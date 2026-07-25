@@ -1100,7 +1100,8 @@ header {
 
 .info-modal {
   max-width: 560px;
-  max-height: min(80vh, calc(100vh - 2rem));
+  height: min(90vh, calc(100vh - 2rem));
+  max-height: min(90vh, calc(100vh - 2rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1196,8 +1197,8 @@ header {
 }
 .version-history-group {
   display: grid;
-  grid-template-columns: minmax(6.5rem, 8.2rem) minmax(0, 1fr);
-  gap: 1.15rem;
+  grid-template-columns: minmax(4.25rem, 4.8rem) minmax(0, 1fr);
+  gap: 0.78rem;
   align-items: start;
   padding: 1.15rem 0 1.25rem;
   border-top: 1px solid rgba(255,255,255,0.08);
@@ -1214,11 +1215,11 @@ header {
 }
 .version-history-date::after {
   content: "";
-  width: 4.6rem;
+  width: 4.05rem;
   height: 2px;
   margin-top: 0.34rem;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(245,201,208,0.72), rgba(184,212,255,0.22), rgba(184,212,255,0));
+  background: linear-gradient(90deg, rgba(184,212,255,0.76), rgba(132,177,255,0.34), rgba(184,212,255,0));
 }
 .version-history-year {
   color: var(--text);
@@ -1232,7 +1233,7 @@ header {
   margin-top: 0.12rem;
   color: var(--text);
   font-family: "Times New Roman", "Noto Serif TC", serif;
-  font-size: 1.7rem;
+  font-size: 1.32rem;
   font-weight: 300;
   letter-spacing: 0.04em;
   line-height: 1.05;
@@ -1739,6 +1740,7 @@ select.card-input option {
 
 @media (max-width: 600px) {
   .info-modal {
+    height: min(72vh, calc(100vh - 2rem));
     max-height: min(72vh, calc(100vh - 2rem));
   }
   .info-modal > .modal-close {
