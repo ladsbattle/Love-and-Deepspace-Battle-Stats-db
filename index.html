@@ -1136,80 +1136,113 @@ header {
 }
 
 .modal.panel-detail .modal-config-table-wrap {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .modal.panel-detail #mLowerBlock {
   display: none;
 }
 
-.modal-config-table {
-  display: grid;
+.modal-config-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
   width: 100%;
 }
 
-.modal-config-row {
+.modal-config-section {
   display: grid;
-  grid-template-columns: 3.4rem minmax(7rem, 1fr) minmax(7.5rem, 1.05fr) 5.2rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
+  row-gap: 0.65rem;
+  align-items: start;
+}
+
+.modal-config-section + .modal-config-section {
+  padding-top: 1.15rem;
+  border-top: 1px solid rgba(150,180,240,0.16);
+}
+
+.modal-config-marker {
+  width: 0.48rem;
+  height: 0.48rem;
+  margin-top: 0.48rem;
+  color: #9bbdff;
+  flex: 0 0 auto;
+}
+
+.modal-config-marker.is-upper {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: currentColor;
+}
+
+.modal-config-marker.is-lower {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: currentColor;
+}
+
+.modal-config-layer-row {
+  display: flex;
   align-items: center;
-  min-height: 3.9rem;
-  border-top: 1px solid rgba(150,180,240,0.14);
-}
-
-.modal-config-row:first-child {
-  border-top: 0;
-}
-
-.modal-config-head {
-  min-height: 2.35rem;
-  background: rgba(184,212,255,0.035);
-}
-
-.modal-config-cell {
+  gap: 0.55rem;
   min-width: 0;
-  padding: 0.65rem 0.7rem;
-  border-left: 1px solid rgba(150,180,240,0.1);
-}
-
-.modal-config-cell:first-child {
-  border-left: 0;
-}
-
-.modal-config-head .modal-config-cell {
-  color: var(--text-dim);
-  font-size: 0.64rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
 }
 
 .modal-config-layer {
-  color: var(--text-muted);
-  font-size: 0.68rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 600;
   letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.modal-config-fields {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: minmax(7.2rem, 0.9fr) minmax(8.6rem, 1.1fr);
+  gap: 0.9rem 1.35rem;
+  min-width: 0;
+}
+
+.modal-config-field {
+  min-width: 0;
+}
+
+.modal-config-label {
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.24rem;
+  white-space: nowrap;
 }
 
 .modal-config-main {
   color: var(--text);
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   line-height: 1.45;
 }
 
 .modal-config-muted {
+  grid-column: 2;
   color: var(--text-dim);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
 }
 
 .modal-config-dir {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 3.4rem;
-  min-height: 1.75rem;
-  padding: 0 0.45rem;
+  min-width: 3rem;
+  min-height: 1.5rem;
+  padding: 0 0.42rem;
   border-radius: 6px;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   color: #dce6f4;
@@ -1230,6 +1263,17 @@ header {
   background: rgba(107,131,168,0.1);
   border: 1px solid rgba(107,131,168,0.2);
   color: var(--text-dim);
+}
+
+.modal.panel-detail .modal-footer-actions .btn-fb {
+  background: var(--modal-orbit-bg, rgba(89,132,164,0.68));
+  border-color: var(--modal-orbit-border, rgba(147,199,231,0.68));
+  color: var(--modal-orbit-button-text, #ffffff);
+}
+
+.modal.panel-detail .modal-footer-actions .btn-fb:hover {
+  background: var(--modal-orbit-bg-strong, var(--modal-orbit-bg, rgba(89,132,164,0.82)));
+  border-color: var(--modal-orbit-color, rgba(147,199,231,0.82));
 }
 
 .info-modal {
@@ -2113,33 +2157,44 @@ select.card-input option {
   .modal.panel-detail .modal-layer::after {
     width: 5.4rem;
   }
-  .modal-config-row {
-    grid-template-columns: 2.75rem minmax(4.9rem, 1fr) minmax(5rem, 1fr) 4.05rem;
-    min-height: 3.55rem;
+  .modal-config-detail {
+    gap: 1rem;
   }
-  .modal-config-head {
-    min-height: 2.2rem;
+  .modal-config-section {
+    column-gap: 0.6rem;
+    row-gap: 0.58rem;
   }
-  .modal-config-cell {
-    padding: 0.55rem 0.45rem;
+  .modal-config-section + .modal-config-section {
+    padding-top: 1rem;
   }
-  .modal-config-head .modal-config-cell {
-    font-size: 0.56rem;
-    letter-spacing: 0.03em;
+  .modal-config-marker {
+    width: 0.42rem;
+    height: 0.42rem;
+    margin-top: 0.43rem;
+  }
+  .modal-config-layer-row {
+    gap: 0.46rem;
   }
   .modal-config-layer {
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+  }
+  .modal-config-fields {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  .modal-config-label {
+    font-size: 0.6rem;
   }
   .modal-config-main {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
   }
   .modal-config-dir {
-    min-width: 3rem;
-    min-height: 1.55rem;
+    min-width: 2.8rem;
+    min-height: 1.42rem;
     padding: 0 0.28rem;
     border-radius: 5px;
-    font-size: 0.64rem;
+    font-size: 0.62rem;
   }
   .modal-footer-actions {
     flex-direction: column;
@@ -3527,27 +3582,38 @@ function modalDirPill(dir) {
 
 function modalConfigRow(label, card, partner, dir) {
   if (card === 'N/A') {
-    return `<div class="modal-config-row">
-      <span class="modal-config-cell modal-config-layer">${escapeHtml(label)}</span>
-      <span class="modal-config-cell modal-config-muted" style="grid-column:2 / -1">單層面板（無此層配置）</span>
+    const markerClass = label === '上層' ? 'is-upper' : 'is-lower';
+    return `<div class="modal-config-section">
+      <span class="modal-config-marker ${markerClass}" aria-hidden="true"></span>
+      <div class="modal-config-layer-row">
+        <span class="modal-config-layer">${escapeHtml(label)}</span>
+        ${modalDirPill(dir)}
+      </div>
+      <div class="modal-config-muted">單層面板（無此層配置）</div>
     </div>`;
   }
-  return `<div class="modal-config-row">
-    <span class="modal-config-cell modal-config-layer">${escapeHtml(label)}</span>
-    <span class="modal-config-cell modal-config-main">${escapeHtml(card)}</span>
-    <span class="modal-config-cell modal-config-main">${escapeHtml(partner)}</span>
-    <span class="modal-config-cell">${modalDirPill(dir)}</span>
+  const markerClass = label === '上層' ? 'is-upper' : 'is-lower';
+  return `<div class="modal-config-section">
+    <span class="modal-config-marker ${markerClass}" aria-hidden="true"></span>
+    <div class="modal-config-layer-row">
+      <span class="modal-config-layer">${escapeHtml(label)}</span>
+      ${modalDirPill(dir)}
+    </div>
+    <div class="modal-config-fields">
+      <div class="modal-config-field">
+        <div class="modal-config-label">日卡階數</div>
+        <div class="modal-config-main">${escapeHtml(card)}</div>
+      </div>
+      <div class="modal-config-field">
+        <div class="modal-config-label">搭檔</div>
+        <div class="modal-config-main">${escapeHtml(partner)}</div>
+      </div>
+    </div>
   </div>`;
 }
 
 function modalConfigTable(d) {
-  return `<div class="modal-config-table">
-    <div class="modal-config-row modal-config-head">
-      <span class="modal-config-cell"></span>
-      <span class="modal-config-cell">日卡階數</span>
-      <span class="modal-config-cell">搭檔</span>
-      <span class="modal-config-cell">對譜情形</span>
-    </div>
+  return `<div class="modal-config-detail">
     ${modalConfigRow('上層', d.upperCard, d.upperPartner, d.upperDir)}
     ${modalConfigRow('下層', d.lowerCard, d.lowerPartner, d.lowerDir)}
   </div>`;
@@ -3572,7 +3638,21 @@ function openPanelDetail(d, recordHistory = true) {
     火: 'var(--col-fire)', 能量: 'var(--col-energy)', 引力: 'var(--col-gravity)',
     波動: 'var(--col-wave)', 金屬: 'var(--col-metal)'
   };
+  const orbitButtonColors = {
+    開放: ['var(--col-open-bg)', 'var(--col-open-border)'],
+    光: ['var(--col-light-bg)', 'var(--col-light-border)'],
+    冰: ['var(--col-ice-bg)', 'var(--col-ice-border)'],
+    火: ['var(--col-fire-bg)', 'var(--col-fire-border)'],
+    能量: ['var(--col-energy-bg)', 'var(--col-energy-border)'],
+    引力: ['var(--col-gravity-bg)', 'var(--col-gravity-border)'],
+    波動: ['var(--col-wave-bg)', 'var(--col-wave-border)'],
+    金屬: ['var(--col-metal-bg)', 'var(--col-metal-border)']
+  };
   modalEl.style.setProperty('--modal-orbit-color', orbitColors[d.orbit] || 'var(--text)');
+  const [orbitBg, orbitBorder] = orbitButtonColors[d.orbit] || ['rgba(89,132,164,0.68)', 'rgba(147,199,231,0.68)'];
+  modalEl.style.setProperty('--modal-orbit-bg', orbitBg);
+  modalEl.style.setProperty('--modal-orbit-bg-strong', orbitBg);
+  modalEl.style.setProperty('--modal-orbit-border', orbitBorder);
   document.getElementById('mLayer').style.color = '';
   upperBlock.classList.add('modal-config-table-wrap');
   upperBlock.querySelector('.modal-block-title')?.remove();
@@ -3797,6 +3877,10 @@ function openEndlessDetail(d, recordHistory = true) {
   modalEl.classList.add('endless-detail');
   modalEl.removeAttribute('data-orbit');
   modalEl.style.removeProperty('--modal-orbit-color');
+  modalEl.style.removeProperty('--modal-orbit-bg');
+  modalEl.style.removeProperty('--modal-orbit-bg-strong');
+  modalEl.style.removeProperty('--modal-orbit-border');
+  modalEl.style.removeProperty('--modal-orbit-button-text');
   document.getElementById('mUpperBlock').classList.remove('modal-config-table-wrap');
   // remove block titles for endless (no upper/lower layers)
   document.getElementById('mUpperBlock').querySelector('.modal-block-title') && document.getElementById('mUpperBlock').querySelector('.modal-block-title').remove();
@@ -3827,6 +3911,10 @@ function closeModalDirect() {
   modalEl.classList.remove('panel-detail', 'endless-detail');
   modalEl.removeAttribute('data-orbit');
   modalEl.style.removeProperty('--modal-orbit-color');
+  modalEl.style.removeProperty('--modal-orbit-bg');
+  modalEl.style.removeProperty('--modal-orbit-bg-strong');
+  modalEl.style.removeProperty('--modal-orbit-border');
+  modalEl.style.removeProperty('--modal-orbit-button-text');
   previewModalPaused = false;
   previewLastTime = performance.now();
   setModalViewed(false);
