@@ -1100,7 +1100,7 @@ header {
 
 .info-modal {
   max-width: 560px;
-  max-height: min(70vh, calc(100vh - 2rem));
+  max-height: min(80vh, calc(100vh - 2rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1773,7 +1773,7 @@ select.card-input option {
   .version-history-date {
     flex-direction: row;
     align-items: baseline;
-    gap: 0.56rem;
+    gap: 0.16rem;
   }
   .version-history-date::after {
     width: 3.8rem;
@@ -1782,11 +1782,14 @@ select.card-input option {
   }
   .version-history-day {
     margin-top: 0;
-    font-size: 1.35rem;
+    font-size: 1.08rem;
   }
   .version-history-year {
-    font-size: 1.35rem;
+    font-size: 1.08rem;
     letter-spacing: 0.04em;
+  }
+  .version-history-year::after {
+    content: ".";
   }
   .version-history-items {
     font-size: 0.86rem;
