@@ -772,7 +772,7 @@ header {
 .panel-card[data-orbit="金屬"]::before  { background: var(--col-metal); }
 
 /* orbit badges on card */
-.orbit-badge { font-size: 0.65rem; letter-spacing: 0.1em; padding: 0.18rem 0.6rem; border-radius: 999px; border: 1px solid; font-weight: 500; }
+.orbit-badge { font-size: 0.65rem; letter-spacing: 0.1em; padding: 0.18rem 0.6rem; border-radius: 999px; border: 1px solid; font-weight: 600; }
 .orbit-badge[data-orbit="開放"]  { color: var(--col-open);   border-color: var(--col-open-border);   background: var(--col-open-bg); }
 .orbit-badge[data-orbit="光"]    { color: var(--col-light);  border-color: var(--col-light-border);  background: var(--col-light-bg); }
 .orbit-badge[data-orbit="冰"]    { color: var(--col-ice);    border-color: var(--col-ice-border);    background: var(--col-ice-bg); }
@@ -847,8 +847,8 @@ header {
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
-.dir-順 { background: rgba(52,211,153,0.12); color: #e3e3e3; border: 1px solid rgba(52,211,153,0.25); }
-.dir-逆 { background: rgba(249,115,22,0.12);  color: #e3e3e3; border: 1px solid rgba(249,115,22,0.25); }
+.dir-順 { background: rgba(184,212,255,0.055); color: #dce6f4; border: 1px solid rgba(184,212,255,0.34); }
+.dir-逆 { background: rgba(210,220,238,0.045); color: #dce6f4; border: 1px solid rgba(210,220,238,0.26); }
 .dir-na { background: rgba(107,131,168,0.1);  color: var(--text-dim); border: 1px solid rgba(107,131,168,0.2); }
 
 .na-text { font-size: 0.78rem; color: var(--text-dim); }
@@ -1096,6 +1096,140 @@ header {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
+}
+
+.modal.panel-detail {
+  max-width: 620px;
+}
+
+.modal.panel-detail .modal-header {
+  margin-bottom: 1.35rem;
+  padding-right: 4.5rem;
+}
+
+.modal.panel-detail .modal-orbit {
+  margin-bottom: 0.6rem;
+}
+
+.modal.panel-detail .modal-layer {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  color: var(--modal-orbit-color, var(--accent2));
+  font-size: 1.55rem;
+  line-height: 1.05;
+}
+
+.modal.panel-detail .modal-layer::after {
+  content: "";
+  display: block;
+  width: 7rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--modal-orbit-color, var(--accent2)), rgba(184,212,255,0.25), rgba(184,212,255,0));
+  opacity: 0.62;
+}
+
+.modal.panel-detail .modal-body {
+  gap: 0;
+  margin-bottom: 1.35rem;
+}
+
+.modal.panel-detail .modal-config-table-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+
+.modal.panel-detail #mLowerBlock {
+  display: none;
+}
+
+.modal-config-table {
+  display: grid;
+  width: 100%;
+}
+
+.modal-config-row {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(7rem, 1fr) minmax(7.5rem, 1.05fr) 5.2rem;
+  align-items: center;
+  min-height: 3.9rem;
+  border-top: 1px solid rgba(150,180,240,0.14);
+}
+
+.modal-config-row:first-child {
+  border-top: 0;
+}
+
+.modal-config-head {
+  min-height: 2.35rem;
+  background: rgba(184,212,255,0.035);
+}
+
+.modal-config-cell {
+  min-width: 0;
+  padding: 0.65rem 0.7rem;
+  border-left: 1px solid rgba(150,180,240,0.1);
+}
+
+.modal-config-cell:first-child {
+  border-left: 0;
+}
+
+.modal-config-head .modal-config-cell {
+  color: var(--text-dim);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.modal-config-layer {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.modal-config-main {
+  color: var(--text);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.modal-config-muted {
+  color: var(--text-dim);
+  font-size: 0.76rem;
+}
+
+.modal-config-dir {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.4rem;
+  min-height: 1.75rem;
+  padding: 0 0.45rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #dce6f4;
+  white-space: nowrap;
+}
+
+.modal-config-dir.dir-順 {
+  background: rgba(184,212,255,0.055);
+  border: 1px solid rgba(184,212,255,0.34);
+}
+
+.modal-config-dir.dir-逆 {
+  background: rgba(210,220,238,0.045);
+  border: 1px solid rgba(210,220,238,0.26);
+}
+
+.modal-config-dir.dir-na {
+  background: rgba(107,131,168,0.1);
+  border: 1px solid rgba(107,131,168,0.2);
+  color: var(--text-dim);
 }
 
 .info-modal {
@@ -1965,6 +2099,47 @@ select.card-input option {
   #modal > .modal-close {
     top: 1.35rem;
     right: 3.35rem;
+  }
+  .modal.panel-detail {
+    max-width: 100%;
+  }
+  .modal.panel-detail .modal-header {
+    padding-right: 3.65rem;
+    margin-bottom: 1.15rem;
+  }
+  .modal.panel-detail .modal-layer {
+    font-size: 1.34rem;
+  }
+  .modal.panel-detail .modal-layer::after {
+    width: 5.4rem;
+  }
+  .modal-config-row {
+    grid-template-columns: 2.75rem minmax(4.9rem, 1fr) minmax(5rem, 1fr) 4.05rem;
+    min-height: 3.55rem;
+  }
+  .modal-config-head {
+    min-height: 2.2rem;
+  }
+  .modal-config-cell {
+    padding: 0.55rem 0.45rem;
+  }
+  .modal-config-head .modal-config-cell {
+    font-size: 0.56rem;
+    letter-spacing: 0.03em;
+  }
+  .modal-config-layer {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+  .modal-config-main {
+    font-size: 0.78rem;
+  }
+  .modal-config-dir {
+    min-width: 3rem;
+    min-height: 1.55rem;
+    padding: 0 0.28rem;
+    border-radius: 5px;
+    font-size: 0.64rem;
   }
   .modal-footer-actions {
     flex-direction: column;
@@ -3343,12 +3518,39 @@ function dirTag(dir) {
   return safeDir ? `<span class="dir-tag dir-${safeDir}">${safeDir}</span>` : '<span class="dir-tag dir-na">—</span>';
 }
 
-function modalBlock(card, partner, dir) {
-  if (card === 'N/A') return '<div class="modal-row"><span class="na-text" style="color:var(--text-dim)">單層面板（無此層配置）</span></div>';
-  const dirText = dir === '順' ? '順譜' : dir === '逆' ? '逆譜' : '—';
-  return `<div class="modal-row"><span class="modal-label">日卡</span><span class="modal-val">${escapeHtml(card)}</span></div>
-    <div class="modal-row"><span class="modal-label">搭檔</span><span class="modal-val">${escapeHtml(partner)}</span></div>
-    <div class="modal-row"><span class="modal-label">對譜情形</span><span class="modal-val">${dirText}</span></div>`;
+function modalDirPill(dir) {
+  if (dir === '順' || dir === '逆') {
+    return `<span class="modal-config-dir dir-${dir}">${dir}譜</span>`;
+  }
+  return '<span class="modal-config-dir dir-na">—</span>';
+}
+
+function modalConfigRow(label, card, partner, dir) {
+  if (card === 'N/A') {
+    return `<div class="modal-config-row">
+      <span class="modal-config-cell modal-config-layer">${escapeHtml(label)}</span>
+      <span class="modal-config-cell modal-config-muted" style="grid-column:2 / -1">單層面板（無此層配置）</span>
+    </div>`;
+  }
+  return `<div class="modal-config-row">
+    <span class="modal-config-cell modal-config-layer">${escapeHtml(label)}</span>
+    <span class="modal-config-cell modal-config-main">${escapeHtml(card)}</span>
+    <span class="modal-config-cell modal-config-main">${escapeHtml(partner)}</span>
+    <span class="modal-config-cell">${modalDirPill(dir)}</span>
+  </div>`;
+}
+
+function modalConfigTable(d) {
+  return `<div class="modal-config-table">
+    <div class="modal-config-row modal-config-head">
+      <span class="modal-config-cell"></span>
+      <span class="modal-config-cell">日卡階數</span>
+      <span class="modal-config-cell">搭檔</span>
+      <span class="modal-config-cell">對譜情形</span>
+    </div>
+    ${modalConfigRow('上層', d.upperCard, d.upperPartner, d.upperDir)}
+    ${modalConfigRow('下層', d.lowerCard, d.lowerPartner, d.lowerDir)}
+  </div>`;
 }
 
 function openPanelDetail(d, recordHistory = true) {
@@ -3356,22 +3558,28 @@ function openPanelDetail(d, recordHistory = true) {
   const wasViewedBeforeOpen = isViewed(folderItem);
   if (recordHistory) addHistoryItem(folderItem);
   setModalViewed(wasViewedBeforeOpen);
-  // restore block titles for panel cards
-  document.getElementById('mUpperBlock').querySelector('.modal-block-title') && document.getElementById('mUpperBlock').querySelector('.modal-block-title').remove();
-  document.getElementById('mLowerBlock').querySelector('.modal-block-title') && document.getElementById('mLowerBlock').querySelector('.modal-block-title').remove();
-  document.getElementById('mUpperBlock').insertAdjacentHTML('afterbegin', '<div class="modal-block-title">▲ 上層</div>');
-  document.getElementById('mLowerBlock').insertAdjacentHTML('afterbegin', '<div class="modal-block-title">▼ 下層</div>');
+  const modalEl = document.getElementById('modal');
+  const upperBlock = document.getElementById('mUpperBlock');
+  const lowerBlock = document.getElementById('mLowerBlock');
+  modalEl.classList.add('panel-detail');
+  modalEl.classList.remove('endless-detail');
+  modalEl.dataset.orbit = d.orbit;
 
   document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}軌道</span>`;
-  document.getElementById('mLayer').textContent = d.layer;
-const orbitColors = {
-  開放: 'var(--col-open)', 光: 'var(--col-light)', 冰: 'var(--col-ice)',
-  火: 'var(--col-fire)', 能量: 'var(--col-energy)', 引力: 'var(--col-gravity)',
-  波動: 'var(--col-wave)', 金屬: 'var(--col-metal)'
-};
-document.getElementById('mLayer').style.color = orbitColors[d.orbit] || 'var(--text)';
-  document.getElementById('mUpperContent').innerHTML = modalBlock(d.upperCard, d.upperPartner, d.upperDir);
-  document.getElementById('mLowerContent').innerHTML = modalBlock(d.lowerCard, d.lowerPartner, d.lowerDir);
+  document.getElementById('mLayer').textContent = `${d.layer} 層`;
+  const orbitColors = {
+    開放: 'var(--col-open)', 光: 'var(--col-light)', 冰: 'var(--col-ice)',
+    火: 'var(--col-fire)', 能量: 'var(--col-energy)', 引力: 'var(--col-gravity)',
+    波動: 'var(--col-wave)', 金屬: 'var(--col-metal)'
+  };
+  modalEl.style.setProperty('--modal-orbit-color', orbitColors[d.orbit] || 'var(--text)');
+  document.getElementById('mLayer').style.color = '';
+  upperBlock.classList.add('modal-config-table-wrap');
+  upperBlock.querySelector('.modal-block-title')?.remove();
+  lowerBlock.querySelector('.modal-block-title')?.remove();
+  lowerBlock.style.display = 'none';
+  document.getElementById('mUpperContent').innerHTML = modalConfigTable(d);
+  document.getElementById('mLowerContent').innerHTML = '';
 
   const orbitLabel = ORBIT_LABEL[d.orbit] || d.orbit;
   const reportUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdu-eI87wlkR2LnTlwc3kzHD4pz_PL1-gydhwCr7W-7HKOxyg/viewform?usp=pp_url&entry.1527588954=${encodeURIComponent(orbitLabel)}&entry.1863774587=${encodeURIComponent(d.layer)}&entry.1242930374=${encodeURIComponent(d.link)}`;
@@ -3584,6 +3792,12 @@ function openEndlessDetail(d, recordHistory = true) {
   const wasViewedBeforeOpen = isViewed(folderItem);
   if (recordHistory) addHistoryItem(folderItem);
   setModalViewed(wasViewedBeforeOpen);
+  const modalEl = document.getElementById('modal');
+  modalEl.classList.remove('panel-detail');
+  modalEl.classList.add('endless-detail');
+  modalEl.removeAttribute('data-orbit');
+  modalEl.style.removeProperty('--modal-orbit-color');
+  document.getElementById('mUpperBlock').classList.remove('modal-config-table-wrap');
   // remove block titles for endless (no upper/lower layers)
   document.getElementById('mUpperBlock').querySelector('.modal-block-title') && document.getElementById('mUpperBlock').querySelector('.modal-block-title').remove();
   document.getElementById('mLowerBlock').querySelector('.modal-block-title') && document.getElementById('mLowerBlock').querySelector('.modal-block-title').remove();
@@ -3609,9 +3823,14 @@ function openEndlessModal(idx) {
 function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalDirect(); }
 function closeModalDirect() {
   document.getElementById('modalOverlay').classList.remove('show');
+  const modalEl = document.getElementById('modal');
+  modalEl.classList.remove('panel-detail', 'endless-detail');
+  modalEl.removeAttribute('data-orbit');
+  modalEl.style.removeProperty('--modal-orbit-color');
   previewModalPaused = false;
   previewLastTime = performance.now();
   setModalViewed(false);
+  document.getElementById('mUpperBlock').classList.remove('modal-config-table-wrap');
   document.getElementById('mLowerBlock').style.display = '';
 }
 document.addEventListener('keydown', e => {
