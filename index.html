@@ -742,42 +742,6 @@ header {
   padding-right: 2.55rem;
 }
 
-.panel-card-main {
-  display: grid;
-  grid-template-columns: minmax(4.8rem, 5.9rem) minmax(0, 1fr);
-  column-gap: 0.85rem;
-  align-items: center;
-  min-height: 7.7rem;
-}
-
-.panel-card-axis {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 0.42rem;
-  min-width: 0;
-}
-
-.panel-card-axis .orbit-badge {
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-.panel-card-axis .layer-num {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.16rem;
-  font-size: 1.45rem;
-  line-height: 1;
-}
-
-.layer-unit {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 0.68em;
-  letter-spacing: 0.04em;
-}
-
 .card-labels,
 .card-meta-right {
   display: flex;
@@ -833,29 +797,19 @@ header {
 .panel-card[data-orbit="引力"] .layer-num  { color: var(--col-gravity); }
 .panel-card[data-orbit="波動"] .layer-num  { color: var(--col-wave); }
 .panel-card[data-orbit="金屬"] .layer-num  { color: var(--col-metal); }
-.panel-card[data-orbit="開放"] .layer-unit  { color: var(--col-open); }
-.panel-card[data-orbit="光"] .layer-unit    { color: var(--col-light); }
-.panel-card[data-orbit="冰"] .layer-unit    { color: var(--col-ice); }
-.panel-card[data-orbit="火"] .layer-unit    { color: var(--col-fire); }
-.panel-card[data-orbit="能量"] .layer-unit  { color: var(--col-energy); }
-.panel-card[data-orbit="引力"] .layer-unit  { color: var(--col-gravity); }
-.panel-card[data-orbit="波動"] .layer-unit  { color: var(--col-wave); }
-.panel-card[data-orbit="金屬"] .layer-unit  { color: var(--col-metal); }
 
 /* Layer sections */
 .layer-section {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  min-width: 0;
+  gap: 0.5rem;
 }
 
 .layer-block {
-  padding: 0.48rem 0;
-}
-
-.layer-block + .layer-block {
-  border-top: 1px solid rgba(150,180,240,0.14);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 7px;
+  padding: 0.55rem 0.75rem;
 }
 
 .layer-label {
@@ -867,31 +821,21 @@ header {
 }
 
 .layer-info {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 0.36rem 0.5rem;
-}
-
-.layer-info > div {
-  min-width: 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .card-name {
   font-size: 0.82rem;
   color: var(--text);
   font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .partner-name {
   font-size: 0.75rem;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .dir-tag {
@@ -902,12 +846,6 @@ header {
   font-weight: 500;
   letter-spacing: 0.05em;
   white-space: nowrap;
-}
-.layer-info .dir-tag {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  margin-left: 0;
 }
 .dir-順 { background: rgba(184,212,255,0.055); color: #dce6f4; border: 1px solid rgba(184,212,255,0.34); }
 .dir-逆 { background: rgba(210,220,238,0.045); color: #dce6f4; border: 1px solid rgba(210,220,238,0.26); }
@@ -2233,23 +2171,6 @@ select.card-input option {
   .viewed-card .endless-card-header .card-meta-right {
     padding-right: 2.15rem;
   }
-  .panel-card-main {
-    grid-template-columns: minmax(4.25rem, 5.2rem) minmax(0, 1fr);
-    column-gap: 0.72rem;
-    min-height: 7.3rem;
-  }
-  .panel-card-axis {
-    gap: 0.36rem;
-  }
-  .panel-card-axis .layer-num {
-    font-size: 1.32rem;
-  }
-  .layer-unit {
-    font-size: 0.64em;
-  }
-  .layer-block {
-    padding: 0.44rem 0;
-  }
   .layer-label {
     font-size: 0.58rem;
     margin-bottom: 0.26rem;
@@ -2259,10 +2180,6 @@ select.card-input option {
   }
   .partner-name {
     font-size: 0.72rem;
-  }
-  .layer-info .dir-tag {
-    font-size: 0.6rem;
-    padding: 0.13rem 0.36rem;
   }
   .modal.viewed-detail::before {
     width: 3.15rem;
@@ -3499,21 +3416,21 @@ function panelCardMarkup(d, action, previewType = '', previewIndex = null) {
   return `
     <div class="panel-card${viewedCardClass(folderItem)}" data-view-key="${escapeHtml(encodedItemKey(folderItem))}" data-orbit="${orbit}"${previewAttrs}${actionAttr}>
       ${viewedCardMarkup(folderItem)}
-      <div class="panel-card-main">
-        <div class="panel-card-axis">
+      <div class="card-orbit-bar">
+        <div class="card-labels">
           <span class="orbit-badge" data-orbit="${orbit}">${orbitLabel}</span>
-          <span class="layer-num"><span>${escapeHtml(String(d.layer))}</span><span class="layer-unit">層</span></span>
         </div>
-        <div class="panel-card-content">
-          <div class="layer-section">
-            ${cardLayerBlock(d.upperCard, d.upperPartner, d.upperDir, '▲ 上層')}
-            ${cardLayerBlock(d.lowerCard, d.lowerPartner, d.lowerDir, '▼ 下層')}
-          </div>
+        <div class="card-meta-right">
+          <span class="layer-num">${escapeHtml(String(d.layer))} 層</span>
         </div>
+      </div>
+      <div class="layer-section">
+        ${cardLayerBlock(d.upperCard, d.upperPartner, d.upperDir, '▲ 上層')}
+        ${cardLayerBlock(d.lowerCard, d.lowerPartner, d.lowerDir, '▼ 下層')}
       </div>
       <div class="card-footer">
         ${d.hasVideo ? videoBadgeMarkup() : '<span></span>'}
-        <span class="link-hint">點擊查看詳情 →</span>
+        <span class="link-hint">點擊查看紀錄 →</span>
       </div>
     </div>`;
 }
@@ -3691,7 +3608,7 @@ function cardLayerBlock(card, partner, dir, label) {
   if (card === 'N/A') return `<div class="layer-block"><div class="layer-label">${escapeHtml(label)}</div><div class="layer-info"><span class="na-text">單層面板</span></div></div>`;
   const safeDir = dir === '順' || dir === '逆' ? dir : '';
   const dirHtml = safeDir
-    ? `<span class="dir-tag dir-${safeDir}">${safeDir}譜</span>`
+    ? `<span class="dir-tag dir-${safeDir}" style="margin-left:auto">${safeDir}譜</span>`
     : '';
   return `<div class="layer-block">
     <div class="layer-label">${escapeHtml(label)}</div>
@@ -3979,7 +3896,7 @@ function endlessCardMarkup(d, action, previewType = '', previewIndex = null) {
       </div>
       <div class="endless-footer">
         ${d.hasVideo ? videoBadgeMarkup() : '<span></span>'}
-        <span class="link-hint">點擊查看詳情 →</span>
+        <span class="link-hint">點擊查看紀錄 →</span>
       </div>
     </div>`;
 }
