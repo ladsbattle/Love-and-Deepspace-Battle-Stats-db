@@ -1049,12 +1049,18 @@ header {
   min-height: 2.7rem;
   padding: 0 0.9rem;
   border-radius: 10px;
-  background: rgba(89,132,164,0.68);
-  border-color: rgba(147,199,231,0.68);
+  background: rgba(89,132,164,0.46);
+  border-color: rgba(147,199,231,0.48);
   color: #ffffff;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
+}
+
+.btn-video-inline {
+  color: rgba(238,244,255,0.78);
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .modal-secondary-actions {
@@ -1085,8 +1091,8 @@ header {
 }
 
 .modal-footer-actions .btn-fb:hover {
-  background: rgba(89,132,164,0.82);
-  border-color: rgba(147,199,231,0.82);
+  background: rgba(89,132,164,0.6);
+  border-color: rgba(147,199,231,0.66);
   color: #ffffff;
 }
 
@@ -1099,8 +1105,7 @@ header {
 }
 
 .modal-footer-actions .save-card-btn svg,
-.modal-footer-actions .btn-report svg,
-.modal-footer-actions .fb-outline-icon {
+.modal-footer-actions .btn-report svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -1117,28 +1122,6 @@ header {
 
 .modal.panel-detail .modal-orbit {
   margin-bottom: 0.6rem;
-}
-
-.modal-video-badge {
-  padding: 0.16rem 0.5rem;
-  border: 1px solid rgba(184,212,255,0.32);
-  border-radius: 999px;
-  background: rgba(184,212,255,0.075);
-  color: var(--text-muted);
-  font-size: 0.64rem;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.05em;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.28rem;
-  white-space: nowrap;
-}
-
-.modal-video-badge svg {
-  width: 0.72rem;
-  height: 0.72rem;
-  flex: 0 0 auto;
 }
 
 .modal.panel-detail .modal-layer {
@@ -1286,14 +1269,14 @@ header {
 }
 
 .modal.panel-detail .modal-footer-actions .btn-fb {
-  background: rgba(89,132,164,0.68);
-  border-color: rgba(147,199,231,0.68);
+  background: rgba(89,132,164,0.46);
+  border-color: rgba(147,199,231,0.48);
   color: #ffffff;
 }
 
 .modal.panel-detail .modal-footer-actions .btn-fb:hover {
-  background: rgba(89,132,164,0.82);
-  border-color: rgba(147,199,231,0.82);
+  background: rgba(89,132,164,0.6);
+  border-color: rgba(147,199,231,0.66);
   color: #ffffff;
 }
 
@@ -1487,7 +1470,6 @@ header {
   letter-spacing: 0.05em;
 }
 .btn-fb:hover { background: rgba(147,212,255,0.38); border-color: rgba(147,212,255,0.7); }
-.btn-fb svg { width: 15px; height: 15px; }
  
 .btn-report {
   display: flex;
@@ -3041,14 +3023,12 @@ function reportButton(reportUrl) {
     </a>`;
 }
 
-function modalFooterActions(link, folderItem, reportUrl) {
+function modalFooterActions(link, folderItem, reportUrl, hasVideo = false) {
+  const videoText = hasVideo ? '<span class="btn-video-inline">｜ 附影片</span>' : '';
   return `
     <div class="modal-footer-actions">
       <a href="${escapeHtml(safeExternalUrl(link))}" target="_blank" rel="noopener" class="btn-fb">
-        <svg class="fb-outline-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M15.5 4.5h-2.2c-2.1 0-3.3 1.3-3.3 3.4V10H8v3h2v6.5h3V13h2.1l0.5-3H13V8.1c0-0.9 0.4-1.4 1.4-1.4h1.1V4.5z"/>
-        </svg>
-        前往Facebook查看
+        前往Facebook查看${videoText}
       </a>
       <div class="modal-secondary-actions">
         ${favoriteButton(folderItem)}
@@ -3361,7 +3341,6 @@ function panelCardMarkup(d, action, previewType = '', previewIndex = null) {
       <div class="card-orbit-bar">
         <div class="card-labels">
           <span class="orbit-badge" data-orbit="${orbit}">${orbitLabel}</span>
-          ${d.hasVideo ? '<span class="video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> 附影片</span>' : ''}
         </div>
         <div class="card-meta-right">
           <span class="layer-num">${d.layer} 層</span>
@@ -3372,7 +3351,7 @@ function panelCardMarkup(d, action, previewType = '', previewIndex = null) {
         ${cardLayerBlock(d.lowerCard, d.lowerPartner, d.lowerDir, '▼ 下層')}
       </div>
       <div class="card-footer">
-        <span></span>
+        ${d.hasVideo ? videoBadgeMarkup() : '<span></span>'}
         <span class="link-hint">點擊查看詳情 →</span>
       </div>
     </div>`;
@@ -3591,6 +3570,10 @@ function dirTag(dir) {
   return safeDir ? `<span class="dir-tag dir-${safeDir}">${safeDir}</span>` : '<span class="dir-tag dir-na">—</span>';
 }
 
+function videoBadgeMarkup() {
+  return '<span class="video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>';
+}
+
 function modalDirPill(dir) {
   if (dir === '順' || dir === '逆') {
     return `<span class="modal-config-dir dir-${dir}">${dir}譜</span>`;
@@ -3649,8 +3632,7 @@ function openPanelDetail(d, recordHistory = true) {
   modalEl.classList.remove('endless-detail');
   modalEl.dataset.orbit = d.orbit;
 
-  const videoBadge = d.hasVideo ? '<span class="modal-video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>' : '';
-  document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}軌道</span>${videoBadge}`;
+  document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}軌道</span>`;
   document.getElementById('mLayer').textContent = `${d.layer} 層`;
   const orbitColors = {
     開放: 'var(--col-open)', 光: 'var(--col-light)', 冰: 'var(--col-ice)',
@@ -3683,7 +3665,7 @@ function openPanelDetail(d, recordHistory = true) {
   const orbitLabel = ORBIT_LABEL[d.orbit] || d.orbit;
   const reportUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdu-eI87wlkR2LnTlwc3kzHD4pz_PL1-gydhwCr7W-7HKOxyg/viewform?usp=pp_url&entry.1527588954=${encodeURIComponent(orbitLabel)}&entry.1863774587=${encodeURIComponent(d.layer)}&entry.1242930374=${encodeURIComponent(d.link)}`;
 
-  document.getElementById('mFooter').innerHTML = modalFooterActions(d.link, folderItem, reportUrl);
+  document.getElementById('mFooter').innerHTML = modalFooterActions(d.link, folderItem, reportUrl, d.hasVideo);
 
   document.getElementById('modalOverlay').classList.add('show');
 }
@@ -3821,7 +3803,6 @@ function endlessCardMarkup(d, action, previewType = '', previewIndex = null) {
       <div class="endless-card-header">
         <div class="card-labels">
           <span class="partner-badge" data-partner="${partner}">${partner}</span>
-          ${d.hasVideo ? '<span class="video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> 附影片</span>' : ''}
         </div>
         <div class="card-meta-right">
           <span class="endless-score">${escapeHtml(fmtScore(d.score))} 分</span>
@@ -3836,7 +3817,7 @@ function endlessCardMarkup(d, action, previewType = '', previewIndex = null) {
         <span class="combo-tag">${combo} 譜</span>
       </div>
       <div class="endless-footer">
-        <span></span>
+        ${d.hasVideo ? videoBadgeMarkup() : '<span></span>'}
         <span class="link-hint">點擊查看詳情 →</span>
       </div>
     </div>`;
@@ -3905,8 +3886,7 @@ function openEndlessDetail(d, recordHistory = true) {
   document.getElementById('mUpperBlock').querySelector('.modal-block-title') && document.getElementById('mUpperBlock').querySelector('.modal-block-title').remove();
   document.getElementById('mLowerBlock').querySelector('.modal-block-title') && document.getElementById('mLowerBlock').querySelector('.modal-block-title').remove();
 
-  const videoBadge = d.hasVideo ? '<span class="modal-video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>' : '';
-  document.getElementById('mOrbit').innerHTML = `<span class="partner-badge" data-partner="${escapeHtml(d.partner)}">${escapeHtml(d.partner)}</span>${videoBadge}`;
+  document.getElementById('mOrbit').innerHTML = `<span class="partner-badge" data-partner="${escapeHtml(d.partner)}">${escapeHtml(d.partner)}</span>`;
   document.getElementById('mLayer').textContent = fmtScore(d.score) + ' 分';
   document.getElementById('mLayer').style.color = 'var(--text)';
   document.getElementById('mUpperContent').innerHTML = `
@@ -3916,7 +3896,7 @@ function openEndlessDetail(d, recordHistory = true) {
 
   const reportUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdP6bWGJ6GFkyOZ7dWsqDbiup7KzTyJGxw9Feta-EqCS3pG6w/viewform?usp=pp_url&entry.1527588954=${encodeURIComponent(d.partner)}&entry.1242930374=${encodeURIComponent(d.link)}`;
 
-  document.getElementById('mFooter').innerHTML = modalFooterActions(d.link, folderItem, reportUrl);
+  document.getElementById('mFooter').innerHTML = modalFooterActions(d.link, folderItem, reportUrl, d.hasVideo);
   document.getElementById('modalOverlay').classList.add('show');
 }
 
