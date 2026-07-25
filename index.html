@@ -1000,7 +1000,13 @@ header {
 }
 
 .modal-header { margin-bottom: 1.25rem; }
-.modal-orbit { margin-bottom: 0.4rem; }
+.modal-orbit {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
 .modal-layer {
   font-family: 'Noto Serif TC', serif;
   font-size: 1.5rem;
@@ -1043,10 +1049,11 @@ header {
   min-height: 2.7rem;
   padding: 0 0.9rem;
   border-radius: 10px;
-  background: rgba(89,132,164,0.68);
-  border-color: rgba(147,199,231,0.68);
+  background: rgba(238,244,255,0.92);
+  border-color: rgba(238,244,255,0.82);
+  color: #0d1628;
   font-size: 0.78rem;
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: 0.03em;
 }
 
@@ -1078,8 +1085,9 @@ header {
 }
 
 .modal-footer-actions .btn-fb:hover {
-  background: rgba(89,132,164,0.82);
-  border-color: rgba(147,199,231,0.82);
+  background: rgba(255,255,255,0.98);
+  border-color: rgba(255,255,255,0.92);
+  color: #08111f;
 }
 
 .modal-footer-actions .save-card-btn:hover,
@@ -1111,6 +1119,28 @@ header {
   margin-bottom: 0.6rem;
 }
 
+.modal-video-badge {
+  padding: 0.16rem 0.5rem;
+  border: 1px solid rgba(184,212,255,0.32);
+  border-radius: 999px;
+  background: rgba(184,212,255,0.075);
+  color: var(--text-muted);
+  font-size: 0.64rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  white-space: nowrap;
+}
+
+.modal-video-badge svg {
+  width: 0.72rem;
+  height: 0.72rem;
+  flex: 0 0 auto;
+}
+
 .modal.panel-detail .modal-layer {
   display: inline-flex;
   flex-direction: column;
@@ -1118,16 +1148,6 @@ header {
   color: var(--modal-orbit-color, var(--accent2));
   font-size: 1.55rem;
   line-height: 1.05;
-}
-
-.modal.panel-detail .modal-layer::after {
-  content: "";
-  display: block;
-  width: 7rem;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--modal-orbit-color, var(--accent2)), rgba(184,212,255,0.25), rgba(184,212,255,0));
-  opacity: 0.62;
 }
 
 .modal.panel-detail .modal-body {
@@ -1266,14 +1286,15 @@ header {
 }
 
 .modal.panel-detail .modal-footer-actions .btn-fb {
-  background: var(--modal-orbit-bg, rgba(89,132,164,0.68));
-  border-color: var(--modal-orbit-border, rgba(147,199,231,0.68));
-  color: var(--modal-orbit-button-text, #ffffff);
+  background: rgba(238,244,255,0.92);
+  border-color: rgba(238,244,255,0.82);
+  color: #0d1628;
 }
 
 .modal.panel-detail .modal-footer-actions .btn-fb:hover {
-  background: var(--modal-orbit-bg-strong, var(--modal-orbit-bg, rgba(89,132,164,0.82)));
-  border-color: var(--modal-orbit-color, rgba(147,199,231,0.82));
+  background: rgba(255,255,255,0.98);
+  border-color: rgba(255,255,255,0.92);
+  color: #08111f;
 }
 
 .info-modal {
@@ -2153,9 +2174,6 @@ select.card-input option {
   }
   .modal.panel-detail .modal-layer {
     font-size: 1.34rem;
-  }
-  .modal.panel-detail .modal-layer::after {
-    width: 5.4rem;
   }
   .modal-config-detail {
     gap: 1rem;
@@ -3601,7 +3619,7 @@ function modalConfigRow(label, card, partner, dir) {
     </div>
     <div class="modal-config-fields">
       <div class="modal-config-field">
-        <div class="modal-config-label">日卡階數</div>
+        <div class="modal-config-label">日卡及階數</div>
         <div class="modal-config-main">${escapeHtml(card)}</div>
       </div>
       <div class="modal-config-field">
@@ -3631,7 +3649,8 @@ function openPanelDetail(d, recordHistory = true) {
   modalEl.classList.remove('endless-detail');
   modalEl.dataset.orbit = d.orbit;
 
-  document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}軌道</span>`;
+  const videoBadge = d.hasVideo ? '<span class="modal-video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>' : '';
+  document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}軌道</span>${videoBadge}`;
   document.getElementById('mLayer').textContent = `${d.layer} 層`;
   const orbitColors = {
     開放: 'var(--col-open)', 光: 'var(--col-light)', 冰: 'var(--col-ice)',
@@ -3886,7 +3905,8 @@ function openEndlessDetail(d, recordHistory = true) {
   document.getElementById('mUpperBlock').querySelector('.modal-block-title') && document.getElementById('mUpperBlock').querySelector('.modal-block-title').remove();
   document.getElementById('mLowerBlock').querySelector('.modal-block-title') && document.getElementById('mLowerBlock').querySelector('.modal-block-title').remove();
 
-  document.getElementById('mOrbit').innerHTML = `<span class="partner-badge" data-partner="${escapeHtml(d.partner)}">${escapeHtml(d.partner)}</span>`;
+  const videoBadge = d.hasVideo ? '<span class="modal-video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>' : '';
+  document.getElementById('mOrbit').innerHTML = `<span class="partner-badge" data-partner="${escapeHtml(d.partner)}">${escapeHtml(d.partner)}</span>${videoBadge}`;
   document.getElementById('mLayer').textContent = fmtScore(d.score) + ' 分';
   document.getElementById('mLayer').style.color = 'var(--text)';
   document.getElementById('mUpperContent').innerHTML = `
