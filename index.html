@@ -907,7 +907,8 @@ body.is-app-loading .endless-filter-panel select {
 .layer-label {
   font-size: 0.6rem;
   letter-spacing: 0.15em;
-  color: var(--text-dim);
+  color: rgba(157, 190, 235, 0.86);
+  font-weight: 400;
   margin-bottom: 0.3rem;
   text-transform: uppercase;
 }
@@ -1442,9 +1443,9 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-layer {
   display: inline-flex;
   align-items: center;
-  color: var(--text);
-  font-size: 0.98rem;
-  font-weight: 700;
+  color: rgba(166, 198, 240, 0.9);
+  font-size: 0.9rem;
+  font-weight: 400;
   letter-spacing: 0.12em;
   white-space: nowrap;
 }
@@ -1472,7 +1473,7 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-label {
   display: block;
   color: var(--text-dim);
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   line-height: 1.35;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1484,7 +1485,7 @@ body.is-app-loading .endless-filter-panel select {
   align-items: center;
   min-height: 2.25rem;
   color: var(--text);
-  font-size: 1.04rem;
+  font-size: 0.98rem;
   line-height: 1.18;
   overflow-wrap: anywhere;
 }
@@ -1537,11 +1538,13 @@ body.is-app-loading .endless-filter-panel select {
 
 .modal-config-main.partner-value .companion-name {
   line-height: 1.12;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .modal-config-field.partner-field .modal-config-main {
   color: var(--text);
-  font-size: 1.04rem;
+  font-size: 0.98rem;
 }
 
 .modal-config-muted {
@@ -2571,12 +2574,13 @@ select.card-input option {
     gap: 0.42rem;
   }
   .modal-config-layer {
-    font-size: 0.9rem;
+    font-size: 0.76rem;
+    font-weight: 400;
     letter-spacing: 0.1em;
   }
   .modal-config-fields {
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-    column-gap: 0.55rem;
+    grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.06fr);
+    column-gap: 0.48rem;
     row-gap: 0.36rem;
   }
   .modal-config-field.dir-field {
@@ -2587,10 +2591,10 @@ select.card-input option {
   }
   .modal-config-label {
     display: block;
-    font-size: 0.58rem;
+    font-size: 0.56rem;
   }
   .modal-config-main {
-    font-size: 0.92rem;
+    font-size: 0.84rem;
     min-height: 2.05rem;
     line-height: 1.18;
   }
@@ -2598,19 +2602,19 @@ select.card-input option {
     gap: 0.28rem;
   }
   .modal-config-main.card-value .rank-icon {
-    width: 1.32rem;
-    height: 1.32rem;
+    width: 1.18rem;
+    height: 1.18rem;
   }
   .modal-config-main.partner-value .companion-avatar {
-    width: 1.96rem;
-    height: 1.96rem;
+    width: 1.72rem;
+    height: 1.72rem;
   }
   .modal-config-main.partner-value .companion-inline {
     min-height: 2.05rem;
-    gap: 0.38rem;
+    gap: 0.32rem;
   }
   .modal-config-field.partner-field .modal-config-main {
-    font-size: 0.92rem;
+    font-size: 0.84rem;
   }
   .modal-config-dir {
     min-width: 0;
