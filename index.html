@@ -903,6 +903,18 @@ body.is-app-loading .endless-filter-panel select {
   text-transform: uppercase;
 }
 
+.layer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-bottom: 0.32rem;
+}
+
+.layer-head .layer-label {
+  margin-bottom: 0;
+}
+
 .layer-info {
   display: flex;
   align-items: center;
@@ -910,10 +922,26 @@ body.is-app-loading .endless-filter-panel select {
   flex-wrap: wrap;
 }
 
+.layer-data-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  column-gap: 0.8rem;
+  row-gap: 0.16rem;
+  min-width: 0;
+}
+
+.layer-data-cell {
+  min-width: 0;
+}
+
 .card-name {
   font-size: 0.82rem;
   color: var(--text);
   font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rank-icon {
@@ -956,10 +984,12 @@ body.is-app-loading .endless-filter-panel select {
 .partner-name {
   font-size: 0.75rem;
   color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dir-tag {
-  margin-left: auto;
   font-size: 0.65rem;
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
@@ -2421,6 +2451,13 @@ select.card-input option {
     font-size: 0.58rem;
     margin-bottom: 0.26rem;
   }
+  .layer-head {
+    margin-bottom: 0.28rem;
+  }
+  .layer-data-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 0.5rem;
+  }
   .card-name {
     font-size: 0.8rem;
   }
@@ -2496,7 +2533,7 @@ select.card-input option {
     letter-spacing: 0.1em;
   }
   .modal-config-fields {
-    grid-template-columns: minmax(4.25rem, 0.62fr) minmax(0, 1.38fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
     column-gap: 0.55rem;
     row-gap: 0.36rem;
   }
@@ -4037,16 +4074,19 @@ function setupPreviewScroll(selector, itemCount) {
 }
 
 function cardLayerBlock(card, partner, dir, label) {
-  if (card === 'N/A') return `<div class="layer-block"><div class="layer-label">${escapeHtml(label)}</div><div class="layer-info"><span class="na-text">單層面板</span></div></div>`;
+  if (card === 'N/A') return `<div class="layer-block"><div class="layer-head"><div class="layer-label">${escapeHtml(label)}</div></div><div class="layer-info"><span class="na-text">單層面板</span></div></div>`;
   const safeDir = dir === '順' || dir === '逆' ? dir : '';
   const dirHtml = safeDir
-    ? `<span class="dir-tag dir-${safeDir}" style="margin-left:auto">${safeDir}譜</span>`
+    ? `<span class="dir-tag dir-${safeDir}">${safeDir}譜</span>`
     : '';
   return `<div class="layer-block">
-    <div class="layer-label">${escapeHtml(label)}</div>
-    <div class="layer-info">
-      <div><div class="card-name">${escapeHtml(card)}${rankIconMarkup(card)}</div><div class="partner-name">${escapeHtml(partner)}</div></div>
+    <div class="layer-head">
+      <div class="layer-label">${escapeHtml(label)}</div>
       ${dirHtml}
+    </div>
+    <div class="layer-data-grid">
+      <div class="layer-data-cell"><div class="card-name">${escapeHtml(card)}${rankIconMarkup(card)}</div></div>
+      <div class="layer-data-cell"><div class="partner-name">${escapeHtml(partner)}</div></div>
     </div>
   </div>`;
 }
