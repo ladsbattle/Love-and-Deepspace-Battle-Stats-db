@@ -646,7 +646,7 @@ header {
 }
 .load-progress strong {
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 400;
   min-width: 2.35rem;
   text-align: left;
 }
@@ -988,10 +988,11 @@ body.is-app-loading .endless-filter-panel select {
   height: 1.24rem;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
   flex: 0 0 auto;
   border: 1px solid rgba(184,212,255,0.34);
-  background: rgba(255,255,255,0.05);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 0 8px rgba(184,212,255,0.12);
+  background: transparent;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.2), 0 0 6px rgba(184,212,255,0.08);
 }
 
 .companion-name {
@@ -1311,20 +1312,14 @@ body.is-app-loading .endless-filter-panel select {
 }
 
 .modal.panel-detail {
-  max-width: 640px;
-  display: grid;
-  grid-template-columns: minmax(6.8rem, 8.1rem) minmax(0, 1fr);
-  column-gap: 1.15rem;
-  row-gap: 1.25rem;
-  align-items: center;
+  max-width: 560px;
+  display: block;
+  padding: 1.95rem 2.05rem 1.75rem;
 }
 
 .modal.panel-detail .modal-header {
-  grid-column: 1;
-  grid-row: 1;
-  margin-bottom: 0;
-  padding-right: 0;
-  align-self: center;
+  margin-bottom: 1.3rem;
+  padding-right: 4.25rem;
 }
 
 .modal.panel-detail .modal-orbit {
@@ -1343,22 +1338,22 @@ body.is-app-loading .endless-filter-panel select {
   .modal.panel-detail .modal-header {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
 
   .modal.panel-detail .modal-orbit {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .modal.panel-detail .modal-layer {
-    justify-content: center;
+    justify-content: flex-start;
   }
 }
 
 .modal-layer-num {
-  font-size: 1.9rem;
+  font-size: 2.18rem;
 }
 
 .modal-layer-unit {
@@ -1368,19 +1363,16 @@ body.is-app-loading .endless-filter-panel select {
 }
 
 .modal.panel-detail .modal-body {
-  grid-column: 2;
-  grid-row: 1;
   gap: 0;
   margin-bottom: 0;
 }
 
 .modal.panel-detail .modal-footer {
-  grid-column: 1 / -1;
-  margin-top: 0.85rem;
+  margin-top: 1.35rem;
 }
 
 .modal.panel-detail .modal-footer-actions {
-  justify-content: center;
+  justify-content: stretch;
 }
 
 .modal.panel-detail .modal-config-table-wrap {
@@ -1398,27 +1390,32 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-detail {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.72rem;
   width: 100%;
 }
 
 .modal-config-section {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 0.5rem;
-  row-gap: 0.48rem;
+  column-gap: 0.58rem;
+  row-gap: 0.58rem;
   align-items: start;
-  padding: 0.35rem 0;
+  padding: 0.72rem 0.82rem;
+  min-height: 6.1rem;
+  background: rgba(184,212,255,0.04);
+  border: 1px solid rgba(184,212,255,0.105);
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 .modal-config-section + .modal-config-section {
-  padding-top: 0.95rem;
-  border-top: 1px solid rgba(150,180,240,0.16);
+  padding-top: 0.72rem;
+  border-top: 1px solid rgba(184,212,255,0.105);
 }
 
 .modal-config-marker {
-  width: 0.32rem;
-  height: 0.32rem;
+  width: 0.3rem;
+  height: 0.3rem;
   margin-top: 0.58rem;
   color: #9bbdff;
   flex: 0 0 auto;
@@ -1437,8 +1434,8 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-layer-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  justify-content: space-between;
+  gap: 0.55rem;
+  justify-content: flex-start;
   min-width: 0;
 }
 
@@ -1446,7 +1443,7 @@ body.is-app-loading .endless-filter-panel select {
   display: inline-flex;
   align-items: center;
   color: var(--text);
-  font-size: 0.86rem;
+  font-size: 0.98rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   white-space: nowrap;
@@ -1454,13 +1451,14 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-fields {
   grid-column: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  column-gap: 0.9rem;
   row-gap: 0.42rem;
   min-width: 0;
   align-items: start;
 }
 .modal-config-fields-empty {
-  min-height: 3.05rem;
+  min-height: 3.35rem;
   align-items: center;
 }
 
@@ -1474,7 +1472,7 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-label {
   display: block;
   color: var(--text-dim);
-  font-size: 0.62rem;
+  font-size: 0.66rem;
   line-height: 1.35;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1484,9 +1482,9 @@ body.is-app-loading .endless-filter-panel select {
 .modal-config-main {
   display: flex;
   align-items: center;
-  min-height: 2.05rem;
+  min-height: 2.25rem;
   color: var(--text);
-  font-size: 0.96rem;
+  font-size: 1.04rem;
   line-height: 1.18;
   overflow-wrap: anywhere;
 }
@@ -1511,8 +1509,8 @@ body.is-app-loading .endless-filter-panel select {
 }
 
 .modal-config-main.card-value .rank-icon {
-  width: 1.38rem;
-  height: 1.38rem;
+  width: 1.48rem;
+  height: 1.48rem;
   margin-left: 0;
   vertical-align: 0;
   flex: 0 0 auto;
@@ -1525,16 +1523,16 @@ body.is-app-loading .endless-filter-panel select {
 
 .modal-config-main.partner-value .companion-inline {
   width: 100%;
-  min-height: 2.05rem;
+  min-height: 2.25rem;
   gap: 0.48rem;
   align-items: center;
 }
 
 .modal-config-main.partner-value .companion-avatar {
-  width: 2rem;
-  height: 2rem;
+  width: 2.28rem;
+  height: 2.28rem;
   border-color: rgba(184,212,255,0.54);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.24), 0 0 10px rgba(184,212,255,0.18);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.24), 0 0 7px rgba(184,212,255,0.1);
 }
 
 .modal-config-main.partner-value .companion-name {
@@ -1543,7 +1541,7 @@ body.is-app-loading .endless-filter-panel select {
 
 .modal-config-field.partner-field .modal-config-main {
   color: var(--text);
-  font-size: 0.96rem;
+  font-size: 1.04rem;
 }
 
 .modal-config-muted {
@@ -1561,25 +1559,27 @@ body.is-app-loading .endless-filter-panel select {
   align-items: center;
   justify-content: center;
   min-width: 0;
-  min-height: 1.5rem;
-  padding: 0 0.62rem;
-  border-radius: 999px;
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  min-height: 1.35rem;
+  padding: 0.13rem 0.46rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   color: inherit;
   line-height: 1;
   white-space: nowrap;
 }
 
 .modal-config-dir.dir-順 {
-  background: rgba(238,244,255,0.045);
-  border: 1px solid rgba(238,244,255,0.46);
+  background: rgba(184,212,255,0.055);
+  border: 1px solid rgba(184,212,255,0.34);
+  color: #dce6f4;
 }
 
 .modal-config-dir.dir-逆 {
-  background: rgba(238,244,255,0.035);
-  border: 1px solid rgba(238,244,255,0.38);
+  background: rgba(210,220,238,0.045);
+  border: 1px solid rgba(210,220,238,0.26);
+  color: #dce6f4;
 }
 
 .modal-config-dir.dir-na {
@@ -2539,41 +2539,44 @@ select.card-input option {
   }
   .modal.panel-detail .modal-header {
     padding-right: 3.65rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
   }
   .modal.panel-detail .modal-layer {
     gap: 0.16rem;
   }
   .modal-layer-num {
-    font-size: 1.62rem;
+    font-size: 1.84rem;
   }
   .modal-layer-unit {
-    font-size: 0.9rem;
+    font-size: 0.96rem;
   }
   .modal-config-detail {
-    gap: 0.95rem;
+    gap: 0.72rem;
   }
   .modal-config-section {
-    column-gap: 0.5rem;
-    row-gap: 0.42rem;
+    column-gap: 0.52rem;
+    row-gap: 0.52rem;
+    padding: 0.7rem 0.76rem;
+    min-height: 6.1rem;
   }
   .modal-config-section + .modal-config-section {
-    padding-top: 0.95rem;
+    padding-top: 0.7rem;
   }
   .modal-config-marker {
-    width: 0.34rem;
-    height: 0.34rem;
-    margin-top: 0.5rem;
+    width: 0.28rem;
+    height: 0.28rem;
+    margin-top: 0.54rem;
   }
   .modal-config-layer-row {
     gap: 0.42rem;
   }
   .modal-config-layer {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     letter-spacing: 0.1em;
   }
   .modal-config-fields {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    column-gap: 0.55rem;
     row-gap: 0.36rem;
   }
   .modal-config-field.dir-field {
@@ -2584,38 +2587,38 @@ select.card-input option {
   }
   .modal-config-label {
     display: block;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
   }
   .modal-config-main {
-    font-size: 0.88rem;
-    min-height: 1.95rem;
+    font-size: 0.92rem;
+    min-height: 2.05rem;
     line-height: 1.18;
   }
   .modal-config-main.card-value {
     gap: 0.28rem;
   }
   .modal-config-main.card-value .rank-icon {
-    width: 1.26rem;
-    height: 1.26rem;
+    width: 1.32rem;
+    height: 1.32rem;
   }
   .modal-config-main.partner-value .companion-avatar {
-    width: 1.84rem;
-    height: 1.84rem;
+    width: 1.96rem;
+    height: 1.96rem;
   }
   .modal-config-main.partner-value .companion-inline {
-    min-height: 1.95rem;
-    gap: 0.42rem;
+    min-height: 2.05rem;
+    gap: 0.38rem;
   }
   .modal-config-field.partner-field .modal-config-main {
-    font-size: 0.88rem;
+    font-size: 0.92rem;
   }
   .modal-config-dir {
     min-width: 0;
-    min-height: 1.34rem;
-    padding: 0 0.42rem;
-    border-radius: 5px;
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
+    min-height: 1.28rem;
+    padding: 0.12rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
   }
   .fb-inline-icon {
     width: 1.3rem;
@@ -3609,7 +3612,7 @@ function modalFooterActions(link, folderItem, reportUrl, hasVideo = false) {
   return `
     <div class="modal-footer-actions">
       <a href="${escapeHtml(safeExternalUrl(link))}" target="_blank" rel="noopener" class="btn-fb">
-        <span>Facebook 查看詳情</span>${videoText}
+        <span>查看面板詳情</span>${videoText}
       </a>
       <div class="modal-secondary-actions">
         ${favoriteButton(folderItem)}
