@@ -660,6 +660,18 @@ body.is-app-loading .endless-filter-panel select {
   0%, 100% { opacity: 0.58; }
   50% { opacity: 1; }
 }
+@keyframes fbActionPulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.025),
+      0 0 14px rgba(184,212,255,0.055);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,0.05),
+      0 0 22px rgba(184,212,255,0.16);
+  }
+}
 
 /* Cards grid */
 .cards-grid {
@@ -723,6 +735,9 @@ body.is-app-loading .endless-filter-panel select {
     overflow-x: auto;
     -webkit-mask-image: none;
     mask-image: none;
+  }
+  .modal.panel-detail .modal-footer-actions .btn-fb {
+    animation: none;
   }
 }
 
@@ -1380,7 +1395,7 @@ body.is-app-loading .endless-filter-panel select {
 }
 .modal-config-dot {
   color: var(--text-muted);
-  margin: 0 0.08rem;
+  margin: 0 0.28rem;
 }
 
 .modal-config-fields {
@@ -1478,24 +1493,25 @@ body.is-app-loading .endless-filter-panel select {
   align-items: center;
   justify-content: center;
   min-width: 0;
-  min-height: 0;
-  padding: 0;
-  border-radius: 0;
+  min-height: 1.42rem;
+  padding: 0 0.5rem;
+  border-radius: 6px;
   font-size: inherit;
   font-weight: inherit;
   letter-spacing: inherit;
   color: inherit;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .modal-config-dir.dir-順 {
-  background: transparent;
-  border: 0;
+  background: rgba(238,244,255,0.045);
+  border: 1px solid rgba(238,244,255,0.46);
 }
 
 .modal-config-dir.dir-逆 {
-  background: transparent;
-  border: 0;
+  background: rgba(238,244,255,0.035);
+  border: 1px solid rgba(238,244,255,0.38);
 }
 
 .modal-config-dir.dir-na {
@@ -1505,12 +1521,32 @@ body.is-app-loading .endless-filter-panel select {
 }
 
 .modal.panel-detail .modal-footer-actions .btn-fb {
+  position: relative;
   flex: 0 0 15.8rem;
   width: 15.8rem;
-  background: rgba(255,255,255,0.075);
-  border-color: rgba(218,232,255,0.34);
+  background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.038));
+  border-color: rgba(218,232,255,0.42);
   color: var(--text);
-  font-weight: 800;
+  font-weight: 600;
+  animation: fbActionPulse 2.9s ease-in-out infinite;
+}
+
+.fb-inline-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  border: 1px solid rgba(238,244,255,0.36);
+  color: rgba(238,244,255,0.9);
+  flex: 0 0 auto;
+}
+
+.fb-inline-icon svg {
+  width: 0.56rem;
+  height: 0.56rem;
+  display: block;
 }
 
 .modal.panel-detail .modal-secondary-actions {
@@ -2490,9 +2526,9 @@ select.card-input option {
   }
   .modal-config-dir {
     min-width: 0;
-    min-height: 0;
-    padding: 0;
-    border-radius: 0;
+    min-height: 1.34rem;
+    padding: 0 0.42rem;
+    border-radius: 5px;
     font-size: inherit;
   }
   .modal-footer-actions {
@@ -3481,7 +3517,7 @@ function modalFooterActions(link, folderItem, reportUrl, hasVideo = false) {
   return `
     <div class="modal-footer-actions">
       <a href="${escapeHtml(safeExternalUrl(link))}" target="_blank" rel="noopener" class="btn-fb">
-        前往Facebook查看詳情${videoText}
+        <span>前往</span><span class="fb-inline-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.1 8.15h2.05V5.1h-2.42c-2.82 0-4.5 1.7-4.5 4.72V12H6.9v3.22h2.33V22h3.46v-6.78h2.9L16.05 12h-3.36V9.98c0-1.02.34-1.83 1.41-1.83z"/></svg></span><span>查看詳情</span>${videoText}
       </a>
       <div class="modal-secondary-actions">
         ${favoriteButton(folderItem)}
