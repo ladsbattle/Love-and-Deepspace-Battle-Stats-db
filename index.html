@@ -597,6 +597,9 @@ header {
   color: var(--text-muted);
   flex-wrap: wrap;
 }
+.boot-progress-inline {
+  gap: 0.55rem;
+}
 .loading-spinner {
   width: 0.82rem;
   height: 0.82rem;
@@ -611,12 +614,32 @@ header {
 .load-progress {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   color: var(--text-dim);
+}
+.load-progress-track {
+  position: relative;
+  width: clamp(6.5rem, 24vw, 11.5rem);
+  height: 0.34rem;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(184,212,255,0.18);
+  background: rgba(184,212,255,0.08);
+}
+.load-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(184,212,255,0.46), rgba(228,239,255,0.9));
+  box-shadow: 0 0 12px rgba(184,212,255,0.22);
+  transition: width 0.22s ease;
 }
 .load-progress strong {
   color: var(--text-muted);
   font-weight: 600;
+  min-width: 2.6rem;
+  text-align: right;
 }
 body.is-app-loading .filter-panel,
 body.is-app-loading .endless-filter-panel {
@@ -1347,11 +1370,17 @@ body.is-app-loading .endless-filter-panel select {
 }
 
 .modal-config-layer {
+  display: inline-flex;
+  align-items: center;
   color: var(--text);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.86rem;
+  font-weight: 700;
   letter-spacing: 0.12em;
   white-space: nowrap;
+}
+.modal-config-dot {
+  color: var(--text-muted);
+  margin: 0 0.08rem;
 }
 
 .modal-config-fields {
@@ -1448,30 +1477,30 @@ body.is-app-loading .endless-filter-panel select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.9rem;
-  min-height: 1.45rem;
-  padding: 0 0.38rem;
-  border-radius: 6px;
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #dce6f4;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  color: inherit;
   white-space: nowrap;
 }
 
 .modal-config-dir.dir-順 {
-  background: rgba(184,212,255,0.055);
-  border: 1px solid rgba(184,212,255,0.34);
+  background: transparent;
+  border: 0;
 }
 
 .modal-config-dir.dir-逆 {
-  background: rgba(210,220,238,0.045);
-  border: 1px solid rgba(210,220,238,0.26);
+  background: transparent;
+  border: 0;
 }
 
 .modal-config-dir.dir-na {
-  background: rgba(107,131,168,0.1);
-  border: 1px solid rgba(107,131,168,0.2);
+  background: transparent;
+  border: 0;
   color: var(--text-dim);
 }
 
@@ -2460,11 +2489,11 @@ select.card-input option {
     font-size: 0.88rem;
   }
   .modal-config-dir {
-    min-width: 2.75rem;
-    min-height: 1.38rem;
-    padding: 0 0.3rem;
-    border-radius: 5px;
-    font-size: 0.62rem;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
   }
   .modal-footer-actions {
     flex-direction: column;
@@ -2764,18 +2793,31 @@ function loadingMarkup(message = '資料載入中…') {
   return `<span class="loading-inline"><span class="loading-spinner"></span><span class="loading-text">${escapeHtml(message)}</span></span>`;
 }
 
+function getBootProgressPercent() {
+  const csvTotal = Math.max(bootProgress.csvTotal, 1);
+  const csvRatio = Math.min(bootProgress.csvDone / csvTotal, 1);
+  const csvWeight = 45;
+  const imageWeight = 55;
+
+  if (bootProgress.imageTotal === null) {
+    return Math.round(csvRatio * csvWeight);
+  }
+
+  const imageRatio = bootProgress.imageTotal === 0
+    ? 1
+    : Math.min(bootProgress.imageDone / bootProgress.imageTotal, 1);
+  return Math.min(100, Math.round((csvRatio * csvWeight) + (imageRatio * imageWeight)));
+}
+
 function loadProgressMarkup() {
-  const imageText = bootProgress.imageTotal === null
-    ? '圖檔準備中'
-    : `圖檔 <strong>${bootProgress.imageDone}/${bootProgress.imageTotal}</strong>`;
+  const percent = getBootProgressPercent();
   return `
-    <span class="loading-inline">
+    <span class="loading-inline boot-progress-inline">
       <span class="loading-spinner"></span>
-      <span class="loading-text">${escapeHtml(bootProgress.stage)}…</span>
-      <span class="load-progress">
-        CSV <strong>${bootProgress.csvDone}/${bootProgress.csvTotal}</strong>
-        <span>·</span>
-        <span>${imageText}</span>
+      <span class="loading-text">資料載入中…</span>
+      <span class="load-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="資料載入進度">
+        <span class="load-progress-track"><span class="load-progress-fill" style="width:${percent}%"></span></span>
+        <strong>${percent}%</strong>
       </span>
     </span>`;
 }
@@ -2801,7 +2843,7 @@ function setSearchControlsDisabled(disabled) {
 
 function markCsvLoaded() {
   bootProgress.csvDone += 1;
-  bootProgress.stage = 'CSV 載入中';
+  bootProgress.stage = '資料載入中';
   renderBootProgress();
 }
 
@@ -2857,7 +2899,7 @@ function preloadImage(url) {
 
 async function preloadInitialImages() {
   const urls = collectInitialImageUrls();
-  bootProgress.stage = '圖檔載入中';
+  bootProgress.stage = '資料載入中';
   bootProgress.imageTotal = urls.length;
   bootProgress.imageDone = 0;
   renderBootProgress();
@@ -4009,11 +4051,12 @@ function companionInlineMarkup(partner) {
   return `<span class="companion-inline">${companionIconMarkup(text)}<span class="companion-name">${escapeHtml(text)}</span></span>`;
 }
 
-function modalDirPill(dir) {
+function modalLayerTitleMarkup(label, dir) {
+  const safeLabel = escapeHtml(label);
   if (dir === '順' || dir === '逆') {
-    return `<span class="modal-config-dir dir-${dir}">${dir}譜</span>`;
+    return `<span class="modal-config-layer">${safeLabel}<span class="modal-config-dot">．</span><span class="modal-config-dir dir-${dir}">${dir}譜</span></span>`;
   }
-  return '<span class="modal-config-dir dir-na">—</span>';
+  return `<span class="modal-config-layer">${safeLabel}</span>`;
 }
 
 function modalConfigRow(label, card, partner, dir) {
@@ -4022,8 +4065,7 @@ function modalConfigRow(label, card, partner, dir) {
     return `<div class="modal-config-section">
       <span class="modal-config-marker ${markerClass}" aria-hidden="true"></span>
       <div class="modal-config-layer-row">
-        <span class="modal-config-layer">${escapeHtml(label)}</span>
-        ${modalDirPill(dir)}
+        ${modalLayerTitleMarkup(label, dir)}
       </div>
       <div class="modal-config-muted">無此層配置</div>
     </div>`;
@@ -4032,8 +4074,7 @@ function modalConfigRow(label, card, partner, dir) {
   return `<div class="modal-config-section">
     <span class="modal-config-marker ${markerClass}" aria-hidden="true"></span>
     <div class="modal-config-layer-row">
-      <span class="modal-config-layer">${escapeHtml(label)}</span>
-      ${modalDirPill(dir)}
+      ${modalLayerTitleMarkup(label, dir)}
     </div>
     <div class="modal-config-fields">
       <div class="modal-config-field">
