@@ -595,6 +595,7 @@ header {
   align-items: center;
   gap: 0.45rem;
   color: var(--text-muted);
+  flex-wrap: wrap;
 }
 .loading-spinner {
   width: 0.82rem;
@@ -606,6 +607,28 @@ header {
 }
 .loading-text {
   animation: loadingBreath 1.6s ease-in-out infinite;
+}
+.load-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-dim);
+}
+.load-progress strong {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+body.is-app-loading .filter-panel,
+body.is-app-loading .endless-filter-panel {
+  opacity: 0.72;
+}
+body.is-app-loading .tab-btn,
+body.is-app-loading .filter-panel button,
+body.is-app-loading .filter-panel input,
+body.is-app-loading .endless-filter-panel button,
+body.is-app-loading .endless-filter-panel input,
+body.is-app-loading .endless-filter-panel select {
+  cursor: wait;
 }
 @keyframes loadingSpin {
   to { transform: rotate(360deg); }
@@ -2680,10 +2703,141 @@ let localFolder = { favorites: [], history: [] };
 let CHANGELOG_DATA = [];
 let changelogLoaded = false;
 let changelogLoadError = false;
+let appLoading = true;
+let bootLoadFailed = false;
+const BOOT_CSV_TOTAL = 3;
+const bootProgress = {
+  csvDone: 0,
+  csvTotal: BOOT_CSV_TOTAL,
+  imageDone: 0,
+  imageTotal: null,
+  stage: '資料載入中'
+};
 const LOCAL_FOLDER_KEY = 'ladsbattle_local_folder_v1';
 
-function loadingMarkup() {
-  return '<span class="loading-inline"><span class="loading-spinner"></span><span class="loading-text">資料載入中…</span></span>';
+function loadingMarkup(message = '資料載入中…') {
+  return `<span class="loading-inline"><span class="loading-spinner"></span><span class="loading-text">${escapeHtml(message)}</span></span>`;
+}
+
+function loadProgressMarkup() {
+  const imageText = bootProgress.imageTotal === null
+    ? '圖檔準備中'
+    : `圖檔 <strong>${bootProgress.imageDone}/${bootProgress.imageTotal}</strong>`;
+  return `
+    <span class="loading-inline">
+      <span class="loading-spinner"></span>
+      <span class="loading-text">${escapeHtml(bootProgress.stage)}…</span>
+      <span class="load-progress">
+        CSV <strong>${bootProgress.csvDone}/${bootProgress.csvTotal}</strong>
+        <span>·</span>
+        <span>${imageText}</span>
+      </span>
+    </span>`;
+}
+
+function renderBootProgress() {
+  if (!appLoading || bootLoadFailed) return;
+  document.getElementById('resultsInfo').innerHTML = loadProgressMarkup();
+  document.getElementById('endlessInfo').innerHTML = loadProgressMarkup();
+}
+
+function setSearchControlsDisabled(disabled) {
+  document.body.classList.toggle('is-app-loading', disabled);
+  document.querySelectorAll(`
+    .tab-nav .tab-btn,
+    .filter-panel button,
+    .filter-panel input,
+    .endless-filter-panel button,
+    .endless-filter-panel input,
+    .endless-filter-panel select
+  `).forEach(el => { el.disabled = disabled; });
+  if (!disabled) updateLayerInputState();
+}
+
+function markCsvLoaded() {
+  bootProgress.csvDone += 1;
+  bootProgress.stage = 'CSV 載入中';
+  renderBootProgress();
+}
+
+async function fetchCsvResource(url, parser, onSuccess) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CSV request failed: ${res.status}`);
+  const text = await res.text();
+  onSuccess(parser(text));
+  markCsvLoaded();
+}
+
+function rankImageSrcFromCard(card) {
+  const text = String(card || '').trim();
+  if (text === '無套裝') return '';
+  const match = text.match(/^([0-3])階/);
+  return match ? `assets/ranks/R${match[1]}.png` : '';
+}
+
+function addCompanionImage(urls, partner) {
+  const text = String(partner || '').trim();
+  if (!text || text === 'N/A') return;
+  urls.add(`assets/companions/${encodeURIComponent(text)}.png`);
+}
+
+function addRankImage(urls, card) {
+  const src = rankImageSrcFromCard(card);
+  if (src) urls.add(src);
+}
+
+function collectInitialImageUrls() {
+  const urls = new Set();
+  DATA.forEach(row => {
+    addRankImage(urls, row.upperCard);
+    addRankImage(urls, row.lowerCard);
+    addCompanionImage(urls, row.upperPartner);
+    addCompanionImage(urls, row.lowerPartner);
+  });
+  ENDLESS_ALL.forEach(row => {
+    addRankImage(urls, row.card);
+    addCompanionImage(urls, row.partner);
+  });
+  return [...urls];
+}
+
+function preloadImage(url) {
+  return new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => resolve({ url, ok: true });
+    image.onerror = () => resolve({ url, ok: false });
+    image.src = url;
+  });
+}
+
+async function preloadInitialImages() {
+  const urls = collectInitialImageUrls();
+  bootProgress.stage = '圖檔載入中';
+  bootProgress.imageTotal = urls.length;
+  bootProgress.imageDone = 0;
+  renderBootProgress();
+  const results = await Promise.all(urls.map(async url => {
+    const result = await preloadImage(url);
+    bootProgress.imageDone += 1;
+    renderBootProgress();
+    return result;
+  }));
+  const failed = results.filter(result => !result.ok);
+  if (failed.length > 0) {
+    console.warn('Some preload images failed:', failed.map(result => result.url));
+  }
+}
+
+function showBootLoadError() {
+  bootLoadFailed = true;
+  appLoading = true;
+  setSearchControlsDisabled(true);
+  stopPreviewAutoScroll();
+  const message = '⚠ 資料載入失敗，請重新整理頁面';
+  document.getElementById('resultsInfo').innerHTML = message;
+  document.getElementById('endlessInfo').innerHTML = message;
+  document.getElementById('cardsGrid').replaceChildren();
+  document.getElementById('endlessGrid').replaceChildren();
 }
 
 function fadeSwap(key, elements, update, afterUpdate) {
@@ -2795,27 +2949,15 @@ async function init() {
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?output=csv';
   const ENDLESS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1577067344&single=true&output=csv';
   const CHANGELOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1820828638&single=true&output=csv';
-
-  // fetch last updated
   const SHEET_FILE_ID = '19RqMAlpyi1g9pXyJ1azm45pxfjvxRqxJOUCdsQpHKDo';
   const DRIVE_API_KEY = 'AIzaSyAzbzHaKnhio4gomMkPm-lppgkDpBj6TIw';
 
-  document.getElementById('resultsInfo').innerHTML = loadingMarkup();
-  document.getElementById('endlessInfo').innerHTML = loadingMarkup();
+  appLoading = true;
+  bootLoadFailed = false;
+  setSearchControlsDisabled(true);
+  renderBootProgress();
 
-  try {
-    const res = await fetch(CSV_URL);
-    const text = await res.text();
-    DATA = parseCSV(text);
-    panelPreviewData = samplePanelPreviewData();
-    applyFilters();
-  } catch (err) {
-    document.getElementById('resultsInfo').innerHTML = '⚠ 資料載入失敗，請重新整理頁面';
-    console.error(err);
-  }
-
-  // fetch last updated, show in footer
-  try {
+  const updateLastUpdated = async () => {
     const metaUrl = `https://www.googleapis.com/drive/v3/files/${SHEET_FILE_ID}?fields=modifiedTime&key=${DRIVE_API_KEY}`;
     const metaRes = await fetch(metaUrl);
     const meta = await metaRes.json();
@@ -2824,37 +2966,46 @@ async function init() {
       const formatted = formatTaipeiDateTime(meta.modifiedTime);
       lastUpdatedEl.textContent = `Last Updated: ${formatted} (UTC+8)`;
     }
-  } catch (err) {
-    console.error('Last Updated fetch failed:', err);
-  }
+  };
+  updateLastUpdated().catch(err => console.error('Last Updated fetch failed:', err));
 
   try {
-    const res = await fetch(ENDLESS_CSV_URL);
-    const text = await res.text();
-    ENDLESS_ALL = parseEndlessCSV(text);
-    ENDLESS_DATA = [...ENDLESS_ALL];
+    const csvTasks = [
+      fetchCsvResource(CSV_URL, parseCSV, rows => { DATA = rows; }),
+      fetchCsvResource(ENDLESS_CSV_URL, parseEndlessCSV, rows => {
+        ENDLESS_ALL = rows;
+        ENDLESS_DATA = [...ENDLESS_ALL];
+      }),
+      fetchCsvResource(CHANGELOG_CSV_URL, parseChangelogCSV, rows => {
+        CHANGELOG_DATA = rows;
+        changelogLoaded = true;
+        renderVersionHistory();
+      }).catch(err => {
+        changelogLoadError = true;
+        markCsvLoaded();
+        renderVersionHistory();
+        console.error('Maintenance history fetch failed:', err);
+      })
+    ];
+
+    await Promise.all(csvTasks);
+    panelPreviewData = samplePanelPreviewData();
     endlessPreviewData = sampleEndlessPreviewData();
+    await preloadInitialImages();
+
+    appLoading = false;
+    setSearchControlsDisabled(false);
     activePartner = null;
+    applyFilters();
     applyEndlessFilters();
   } catch (err) {
-    document.getElementById('endlessInfo').innerHTML = '⚠ 資料載入失敗，請重新整理頁面';
+    showBootLoadError();
     console.error(err);
-  }
-
-  try {
-    const res = await fetch(CHANGELOG_CSV_URL);
-    const text = await res.text();
-    CHANGELOG_DATA = parseChangelogCSV(text);
-    changelogLoaded = true;
-    renderVersionHistory();
-  } catch (err) {
-    changelogLoadError = true;
-    renderVersionHistory();
-    console.error('Maintenance history fetch failed:', err);
   }
 }
 
 function selectOrbit(btn) {
+  if (appLoading) return;
   const orbit = btn.dataset.orbit;
   activeLayerFilters = { upper: [], lower: [] };
   clearLayerInput();
@@ -2917,6 +3068,7 @@ function updateLayerInputState() {
 }
 
 function validateLayer() {
+  if (appLoading) return;
   const val = document.getElementById('layerInput').value.trim();
   const errEl = document.getElementById('layerError');
   const inp = document.getElementById('layerInput');
@@ -2946,6 +3098,7 @@ function validateLayer() {
 }
 
 function onLayerInput() {
+  if (appLoading) return;
   activeLayerFilters = { upper: [], lower: [] };
   validateLayer();
 }
@@ -3397,6 +3550,7 @@ function renderFolderPanel() {
 }
 
 function toggleDynamicFilter(side, type, value) {
+  if (appLoading) return;
   const filters = activeLayerFilters[side];
   const idx = filters.findIndex(f => f.type === type && f.value === value);
   if (idx >= 0) {
@@ -3414,6 +3568,7 @@ function toggleDynamicFilterFromButton(btn) {
 }
 
 function clearDynamicFilters() {
+  if (appLoading) return;
   activeLayerFilters = { upper: [], lower: [] };
   applyFilters();
 }
@@ -3464,6 +3619,7 @@ function matchesLayerFilters(d, side) {
 }
 
 function applyFilters() {
+  if (appLoading) return;
   if (!layerOK) {
     clearPanelResultsForInvalidLayer();
     return;
@@ -3491,6 +3647,7 @@ function applyFilters() {
 }
 
 function resetFilters() {
+  if (appLoading) return;
   activeOrbit = null;
   activeLayerFilters = { upper: [], lower: [] };
   document.querySelectorAll('#orbitChips .chip').forEach(c => c.classList.remove('active'));
@@ -3918,6 +4075,7 @@ function restartActivePreview(tab) {
 }
 
 function switchTab(tab, btn) {
+  if (appLoading) return;
   const nextSection = document.getElementById('section-' + tab);
   const currentSection = document.querySelector('.section.active');
   if (!nextSection || currentSection === nextSection) return;
@@ -3945,6 +4103,7 @@ function switchTab(tab, btn) {
 }
 
 function selectPartnerDropdown(value) {
+  if (appLoading) return;
   activePartner = value || null;
   activeEndlessCard = null;
   applyEndlessFilters();
@@ -3984,16 +4143,19 @@ function renderEndlessDynamicFilters(baseData) {
 }
 
 function toggleEndlessCardFilter(value) {
+  if (appLoading) return;
   activeEndlessCard = activeEndlessCard === value ? null : value;
   applyEndlessFilters();
 }
 
 function clearEndlessDynamicFilters() {
+  if (appLoading) return;
   activeEndlessCard = null;
   applyEndlessFilters();
 }
 
 function applyEndlessFilters() {
+  if (appLoading) return;
   const videoOnly = document.getElementById('endlessVideoOnly').checked;
   const baseData = ENDLESS_ALL.filter(d => {
     if (activePartner && d.partner !== activePartner) return false;
@@ -4008,6 +4170,7 @@ function applyEndlessFilters() {
 }
 
 function resetEndlessFilters() {
+  if (appLoading) return;
   activePartner = null;
   activeEndlessCard = null;
   document.getElementById('partnerSelect').value = '';
