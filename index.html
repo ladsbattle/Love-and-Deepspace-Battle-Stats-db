@@ -1949,6 +1949,8 @@ body.is-app-loading .endless-filter-panel select {
 
 /* ── Tab navigation ── */
 .tab-nav {
+  --tab-slider-x: 0.28rem;
+  --tab-slider-w: calc((100% - 0.56rem - 0.16rem) / 2);
   position: relative;
   z-index: 10;
   display: grid;
@@ -1963,7 +1965,27 @@ body.is-app-loading .endless-filter-panel select {
   margin: 0.7rem auto 0;
 }
 .tab-nav::before {
-  content: none;
+  content: '';
+  position: absolute;
+  top: 0.28rem;
+  left: 0;
+  width: var(--tab-slider-w);
+  height: calc(100% - 0.56rem);
+  border-radius: 999px;
+  border: 1px solid rgba(186, 205, 236, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.055)),
+    rgba(145, 165, 202, 0.12);
+  box-shadow:
+    0 0 20px rgba(160, 184, 224, 0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.055);
+  transform: translateX(var(--tab-slider-x));
+  transition:
+    transform 0.26s cubic-bezier(.22, .61, .36, 1),
+    width 0.26s cubic-bezier(.22, .61, .36, 1),
+    border-color 0.24s ease,
+    background 0.24s ease;
+  pointer-events: none;
 }
 .tab-btn {
   position: relative;
@@ -1990,13 +2012,6 @@ body.is-app-loading .endless-filter-panel select {
 .tab-btn.active {
   color: var(--text);
   font-weight: 700;
-  border-color: rgba(186, 205, 236, 0.72);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.055)),
-    rgba(145, 165, 202, 0.12);
-  box-shadow:
-    0 0 18px rgba(160, 184, 224, 0.15),
-    inset 0 0 0 1px rgba(255,255,255,0.055);
 }
 
 /* ── Section visibility ── */
@@ -2777,12 +2792,15 @@ select.card-input option {
 
   /* tab nav fits smaller screens */
   .tab-nav {
+    --tab-slider-x: 0.24rem;
+    --tab-slider-w: calc((100% - 0.48rem - 0.16rem) / 2);
     width: min(16.5rem, calc(100vw - 2rem));
     padding: 0.24rem;
     margin-top: 0.65rem;
   }
   .tab-nav::before {
-    content: none;
+    top: 0.24rem;
+    height: calc(100% - 0.48rem);
   }
   .tab-btn {
     min-height: 2.18rem;
@@ -3316,6 +3334,7 @@ function parseChangelogCSV(text) {
 async function init() {
   loadLocalFolder();
   renderFolderPanel();
+  updatePrimaryTabSlider();
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?output=csv';
   const ENDLESS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1577067344&single=true&output=csv';
   const CHANGELOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1820828638&single=true&output=csv';
@@ -4491,6 +4510,20 @@ function restartActivePreview(tab) {
   }
 }
 
+function updatePrimaryTabSlider() {
+  const nav = document.querySelector('.tab-nav');
+  const activeBtn = nav?.querySelector('.tab-btn.active');
+  if (!nav || !activeBtn) return;
+
+  const navRect = nav.getBoundingClientRect();
+  const btnRect = activeBtn.getBoundingClientRect();
+  const left = btnRect.left - navRect.left;
+  const width = btnRect.width;
+
+  nav.style.setProperty('--tab-slider-x', `${left}px`);
+  nav.style.setProperty('--tab-slider-w', `${width}px`);
+}
+
 function switchTab(tab, btn) {
   if (appLoading) return;
   const nextSection = document.getElementById('section-' + tab);
@@ -4501,6 +4534,7 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.querySelector('.tab-nav')?.setAttribute('data-active', tab);
+  updatePrimaryTabSlider();
 
   if (currentSection) {
     currentSection.classList.add('content-transition', 'is-fading');
@@ -4770,7 +4804,13 @@ function updateScrollButtons() {
 }
 
 window.addEventListener('scroll', updateScrollButtons);
-window.addEventListener('resize', updateScrollButtons);
+window.addEventListener('resize', () => {
+  updateScrollButtons();
+  updatePrimaryTabSlider();
+});
+if (document.fonts?.ready) {
+  document.fonts.ready.then(updatePrimaryTabSlider).catch(() => {});
+}
 
 init();
 updateScrollButtons();
