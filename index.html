@@ -610,7 +610,7 @@ header {
   flex: 0 0 auto;
 }
 .boot-progress-inline .load-progress {
-  flex: 0 1 50%;
+  flex: 0 1 25%;
   min-width: 0;
 }
 .loading-spinner {
@@ -949,16 +949,23 @@ body.is-app-loading .endless-filter-panel select {
 }
 .layer-data-cell + .layer-data-cell {
   position: relative;
-  padding-left: 0.62rem;
+  padding-left: 0.92rem;
 }
 .layer-data-cell + .layer-data-cell::before {
   content: "｜";
   position: absolute;
-  left: 0;
+  left: 0.18rem;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(184,212,255,0.2);
-  font-weight: 400;
+  color: rgba(184,212,255,0.48);
+  font-weight: 700;
+}
+.layer-data-grid-empty {
+  min-height: 1.42rem;
+  align-items: center;
+}
+.layer-data-empty {
+  grid-column: 1 / -1;
 }
 
 .card-name {
@@ -1027,6 +1034,10 @@ body.is-app-loading .endless-filter-panel select {
 .dir-順 { background: rgba(184,212,255,0.055); color: #dce6f4; border: 1px solid rgba(184,212,255,0.34); }
 .dir-逆 { background: rgba(210,220,238,0.045); color: #dce6f4; border: 1px solid rgba(210,220,238,0.26); }
 .dir-na { background: rgba(107,131,168,0.1);  color: var(--text-dim); border: 1px solid rgba(107,131,168,0.2); }
+.dir-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
 
 .na-text { font-size: 0.78rem; color: var(--text-dim); }
 
@@ -1460,9 +1471,16 @@ body.is-app-loading .endless-filter-panel select {
   min-width: 0;
   align-items: start;
 }
+.modal-config-fields-empty {
+  min-height: 3.05rem;
+  align-items: center;
+}
 
 .modal-config-field {
   min-width: 0;
+}
+.modal-config-field-empty {
+  grid-column: 1 / -1;
 }
 
 .modal-config-label {
@@ -1545,6 +1563,9 @@ body.is-app-loading .endless-filter-panel select {
   color: var(--text-dim);
   font-size: 0.86rem;
   line-height: 1.6;
+}
+.modal-config-main.modal-config-muted {
+  grid-column: auto;
 }
 
 .modal-config-dir {
@@ -3601,7 +3622,7 @@ function modalFooterActions(link, folderItem, reportUrl, hasVideo = false) {
   return `
     <div class="modal-footer-actions">
       <a href="${escapeHtml(safeExternalUrl(link))}" target="_blank" rel="noopener" class="btn-fb">
-        <span class="fb-inline-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.1 8.15h2.05V5.1h-2.42c-2.82 0-4.5 1.7-4.5 4.72V12H6.9v3.22h2.33V22h3.46v-6.78h2.9L16.05 12h-3.36V9.98c0-1.02.34-1.83 1.41-1.83z"/></svg></span><span>Facebook 查看詳情</span>${videoText}
+        <span>Facebook 查看詳情</span>${videoText}
       </a>
       <div class="modal-secondary-actions">
         ${favoriteButton(folderItem)}
@@ -4102,7 +4123,15 @@ function setupPreviewScroll(selector, itemCount) {
 }
 
 function cardLayerBlock(card, partner, dir, label) {
-  if (card === 'N/A') return `<div class="layer-block"><div class="layer-head"><div class="layer-label">${escapeHtml(label)}</div></div><div class="layer-info"><span class="na-text">單層面板</span></div></div>`;
+  if (card === 'N/A') return `<div class="layer-block layer-block-empty">
+    <div class="layer-head">
+      <div class="layer-label">${escapeHtml(label)}</div>
+      <span class="dir-tag dir-placeholder" aria-hidden="true">順譜</span>
+    </div>
+    <div class="layer-data-grid layer-data-grid-empty">
+      <div class="layer-data-cell layer-data-empty"><div class="na-text">單層面板</div></div>
+    </div>
+  </div>`;
   const safeDir = dir === '順' || dir === '逆' ? dir : '';
   const dirHtml = safeDir
     ? `<span class="dir-tag dir-${safeDir}">${safeDir}譜</span>`
@@ -4188,12 +4217,16 @@ function modalDirFieldMarkup(dir) {
 function modalConfigRow(label, card, partner, dir) {
   if (card === 'N/A') {
     const markerClass = label === '上層' ? 'is-upper' : 'is-lower';
-    return `<div class="modal-config-section">
+    return `<div class="modal-config-section modal-config-section-empty">
       <span class="modal-config-marker ${markerClass}" aria-hidden="true"></span>
       <div class="modal-config-layer-row">
         ${modalLayerTitleMarkup(label)}
       </div>
-      <div class="modal-config-muted">無此層配置</div>
+      <div class="modal-config-fields modal-config-fields-empty">
+        <div class="modal-config-field modal-config-field-empty">
+          <div class="modal-config-main modal-config-muted">無此層配置</div>
+        </div>
+      </div>
     </div>`;
   }
   const markerClass = label === '上層' ? 'is-upper' : 'is-lower';
