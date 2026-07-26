@@ -1688,46 +1688,20 @@ body.is-app-loading .endless-filter-panel select {
 }
 
 .info-tabs {
-  --info-tabs-pad: 0.22rem;
-  --info-tabs-pad-total: 0.44rem;
-  --info-slider-gap: 0.18rem;
-  --info-slider-gap-half: 0.09rem;
-  --info-slider-gap-double: 0.36rem;
   position: relative;
   flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0;
+  gap: 0.16rem;
   margin: 0 0 1rem;
-  padding: var(--info-tabs-pad);
+  padding: 0.22rem;
   border: 1px solid rgba(184,212,255,0.24);
   border-radius: 999px;
   background: rgba(7,16,31,0.42);
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025);
 }
 .info-tabs::before {
-  content: '';
-  position: absolute;
-  top: calc(var(--info-tabs-pad) + var(--info-slider-gap-half));
-  left: calc(var(--info-tabs-pad) + var(--info-slider-gap-half));
-  width: calc((100% - var(--info-tabs-pad-total)) / 3 - var(--info-slider-gap));
-  height: calc(100% - var(--info-tabs-pad-total) - var(--info-slider-gap));
-  border-radius: 999px;
-  border: 1px solid rgba(184,212,255,0.48);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055)),
-    rgba(145,165,202,0.13);
-  box-shadow:
-    0 0 16px rgba(160,184,224,0.12),
-    inset 0 0 0 1px rgba(255,255,255,0.045);
-  transition: transform 0.24s ease;
-  pointer-events: none;
-}
-.info-tabs[data-active="intro"]::before {
-  transform: translateX(calc(100% + var(--info-slider-gap)));
-}
-.info-tabs[data-active="version"]::before {
-  transform: translateX(calc(200% + var(--info-slider-gap-double)));
+  content: none;
 }
 .info-tab {
   position: relative;
@@ -1735,18 +1709,30 @@ body.is-app-loading .endless-filter-panel select {
   min-height: 2rem;
   padding: 0.36rem 0.45rem;
   border-radius: 999px;
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
   color: rgba(219,232,255,0.72);
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s ease, font-weight 0.2s ease;
+  transition:
+    color 0.2s ease,
+    font-weight 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .info-tab.active {
   color: #dbe8ff;
   font-weight: 700;
+  border-color: rgba(184,212,255,0.48);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055)),
+    rgba(145,165,202,0.13);
+  box-shadow:
+    0 0 14px rgba(160,184,224,0.10),
+    inset 0 0 0 1px rgba(255,255,255,0.045);
 }
 
 .info-content {
