@@ -757,7 +757,7 @@ header {
 }
 .panel-card-title {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.48rem;
   min-width: 0;
 }
@@ -778,7 +778,18 @@ header {
 .panel-card[data-orbit="金屬"]::before  { background: var(--col-metal); }
 
 /* orbit badges on card */
-.orbit-badge { font-size: 0.65rem; letter-spacing: 0.1em; padding: 0.18rem 0.6rem; border-radius: 999px; border: 1px solid; font-weight: 600; }
+.orbit-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-weight: 600;
+}
 .orbit-badge[data-orbit="開放"]  { color: var(--col-open);   border-color: var(--col-open-border);   background: var(--col-open-bg); }
 .orbit-badge[data-orbit="光"]    { color: var(--col-light);  border-color: var(--col-light-border);  background: var(--col-light-bg); }
 .orbit-badge[data-orbit="冰"]    { color: var(--col-ice);    border-color: var(--col-ice-border);    background: var(--col-ice-bg); }
@@ -789,6 +800,9 @@ header {
 .orbit-badge[data-orbit="金屬"]  { color: var(--col-metal);  border-color: var(--col-metal-border);  background: var(--col-metal-bg); }
 
 .layer-num {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
   font-family: 'Noto Serif TC', serif;
   font-size: 1.05rem;
   letter-spacing: 0.05em;
