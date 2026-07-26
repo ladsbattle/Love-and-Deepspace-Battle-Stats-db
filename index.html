@@ -2500,8 +2500,11 @@ select.card-input option {
     column-gap: 0.55rem;
     row-gap: 0.36rem;
   }
-  .modal-config-field.partner-field {
+  .modal-config-field.dir-field {
     grid-column: 1 / -1;
+  }
+  .modal-config-field.partner-field {
+    grid-column: auto;
   }
   .modal-config-label {
     display: block;
@@ -3533,7 +3536,7 @@ function modalFooterActions(link, folderItem, reportUrl, hasVideo = false) {
   return `
     <div class="modal-footer-actions">
       <a href="${escapeHtml(safeExternalUrl(link))}" target="_blank" rel="noopener" class="btn-fb">
-        <span>前往</span><span class="fb-inline-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.1 8.15h2.05V5.1h-2.42c-2.82 0-4.5 1.7-4.5 4.72V12H6.9v3.22h2.33V22h3.46v-6.78h2.9L16.05 12h-3.36V9.98c0-1.02.34-1.83 1.41-1.83z"/></svg></span><span>查看詳情</span>${videoText}
+        <span class="fb-inline-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.1 8.15h2.05V5.1h-2.42c-2.82 0-4.5 1.7-4.5 4.72V12H6.9v3.22h2.33V22h3.46v-6.78h2.9L16.05 12h-3.36V9.98c0-1.02.34-1.83 1.41-1.83z"/></svg></span><span>查看詳情</span>${videoText}
       </a>
       <div class="modal-secondary-actions">
         ${favoriteButton(folderItem)}
