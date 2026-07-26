@@ -1648,8 +1648,8 @@ body.is-app-loading .endless-filter-panel select {
 
 .info-modal {
   max-width: 560px;
-  height: min(60vh, calc(100vh - 2rem));
-  max-height: min(60vh, calc(100vh - 2rem));
+  height: min(78vh, calc(100vh - 2rem));
+  max-height: min(78vh, calc(100vh - 2rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1680,19 +1680,26 @@ body.is-app-loading .endless-filter-panel select {
 .info-modal-title {
   margin: 0;
   color: var(--text);
-  font-size: 1.24rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.42rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 22px rgba(180,210,255,0.24);
 }
 
 .info-tabs {
+  --info-tabs-pad: 0.22rem;
+  --info-tabs-pad-total: 0.44rem;
+  --info-slider-gap: 0.06rem;
+  --info-slider-gap-half: 0.03rem;
+  --info-slider-gap-double: 0.12rem;
   position: relative;
   flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
   margin: 0 0 1rem;
-  padding: 0.22rem;
+  padding: var(--info-tabs-pad);
   border: 1px solid rgba(184,212,255,0.24);
   border-radius: 999px;
   background: rgba(7,16,31,0.42);
@@ -1701,10 +1708,10 @@ body.is-app-loading .endless-filter-panel select {
 .info-tabs::before {
   content: '';
   position: absolute;
-  top: 0.22rem;
-  left: 0.22rem;
-  width: calc((100% - 0.44rem) / 3);
-  height: calc(100% - 0.44rem);
+  top: calc(var(--info-tabs-pad) + var(--info-slider-gap-half));
+  left: calc(var(--info-tabs-pad) + var(--info-slider-gap-half));
+  width: calc((100% - var(--info-tabs-pad-total)) / 3 - var(--info-slider-gap));
+  height: calc(100% - var(--info-tabs-pad-total) - var(--info-slider-gap));
   border-radius: 999px;
   border: 1px solid rgba(184,212,255,0.48);
   background:
@@ -1717,10 +1724,10 @@ body.is-app-loading .endless-filter-panel select {
   pointer-events: none;
 }
 .info-tabs[data-active="intro"]::before {
-  transform: translateX(100%);
+  transform: translateX(calc(100% + var(--info-slider-gap)));
 }
 .info-tabs[data-active="version"]::before {
-  transform: translateX(200%);
+  transform: translateX(calc(200% + var(--info-slider-gap-double)));
 }
 .info-tab {
   position: relative;
@@ -1732,7 +1739,7 @@ body.is-app-loading .endless-filter-panel select {
   background: transparent;
   color: rgba(219,232,255,0.72);
   font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s ease, font-weight 0.2s ease;
@@ -1746,7 +1753,8 @@ body.is-app-loading .endless-filter-panel select {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 0.45rem 0 0;
+  border-top: 1px solid rgba(184,212,255,0.12);
+  padding: 0.95rem 0.45rem 0 0;
   scrollbar-gutter: stable;
 }
 
@@ -1772,17 +1780,22 @@ body.is-app-loading .endless-filter-panel select {
   padding-top: 1.05rem;
 }
 
+.info-panel.info-section {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
 .info-section-title {
   margin: 0 0 0.65rem;
   color: var(--text);
-  font-size: 0.92rem;
+  font-size: 0.98rem;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
 
 .info-section-desc {
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   line-height: 1.9;
 }
 
@@ -1816,7 +1829,7 @@ body.is-app-loading .endless-filter-panel select {
   background: rgba(255,255,255,0.03);
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 .info-link-icon {
@@ -1863,7 +1876,7 @@ body.is-app-loading .endless-filter-panel select {
 .version-history-year {
   color: var(--text);
   font-family: "Times New Roman", "Noto Serif TC", serif;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
   font-weight: 300;
   letter-spacing: 0.12em;
   line-height: 1;
@@ -1872,7 +1885,7 @@ body.is-app-loading .endless-filter-panel select {
   margin-top: 0.12rem;
   color: var(--text);
   font-family: "Times New Roman", "Noto Serif TC", serif;
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 300;
   letter-spacing: 0.08em;
   line-height: 1.15;
@@ -1882,7 +1895,7 @@ body.is-app-loading .endless-filter-panel select {
   padding-left: 0;
   list-style: none;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   line-height: 1.75;
 }
 .version-history-items li {
@@ -1904,7 +1917,7 @@ body.is-app-loading .endless-filter-panel select {
 .version-history-empty {
   padding: 1.5rem 0;
   color: var(--text-dim);
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   text-align: center;
 }
 
@@ -2385,8 +2398,8 @@ select.card-input option {
 
 @media (max-width: 600px) {
   .info-modal {
-    height: min(56vh, calc(100vh - 2rem));
-    max-height: min(56vh, calc(100vh - 2rem));
+    height: min(78vh, calc(100vh - 2rem));
+    max-height: min(78vh, calc(100vh - 2rem));
   }
   .info-modal > .modal-close {
     top: 1.38rem;
@@ -2404,7 +2417,7 @@ select.card-input option {
     margin-bottom: 1rem;
   }
   .info-modal-title {
-    font-size: 1.34rem;
+    font-size: 1.48rem;
   }
   .info-tabs {
     margin-bottom: 0.85rem;
@@ -2412,11 +2425,11 @@ select.card-input option {
   .info-tab {
     min-height: 1.9rem;
     padding: 0.32rem 0.28rem;
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     letter-spacing: 0.02em;
   }
   .info-content {
-    padding: 0 0.4rem 0 0;
+    padding: 0.85rem 0.4rem 0 0;
   }
   .version-history-list {
     padding-right: 0.1rem;
@@ -2438,18 +2451,18 @@ select.card-input option {
   }
   .version-history-day {
     margin-top: 0;
-    font-size: 0.9rem;
+    font-size: 0.94rem;
     letter-spacing: 0.06em;
   }
   .version-history-year {
-    font-size: 0.9rem;
+    font-size: 0.94rem;
     letter-spacing: 0.04em;
   }
   .version-history-year::after {
     content: ".";
   }
   .version-history-items {
-    font-size: 0.86rem;
+    font-size: 0.9rem;
     line-height: 1.7;
   }
 
@@ -3856,6 +3869,8 @@ function switchInfoTab(tab) {
     panel.classList.toggle('active', isActive);
     panel.hidden = !isActive;
   });
+  const infoContent = document.querySelector('.info-content');
+  if (infoContent) infoContent.scrollTop = 0;
   if (activeTab === 'version') renderVersionHistory();
 }
 
