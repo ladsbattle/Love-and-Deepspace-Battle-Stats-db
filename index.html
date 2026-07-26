@@ -2981,10 +2981,21 @@ function loadProgressMarkup() {
     </span>`;
 }
 
+function updateBootProgressElement(element) {
+  if (!element) return;
+  const percentText = `${getBootProgressPercent()}%`;
+  const progressText = element.querySelector('.load-progress strong');
+  if (progressText) {
+    progressText.textContent = percentText;
+    return;
+  }
+  element.innerHTML = loadProgressMarkup();
+}
+
 function renderBootProgress() {
   if (!appLoading || bootLoadFailed) return;
-  document.getElementById('resultsInfo').innerHTML = loadProgressMarkup();
-  document.getElementById('endlessInfo').innerHTML = loadProgressMarkup();
+  updateBootProgressElement(document.getElementById('resultsInfo'));
+  updateBootProgressElement(document.getElementById('endlessInfo'));
 }
 
 function setSearchControlsDisabled(disabled) {
