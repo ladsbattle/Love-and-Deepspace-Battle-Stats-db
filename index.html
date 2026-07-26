@@ -755,6 +755,12 @@ header {
   gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
+.panel-card-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.48rem;
+  min-width: 0;
+}
 .card-labels {
   min-width: 0;
   flex-wrap: wrap;
@@ -1259,6 +1265,7 @@ header {
   color: var(--text);
   font-size: 0.96rem;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .modal-config-field:nth-child(2) .modal-config-main {
@@ -2245,18 +2252,20 @@ select.card-input option {
     letter-spacing: 0.1em;
   }
   .modal-config-fields {
-    grid-template-columns: 1fr;
-    gap: 0.22rem;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    column-gap: 0.65rem;
+    row-gap: 0.22rem;
   }
   .modal-config-label {
     display: block;
     font-size: 0.6rem;
   }
   .modal-config-main {
-    font-size: 0.96rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
   }
   .modal-config-field:nth-child(2) .modal-config-main {
-    font-size: 0.96rem;
+    font-size: 0.88rem;
   }
   .modal-config-dir {
     min-width: 2.75rem;
@@ -3417,10 +3426,8 @@ function panelCardMarkup(d, action, previewType = '', previewIndex = null) {
     <div class="panel-card${viewedCardClass(folderItem)}" data-view-key="${escapeHtml(encodedItemKey(folderItem))}" data-orbit="${orbit}"${previewAttrs}${actionAttr}>
       ${viewedCardMarkup(folderItem)}
       <div class="card-orbit-bar">
-        <div class="card-labels">
+        <div class="card-labels panel-card-title">
           <span class="orbit-badge" data-orbit="${orbit}">${orbitLabel}</span>
-        </div>
-        <div class="card-meta-right">
           <span class="layer-num">${escapeHtml(String(d.layer))} 層</span>
         </div>
       </div>
