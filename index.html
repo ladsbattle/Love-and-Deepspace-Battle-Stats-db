@@ -839,6 +839,16 @@ header {
   font-weight: 400;
 }
 
+.rank-icon {
+  display: inline-block;
+  width: 1.18em;
+  height: 1.18em;
+  margin-left: 0.32rem;
+  object-fit: contain;
+  vertical-align: -0.18em;
+  filter: drop-shadow(0 0 4px rgba(184, 212, 255, 0.16));
+}
+
 .partner-name {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -2217,6 +2227,11 @@ select.card-input option {
   }
   .card-name {
     font-size: 0.8rem;
+  }
+  .rank-icon {
+    width: 1.16em;
+    height: 1.16em;
+    margin-left: 0.26rem;
   }
   .partner-name {
     font-size: 0.72rem;
@@ -3653,7 +3668,7 @@ function cardLayerBlock(card, partner, dir, label) {
   return `<div class="layer-block">
     <div class="layer-label">${escapeHtml(label)}</div>
     <div class="layer-info">
-      <div><div class="card-name">${escapeHtml(card)}</div><div class="partner-name">${escapeHtml(partner)}</div></div>
+      <div><div class="card-name">${escapeHtml(card)}${rankIconMarkup(card)}</div><div class="partner-name">${escapeHtml(partner)}</div></div>
       ${dirHtml}
     </div>
   </div>`;
@@ -3692,6 +3707,15 @@ function videoBadgeMarkup() {
   return '<span class="video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>';
 }
 
+function rankIconMarkup(card) {
+  const text = String(card || '').trim();
+  if (text === '無套裝') return '';
+  const match = text.match(/^([0-3])階/);
+  if (!match) return '';
+  const rank = match[1];
+  return `<img class="rank-icon" src="assets/ranks/R${rank}.png" alt="${rank}階" loading="lazy">`;
+}
+
 function modalDirPill(dir) {
   if (dir === '順' || dir === '逆') {
     return `<span class="modal-config-dir dir-${dir}">${dir}譜</span>`;
@@ -3721,7 +3745,7 @@ function modalConfigRow(label, card, partner, dir) {
     <div class="modal-config-fields">
       <div class="modal-config-field">
         <div class="modal-config-label">日卡及階數</div>
-        <div class="modal-config-main">${escapeHtml(card)}</div>
+        <div class="modal-config-main">${escapeHtml(card)}${rankIconMarkup(card)}</div>
       </div>
       <div class="modal-config-field">
         <div class="modal-config-label">搭檔</div>
@@ -3911,7 +3935,7 @@ function fmtScore(s) {
 function endlessCardMarkup(d, action, previewType = '', previewIndex = null) {
   const folderItem = endlessFolderItem(d);
   const partner = escapeHtml(d.partner);
-  const card = escapeHtml(d.card);
+  const card = `${escapeHtml(d.card)}${rankIconMarkup(d.card)}`;
   const combo = escapeHtml(d.combo);
   const actionAttr = action ? ` onclick="${action}"` : '';
   const previewAttrs = previewType ? ` data-preview-type="${previewType}" data-preview-index="${previewIndex}"` : '';
@@ -4008,7 +4032,7 @@ function openEndlessDetail(d, recordHistory = true) {
   document.getElementById('mLayer').textContent = fmtScore(d.score) + ' 分';
   document.getElementById('mLayer').style.color = 'var(--text)';
   document.getElementById('mUpperContent').innerHTML = `
-    <div class="modal-row"><span class="modal-label">日卡</span><span class="modal-val">${escapeHtml(d.card)}</span></div>
+    <div class="modal-row"><span class="modal-label">日卡</span><span class="modal-val">${escapeHtml(d.card)}${rankIconMarkup(d.card)}</span></div>
     <div class="modal-row"><span class="modal-label">對譜數</span><span class="modal-val">${escapeHtml(d.combo)} 譜</span></div>`;
   document.getElementById('mLowerBlock').style.display = 'none';
 
