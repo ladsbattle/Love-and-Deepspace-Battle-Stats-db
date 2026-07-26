@@ -1953,7 +1953,7 @@ body.is-app-loading .endless-filter-panel select {
   z-index: 10;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
+  gap: 0.16rem;
   width: min(19rem, calc(100vw - 2.5rem));
   padding: 0.28rem;
   border: 1px solid var(--border);
@@ -1963,24 +1963,7 @@ body.is-app-loading .endless-filter-panel select {
   margin: 0.7rem auto 0;
 }
 .tab-nav::before {
-  content: '';
-  position: absolute;
-  top: 0.28rem;
-  left: 0.28rem;
-  width: calc((100% - 0.56rem) / 2);
-  height: calc(100% - 0.56rem);
-  border-radius: 999px;
-  border: 1px solid rgba(186, 205, 236, 0.72);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.055)),
-    rgba(145, 165, 202, 0.12);
-  box-shadow:
-    0 0 20px rgba(160, 184, 224, 0.18),
-    inset 0 0 0 1px rgba(255,255,255,0.055);
-  transition: transform 0.24s ease, border-color 0.24s ease, background 0.24s ease;
-}
-.tab-nav[data-active="endless"]::before {
-  transform: translateX(100%);
+  content: none;
 }
 .tab-btn {
   position: relative;
@@ -1988,20 +1971,32 @@ body.is-app-loading .endless-filter-panel select {
   min-height: 2.35rem;
   padding: 0.42rem 0.85rem;
   border-radius: 999px;
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition:
+    color 0.2s ease,
+    font-weight 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   letter-spacing: 0.05em;
 }
 .tab-btn:hover { color: var(--text); }
 .tab-btn.active {
   color: var(--text);
   font-weight: 700;
+  border-color: rgba(186, 205, 236, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.055)),
+    rgba(145, 165, 202, 0.12);
+  box-shadow:
+    0 0 18px rgba(160, 184, 224, 0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.055);
 }
 
 /* ── Section visibility ── */
@@ -2199,7 +2194,7 @@ select.card-input option {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
+  gap: 0.14rem;
   margin: 0.75rem 1rem 0;
   padding: 0.22rem;
   border: 1px solid rgba(184,212,255,0.24);
@@ -2208,25 +2203,7 @@ select.card-input option {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025);
 }
 .folder-tabs::before {
-  content: '';
-  position: absolute;
-  top: 0.22rem;
-  left: 0.22rem;
-  width: calc((100% - 0.44rem) / 2);
-  height: calc(100% - 0.44rem);
-  border-radius: 999px;
-  border: 1px solid rgba(184,212,255,0.48);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055)),
-    rgba(145,165,202,0.13);
-  box-shadow:
-    0 0 16px rgba(160,184,224,0.12),
-    inset 0 0 0 1px rgba(255,255,255,0.045);
-  transition: transform 0.24s ease;
-  pointer-events: none;
-}
-.folder-tabs[data-active="history"]::before {
-  transform: translateX(100%);
+  content: none;
 }
 .folder-tab {
   position: relative;
@@ -2234,18 +2211,30 @@ select.card-input option {
   min-height: 2rem;
   padding: 0.36rem 0.75rem;
   border-radius: 999px;
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
   color: rgba(219,232,255,0.72);
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.74rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.2s ease, font-weight 0.2s ease;
+  transition:
+    color 0.2s ease,
+    font-weight 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .folder-tab.active {
   color: #dbe8ff;
   font-weight: 700;
+  border-color: rgba(184,212,255,0.48);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055)),
+    rgba(145,165,202,0.13);
+  box-shadow:
+    0 0 14px rgba(160,184,224,0.10),
+    inset 0 0 0 1px rgba(255,255,255,0.045);
 }
 .folder-toolbar {
   display: flex;
@@ -2793,10 +2782,7 @@ select.card-input option {
     margin-top: 0.65rem;
   }
   .tab-nav::before {
-    top: 0.24rem;
-    left: 0.24rem;
-    width: calc((100% - 0.48rem) / 2);
-    height: calc(100% - 0.48rem);
+    content: none;
   }
   .tab-btn {
     min-height: 2.18rem;
