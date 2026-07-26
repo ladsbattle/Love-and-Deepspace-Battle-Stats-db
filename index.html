@@ -1680,16 +1680,87 @@ body.is-app-loading .endless-filter-panel select {
 .info-modal-title {
   margin: 0;
   color: var(--text);
-  font-size: 1.42rem;
+  font-size: 1.24rem;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
+.info-tabs {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin: 0 0 1rem;
+  padding: 0.22rem;
+  border: 1px solid rgba(184,212,255,0.24);
+  border-radius: 999px;
+  background: rgba(7,16,31,0.42);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025);
+}
+.info-tabs::before {
+  content: '';
+  position: absolute;
+  top: 0.22rem;
+  left: 0.22rem;
+  width: calc((100% - 0.44rem) / 3);
+  height: calc(100% - 0.44rem);
+  border-radius: 999px;
+  border: 1px solid rgba(184,212,255,0.48);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055)),
+    rgba(145,165,202,0.13);
+  box-shadow:
+    0 0 16px rgba(160,184,224,0.12),
+    inset 0 0 0 1px rgba(255,255,255,0.045);
+  transition: transform 0.24s ease;
+  pointer-events: none;
+}
+.info-tabs[data-active="intro"]::before {
+  transform: translateX(100%);
+}
+.info-tabs[data-active="version"]::before {
+  transform: translateX(200%);
+}
+.info-tab {
+  position: relative;
+  z-index: 1;
+  min-height: 2rem;
+  padding: 0.36rem 0.45rem;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: rgba(219,232,255,0.72);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease, font-weight 0.2s ease;
+}
+.info-tab.active {
+  color: #dbe8ff;
+  font-weight: 700;
+}
+
 .info-content {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding: 0 0.45rem 0 0;
   scrollbar-gutter: stable;
+}
+
+.info-panel {
+  display: none;
+}
+
+.info-panel.active {
+  display: block;
+}
+
+.info-panel.info-section {
+  border-top: 0;
+  padding-top: 0.2rem;
 }
 
 .info-section {
@@ -1717,6 +1788,12 @@ body.is-app-loading .endless-filter-panel select {
 
 .info-section-desc p {
   margin: 0 0 1rem;
+}
+
+.info-link-actions {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
 }
 
 .info-link-button {
@@ -2315,6 +2392,15 @@ select.card-input option {
   .info-modal-title {
     font-size: 1.34rem;
   }
+  .info-tabs {
+    margin-bottom: 0.85rem;
+  }
+  .info-tab {
+    min-height: 1.9rem;
+    padding: 0.32rem 0.28rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
   .info-content {
     padding: 0 0.4rem 0 0;
   }
@@ -2889,17 +2975,32 @@ select.card-input option {
   <div class="modal info-modal">
     <button class="modal-close" onclick="closeInfoModalDirect()" aria-label="關閉">✕</button>
     <div class="info-modal-header">
-      <h2 class="info-modal-title">關於</h2>
+      <h2 class="info-modal-title">關於面板資料庫</h2>
+    </div>
+    <div class="info-tabs" data-active="guide" role="tablist" aria-label="資料庫資訊分類">
+      <button class="info-tab active" type="button" role="tab" aria-selected="true" data-tab="guide" onclick="switchInfoTab('guide')">使用說明</button>
+      <button class="info-tab" type="button" role="tab" aria-selected="false" data-tab="intro" onclick="switchInfoTab('intro')">網站介紹</button>
+      <button class="info-tab" type="button" role="tab" aria-selected="false" data-tab="version" onclick="switchInfoTab('version')">版本紀錄</button>
     </div>
     <div class="info-content">
-      <section class="info-section">
-        <h2 class="info-section-title">✦ 使用介紹</h2>
+      <section class="info-section info-panel active" id="infoPanelGuide" data-panel="guide" role="tabpanel">
+        <h2 class="info-section-title">✦ 使用說明</h2>
         <div class="info-section-desc">
-          <p>本站收錄「戀與深空戰鬥討論群_臉書面板分享專區」的戰鬥資料，包含開放穩定軌道、開放波動軌道、定向軌道及無盡挑戰等，獵人可以在此進行查詢，也歡迎加入下方專區分享通關資料</p>
-          <a class="info-link-button" href="https://www.facebook.com/share/g/18qcHFWDrj/" target="_blank" rel="noopener">前往面板分享專區</a>
+          <p>「面板」可透過編隊畫面中右上角的「屬性詳情」進行查看，編隊屬性會顯示當前隊伍的屬性資訊。當遇到卡關的情形時，獵人可以透過參考通關面板的方式來了解自己目前面板的狀況，若自身面板較低，可以通關面板的數值為目標進行養成；若面板接近或是溢出，則可以考慮調整手法。</p>
+          <p>「戀與深空戰鬥討論群｜面板資料庫」提供各軌道、各關卡的通關資訊，並提供進階篩選及收藏等功能，歡迎獵人多加利用。</p>
         </div>
       </section>
-      <section class="info-section">
+      <section class="info-section info-panel" id="infoPanelIntro" data-panel="intro" role="tabpanel" hidden>
+        <h2 class="info-section-title">✦ 網站介紹</h2>
+        <div class="info-section-desc">
+          <p>本社團為LINE匿名社群「戀與深空戰鬥討論群」所有，收錄Facebook社團「戀與深空戰鬥討論群_臉書面板分享專區」的開放穩定軌道、開放波動軌道、定向軌道及無盡挑戰通關資料，提供各位玩家便捷的查詢管道。如需參考日冕、芯核及戰鬥攻略或其他討論，請移步LINE匿名社群。</p>
+          <div class="info-link-actions">
+            <a class="info-link-button" href="https://line.me/ti/g2/gw9Ds6tjgN1mPRRCKbc7pLofd4Wzd1MJoR71eQ" target="_blank" rel="noopener">戀與深空戰鬥討論群</a>
+            <a class="info-link-button" href="https://www.facebook.com/share/g/1EHo4wBBby/" target="_blank" rel="noopener">臉書面板分享專區</a>
+          </div>
+        </div>
+      </section>
+      <section class="info-section info-panel" id="infoPanelVersion" data-panel="version" role="tabpanel" hidden>
         <h2 class="info-section-title">✦ 版本紀錄</h2>
         <div class="version-history-list" id="versionHistoryList">
           <div class="version-history-empty">版本紀錄載入中…</div>
@@ -3715,7 +3816,24 @@ function renderVersionHistory() {
   }).join('');
 }
 
+function switchInfoTab(tab) {
+  const activeTab = ['guide', 'intro', 'version'].includes(tab) ? tab : 'guide';
+  document.querySelector('.info-tabs')?.setAttribute('data-active', activeTab);
+  document.querySelectorAll('.info-tab').forEach(btn => {
+    const isActive = btn.dataset.tab === activeTab;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+  document.querySelectorAll('.info-panel').forEach(panel => {
+    const isActive = panel.dataset.panel === activeTab;
+    panel.classList.toggle('active', isActive);
+    panel.hidden = !isActive;
+  });
+  if (activeTab === 'version') renderVersionHistory();
+}
+
 function openInfoModal() {
+  switchInfoTab('guide');
   renderVersionHistory();
   document.getElementById('infoOverlay')?.classList.add('show');
 }
