@@ -1648,8 +1648,8 @@ body.is-app-loading .endless-filter-panel select {
 
 .info-modal {
   max-width: 560px;
-  height: min(90vh, calc(100vh - 2rem));
-  max-height: min(90vh, calc(100vh - 2rem));
+  height: min(60vh, calc(100vh - 2rem));
+  max-height: min(60vh, calc(100vh - 2rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1800,6 +1800,7 @@ body.is-app-loading .endless-filter-panel select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   min-height: 1.8rem;
   padding: 0 0.8rem;
   border-radius: 999px;
@@ -1809,6 +1810,11 @@ body.is-app-loading .endless-filter-panel select {
   text-decoration: none;
   font-size: 0.72rem;
   transition: background 0.2s ease, border-color 0.2s ease;
+}
+.info-link-icon {
+  width: 0.8rem;
+  height: 0.8rem;
+  flex: 0 0 auto;
 }
 .info-link-button:hover {
   color: var(--text);
@@ -2371,8 +2377,8 @@ select.card-input option {
 
 @media (max-width: 600px) {
   .info-modal {
-    height: min(72vh, calc(100vh - 2rem));
-    max-height: min(72vh, calc(100vh - 2rem));
+    height: min(56vh, calc(100vh - 2rem));
+    max-height: min(56vh, calc(100vh - 2rem));
   }
   .info-modal > .modal-close {
     top: 1.38rem;
@@ -2984,24 +2990,33 @@ select.card-input option {
     </div>
     <div class="info-content">
       <section class="info-section info-panel active" id="infoPanelGuide" data-panel="guide" role="tabpanel">
-        <h2 class="info-section-title">✦ 使用說明</h2>
         <div class="info-section-desc">
+          <p>「戀與深空戰鬥討論群｜面板資料庫」提供各軌道、各關卡的通關資訊，獵人可選擇欲查詢的項目，並且進行進階篩選，所有的通關資料卡片皆提供收藏的功能，您可以於首頁右上角的資料夾查看收藏紀錄。</p>
           <p>「面板」可透過編隊畫面中右上角的「屬性詳情」進行查看，編隊屬性會顯示當前隊伍的屬性資訊。當遇到卡關的情形時，獵人可以透過參考通關面板的方式來了解自己目前面板的狀況，若自身面板較低，可以通關面板的數值為目標進行養成；若面板接近或是溢出，則可以考慮調整手法。</p>
-          <p>「戀與深空戰鬥討論群｜面板資料庫」提供各軌道、各關卡的通關資訊，並提供進階篩選及收藏等功能，歡迎獵人多加利用。</p>
         </div>
       </section>
       <section class="info-section info-panel" id="infoPanelIntro" data-panel="intro" role="tabpanel" hidden>
-        <h2 class="info-section-title">✦ 網站介紹</h2>
         <div class="info-section-desc">
           <p>本社團為LINE匿名社群「戀與深空戰鬥討論群」所有，收錄Facebook社團「戀與深空戰鬥討論群_臉書面板分享專區」的開放穩定軌道、開放波動軌道、定向軌道及無盡挑戰通關資料，提供各位玩家便捷的查詢管道。如需參考日冕、芯核及戰鬥攻略或其他討論，請移步LINE匿名社群。</p>
           <div class="info-link-actions">
-            <a class="info-link-button" href="https://line.me/ti/g2/gw9Ds6tjgN1mPRRCKbc7pLofd4Wzd1MJoR71eQ" target="_blank" rel="noopener">戀與深空戰鬥討論群</a>
-            <a class="info-link-button" href="https://www.facebook.com/share/g/1EHo4wBBby/" target="_blank" rel="noopener">臉書面板分享專區</a>
+            <a class="info-link-button" href="https://www.facebook.com/share/g/1EHo4wBBby/" target="_blank" rel="noopener">
+              <svg class="info-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07l-1.21 1.21"></path>
+                <path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07l1.21-1.21"></path>
+              </svg>
+              面板資料庫
+            </a>
+            <a class="info-link-button" href="https://line.me/ti/g2/gw9Ds6tjgN1mPRRCKbc7pLofd4Wzd1MJoR71eQ" target="_blank" rel="noopener">
+              <svg class="info-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07l-1.21 1.21"></path>
+                <path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07l1.21-1.21"></path>
+              </svg>
+              戰鬥討論群
+            </a>
           </div>
         </div>
       </section>
       <section class="info-section info-panel" id="infoPanelVersion" data-panel="version" role="tabpanel" hidden>
-        <h2 class="info-section-title">✦ 版本紀錄</h2>
         <div class="version-history-list" id="versionHistoryList">
           <div class="version-history-empty">版本紀錄載入中…</div>
         </div>
