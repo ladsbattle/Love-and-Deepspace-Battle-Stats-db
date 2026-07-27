@@ -1949,8 +1949,9 @@ body.is-app-loading .endless-filter-panel select {
 
 /* ── Tab navigation ── */
 .tab-nav {
-  --tab-slider-x: 0.28rem;
-  --tab-slider-w: calc((100% - 0.56rem - 0.16rem) / 2);
+  --tab-slider-safe: 0.08rem;
+  --tab-slider-x: calc(0.28rem + var(--tab-slider-safe));
+  --tab-slider-w: calc((100% - 0.56rem - 0.16rem) / 2 - var(--tab-slider-safe) * 2);
   position: relative;
   z-index: 10;
   display: grid;
@@ -2792,8 +2793,9 @@ select.card-input option {
 
   /* tab nav fits smaller screens */
   .tab-nav {
-    --tab-slider-x: 0.24rem;
-    --tab-slider-w: calc((100% - 0.48rem - 0.16rem) / 2);
+    --tab-slider-safe: 0.07rem;
+    --tab-slider-x: calc(0.24rem + var(--tab-slider-safe));
+    --tab-slider-w: calc((100% - 0.48rem - 0.16rem) / 2 - var(--tab-slider-safe) * 2);
     width: min(16.5rem, calc(100vw - 2rem));
     padding: 0.24rem;
     margin-top: 0.65rem;
@@ -4517,8 +4519,9 @@ function updatePrimaryTabSlider() {
 
   const navRect = nav.getBoundingClientRect();
   const btnRect = activeBtn.getBoundingClientRect();
-  const left = btnRect.left - navRect.left;
-  const width = btnRect.width;
+  const safetyInset = Math.max(3, Math.min(6, btnRect.width * 0.018));
+  const left = btnRect.left - navRect.left + safetyInset;
+  const width = Math.max(0, btnRect.width - safetyInset * 2);
 
   nav.style.setProperty('--tab-slider-x', `${left}px`);
   nav.style.setProperty('--tab-slider-w', `${width}px`);
