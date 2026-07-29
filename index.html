@@ -378,6 +378,81 @@ header {
 }
 .layer-error-msg.show { display: block; }
 
+.layer-suggestion-panel {
+  display: none;
+  margin-top: 0.55rem;
+  min-width: 0;
+}
+.layer-suggestion-panel.show {
+  display: block;
+}
+.layer-suggestion-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.42rem;
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+.layer-suggestion-hint {
+  color: rgba(176,200,232,0.58);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.layer-suggestion-track {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.05rem 0 0.15rem;
+}
+.layer-suggestion-track::-webkit-scrollbar {
+  display: none;
+}
+.layer-suggestion-chip {
+  flex: 0 0 auto;
+  min-width: 4.8rem;
+  height: 2.05rem;
+  padding: 0 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(150,180,240,0.24);
+  background: rgba(255,255,255,0.035);
+  color: var(--text-muted);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+}
+.layer-suggestion-chip:hover,
+.layer-suggestion-chip:focus-visible {
+  border-color: rgba(188,212,255,0.52);
+  color: var(--text);
+  background: rgba(160,190,240,0.12);
+}
+.layer-suggestion-chip.active {
+  border-color: rgba(188,212,255,0.72);
+  background: rgba(160,190,240,0.18);
+  color: var(--text);
+}
+.layer-suggestion-count {
+  color: var(--text-dim);
+  font-size: 0.58rem;
+  letter-spacing: 0.03em;
+}
+
 /* hide number input spinners */
 .layer-input::-webkit-outer-spin-button,
 .layer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -2539,6 +2614,32 @@ select.card-input option {
   .ios-input-shell .layer-input:focus {
     border-color: transparent;
   }
+  .layer-suggestion-panel {
+    margin-top: 0.5rem;
+  }
+  .layer-suggestion-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.12rem;
+    margin-bottom: 0.36rem;
+    font-size: 0.6rem;
+  }
+  .layer-suggestion-hint {
+    font-size: 0.55rem;
+  }
+  .layer-suggestion-track {
+    gap: 0.36rem;
+  }
+  .layer-suggestion-chip {
+    min-width: 4.35rem;
+    height: 1.92rem;
+    padding: 0 0.58rem;
+    font-size: 0.66rem;
+    gap: 0.3rem;
+  }
+  .layer-suggestion-count {
+    font-size: 0.54rem;
+  }
   .video-toggle {
     height: 2rem;
     padding: 0.5rem 0.625rem;
@@ -2866,6 +2967,7 @@ select.card-input option {
           <input class="layer-input" type="number" id="layerInput" placeholder="請先選擇軌道" min="1" oninput="onLayerInput()" disabled>
         </div>
         <div class="layer-error-msg" id="layerError">輸入內容無效</div>
+        <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
       </div>
 
       <div class="filter-group video-group">
@@ -3385,6 +3487,7 @@ async function init() {
     appLoading = false;
     setSearchControlsDisabled(false);
     activePartner = null;
+    renderLayerSuggestions();
     applyFilters();
     applyEndlessFilters();
   } catch (err) {
@@ -3407,6 +3510,7 @@ function selectOrbit(btn) {
     btn.classList.add('active');
   }
   updateLayerInputState();
+  renderLayerSuggestions();
   validateLayer();
 }
 
@@ -3456,6 +3560,64 @@ function updateLayerInputState() {
   inp.placeholder = locked ? '請先選擇軌道' : '輸入層數';
 }
 
+function getLayerSuggestions() {
+  if (!activeOrbit || !Array.isArray(DATA) || DATA.length === 0) return [];
+  const counts = new Map();
+  DATA.forEach(row => {
+    if (row.orbit !== activeOrbit || !Number.isFinite(row.layer)) return;
+    counts.set(row.layer, (counts.get(row.layer) || 0) + 1);
+  });
+  return [...counts.entries()]
+    .map(([layer, count]) => ({ layer, count }))
+    .sort((a, b) => b.count - a.count || a.layer - b.layer)
+    .slice(0, 5);
+}
+
+function renderLayerSuggestions() {
+  const panel = document.getElementById('layerSuggestionPanel');
+  if (!panel) return;
+  const suggestions = getLayerSuggestions();
+  if (!activeOrbit || appLoading || suggestions.length === 0) {
+    panel.classList.remove('show');
+    panel.replaceChildren();
+    return;
+  }
+  panel.innerHTML = `
+    <div class="layer-suggestion-head">
+      <span>熱門層數</span>
+      <span class="layer-suggestion-hint">依資料筆數排序</span>
+    </div>
+    <div class="layer-suggestion-track" aria-label="熱門層數快捷選項">
+      ${suggestions.map(item => `
+        <button class="layer-suggestion-chip" type="button" data-layer="${item.layer}" onclick="selectSuggestedLayer(${item.layer})">
+          <span>${item.layer} 層</span>
+          <span class="layer-suggestion-count">${item.count} 筆</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+  panel.classList.add('show');
+  updateLayerSuggestionActive();
+}
+
+function updateLayerSuggestionActive() {
+  const inp = document.getElementById('layerInput');
+  const value = inp ? inp.value.trim() : '';
+  document.querySelectorAll('.layer-suggestion-chip').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.layer === value);
+  });
+}
+
+function selectSuggestedLayer(layer) {
+  if (appLoading || !activeOrbit) return;
+  const inp = document.getElementById('layerInput');
+  if (!inp) return;
+  inp.value = String(layer);
+  activeLayerFilters = { upper: [], lower: [] };
+  updateLayerSuggestionActive();
+  validateLayer();
+}
+
 function validateLayer() {
   if (appLoading) return;
   const val = document.getElementById('layerInput').value.trim();
@@ -3489,6 +3651,7 @@ function validateLayer() {
 function onLayerInput() {
   if (appLoading) return;
   activeLayerFilters = { upper: [], lower: [] };
+  updateLayerSuggestionActive();
   validateLayer();
 }
 
@@ -4061,6 +4224,7 @@ function resetFilters() {
   document.querySelectorAll('#orbitChips .chip').forEach(c => c.classList.remove('active'));
   clearLayerInput();
   updateLayerInputState();
+  renderLayerSuggestions();
   document.getElementById('videoOnly').checked = false;
   applyFilters();
 }
