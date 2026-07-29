@@ -1949,9 +1949,8 @@ body.is-app-loading .endless-filter-panel select {
 
 /* ── Tab navigation ── */
 .tab-nav {
-  --tab-slider-safe: 0.08rem;
-  --tab-slider-x: calc(0.28rem + var(--tab-slider-safe));
-  --tab-slider-w: calc((100% - 0.56rem - 0.16rem) / 2 - var(--tab-slider-safe) * 2);
+  --tab-slider-x: 0.28rem;
+  --tab-slider-w: calc((100% - 0.56rem - 0.16rem) / 2);
   position: relative;
   z-index: 10;
   display: grid;
@@ -2793,9 +2792,8 @@ select.card-input option {
 
   /* tab nav fits smaller screens */
   .tab-nav {
-    --tab-slider-safe: 0.07rem;
-    --tab-slider-x: calc(0.24rem + var(--tab-slider-safe));
-    --tab-slider-w: calc((100% - 0.48rem - 0.16rem) / 2 - var(--tab-slider-safe) * 2);
+    --tab-slider-x: 0.24rem;
+    --tab-slider-w: calc((100% - 0.48rem - 0.16rem) / 2);
     width: min(16.5rem, calc(100vw - 2rem));
     padding: 0.24rem;
     margin-top: 0.65rem;
@@ -3004,14 +3002,14 @@ select.card-input option {
     <div class="info-content">
       <section class="info-section info-panel active" id="infoPanelGuide" data-panel="guide" role="tabpanel">
         <div class="info-section-desc">
-          <p><span class="info-highlight">戀與深空戰鬥討論群｜面板資料庫</span>提供各軌道、各關卡的通關紀錄查詢，助力獵人們更有效率地通關。獵人可以先選擇欲查詢的項目，接著進行進階篩選，尋找符合自身隊伍配置的結果；所有的通關資料卡片皆提供收藏之功能，首頁右上角的資料夾可以查看<span class="info-highlight">收藏</span>及<span class="info-highlight">瀏覽記錄</span>。</p>
-          <p>以下簡要介紹面板的基本概念：面板指的是<span class="info-highlight">隊伍的屬性資訊</span>，玩家間交流關卡的通關資訊時，經常會直接使用面板截圖進行討論。獵人可透過編隊畫面中右上角的<span class="info-highlight">屬性詳情</span>查看面板，該頁面會顯示當前隊伍的生命、攻擊、防禦、暴擊、暴傷、誓約增傷、誓約回能、加速回能及虛弱增傷數值。</p>
-          <p>當戰鬥卡關時，您可以在這個資料庫搜尋<span class="info-highlight">相同日卡、相同階數、相同搭檔</span>的面板進行參考，了解自身戰隊的情形。若面板較低，可將通關面板的數值視為目標進行養成，持續提升面板；若面板接近或是溢出，則可以考慮調整手法，或是繼續提升面板至更有餘裕的程度。</p>
+          <p><span class="info-highlight">面板資料庫</span>提供各軌道、各關卡的通關紀錄查詢，助力獵人們更有效率地養成通關隊伍。獵人可以先選擇欲查詢的項目，接著進行進階篩選，尋找符合自身隊伍配置的結果；本資料庫所有的通關資料卡片皆提供收藏之功能，首頁右上角的資料夾可以查看<span class="info-highlight">收藏</span>及<span class="info-highlight">瀏覽記錄</span>。</p>
+          <p>以下簡要介紹面板的基本概念：<span class="info-highlight">面板</span>指的是戰鬥系統中的<span class="info-highlight">隊伍屬性資訊</span>，玩家間交流關卡的通關資訊時，經常會使用面板進行討論與比較。獵人可透過編隊畫面中右上角的<span class="info-highlight">屬性詳情</span>查看面板，該頁面會顯示當前隊伍的各項數值，包括：生命、攻擊、防禦、暴擊、暴傷、誓約增傷、誓約回能、加速回能及虛弱增傷。</p>
+          <p>當戰鬥卡關時，您可以在這個資料庫尋找<span class="info-highlight">相同日卡、相同階數或相同搭檔</span>的面板進行參考，了解自身戰隊的情形。若面板較低，可將通關面板的數值視為目標進行養成，持續提升面板；若面板接近或是溢出，則可以考慮調整手法，或是繼續提升面板至更有餘裕的程度；或是於<span class="info-highlight">網站介紹</span>頁面加入討論群詢問。</p>
         </div>
       </section>
       <section class="info-section info-panel" id="infoPanelIntro" data-panel="intro" role="tabpanel" hidden>
         <div class="info-section-desc">
-          <p>本社團為LINE匿名社群<span class="info-highlight">戀與深空戰鬥討論群</span>所有，收錄Facebook社團<span class="info-highlight">戀與深空戰鬥討論群_臉書面板分享專區</span>的開放穩定軌道、開放波動軌道、定向軌道及無盡挑戰通關資料，提供各位玩家便捷的查詢管道；我們相信每一份通關資料都有其參考價值，也珍視群友每一次的分享，若您有意願貢獻通關資料，歡迎申請加入分享專區。</p>
+          <p>本資料庫為LINE匿名社群<span class="info-highlight">戀與深空戰鬥討論群</span>所有，目的為收錄並整理Facebook社團<span class="info-highlight">戀與深空戰鬥討論群_臉書面板分享專區</span>的開放穩定軌道、開放波動軌道、定向軌道及無盡挑戰通關資料，提供各位玩家便捷的查詢管道；我們相信每一份通關資料都有其參考價值，也珍視群友每一次的通關心得分享，若您有意願分享通關資料，歡迎加入分享專區。</p>
           <div class="info-link-actions">
             <a class="info-link-button" href="https://www.facebook.com/share/g/1EHo4wBBby/" target="_blank" rel="noopener">
               <svg class="info-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -4519,9 +4517,8 @@ function updatePrimaryTabSlider() {
 
   const navRect = nav.getBoundingClientRect();
   const btnRect = activeBtn.getBoundingClientRect();
-  const safetyInset = Math.max(3, Math.min(6, btnRect.width * 0.018));
-  const left = btnRect.left - navRect.left + safetyInset;
-  const width = Math.max(0, btnRect.width - safetyInset * 2);
+  const left = btnRect.left - navRect.left;
+  const width = btnRect.width;
 
   nav.style.setProperty('--tab-slider-x', `${left}px`);
   nav.style.setProperty('--tab-slider-w', `${width}px`);
