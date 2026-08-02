@@ -382,6 +382,8 @@ header {
   display: none;
   margin-top: 0.55rem;
   min-width: 0;
+  width: 100%;
+  grid-column: 1 / -1;
 }
 .layer-suggestion-panel.show {
   display: block;
@@ -417,7 +419,7 @@ header {
 }
 .layer-suggestion-chip {
   flex: 0 0 auto;
-  min-width: 4.8rem;
+  min-width: 4.2rem;
   height: 2.05rem;
   padding: 0 0.72rem;
   border-radius: 999px;
@@ -441,16 +443,6 @@ header {
   border-color: rgba(188,212,255,0.52);
   color: var(--text);
   background: rgba(160,190,240,0.12);
-}
-.layer-suggestion-chip.active {
-  border-color: rgba(188,212,255,0.72);
-  background: rgba(160,190,240,0.18);
-  color: var(--text);
-}
-.layer-suggestion-count {
-  color: var(--text-dim);
-  font-size: 0.58rem;
-  letter-spacing: 0.03em;
 }
 
 /* hide number input spinners */
@@ -2631,14 +2623,11 @@ select.card-input option {
     gap: 0.36rem;
   }
   .layer-suggestion-chip {
-    min-width: 4.35rem;
+    min-width: 3.9rem;
     height: 1.92rem;
     padding: 0 0.58rem;
     font-size: 0.66rem;
     gap: 0.3rem;
-  }
-  .layer-suggestion-count {
-    font-size: 0.54rem;
   }
   .video-toggle {
     height: 2rem;
@@ -2967,7 +2956,6 @@ select.card-input option {
           <input class="layer-input" type="number" id="layerInput" placeholder="請先選擇軌道" min="1" oninput="onLayerInput()" disabled>
         </div>
         <div class="layer-error-msg" id="layerError">輸入內容無效</div>
-        <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
       </div>
 
       <div class="filter-group video-group">
@@ -2978,6 +2966,7 @@ select.card-input option {
           <span>僅看附影片</span>
         </label>
       </div>
+      <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
     </div>
 
     <div class="dynamic-filter-panel" id="dynamicFilterPanel">
@@ -3570,7 +3559,7 @@ function getLayerSuggestions() {
   return [...counts.entries()]
     .map(([layer, count]) => ({ layer, count }))
     .sort((a, b) => b.count - a.count || a.layer - b.layer)
-    .slice(0, 5);
+    .slice(0, 10);
 }
 
 function renderLayerSuggestions() {
@@ -3591,21 +3580,11 @@ function renderLayerSuggestions() {
       ${suggestions.map(item => `
         <button class="layer-suggestion-chip" type="button" data-layer="${item.layer}" onclick="selectSuggestedLayer(${item.layer})">
           <span>${item.layer} 層</span>
-          <span class="layer-suggestion-count">${item.count} 筆</span>
         </button>
       `).join('')}
     </div>
   `;
   panel.classList.add('show');
-  updateLayerSuggestionActive();
-}
-
-function updateLayerSuggestionActive() {
-  const inp = document.getElementById('layerInput');
-  const value = inp ? inp.value.trim() : '';
-  document.querySelectorAll('.layer-suggestion-chip').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.layer === value);
-  });
 }
 
 function selectSuggestedLayer(layer) {
@@ -3614,7 +3593,6 @@ function selectSuggestedLayer(layer) {
   if (!inp) return;
   inp.value = String(layer);
   activeLayerFilters = { upper: [], lower: [] };
-  updateLayerSuggestionActive();
   validateLayer();
 }
 
@@ -3651,7 +3629,6 @@ function validateLayer() {
 function onLayerInput() {
   if (appLoading) return;
   activeLayerFilters = { upper: [], lower: [] };
-  updateLayerSuggestionActive();
   validateLayer();
 }
 
