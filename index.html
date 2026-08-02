@@ -3559,7 +3559,8 @@ function getLayerSuggestions() {
   return [...counts.entries()]
     .map(([layer, count]) => ({ layer, count }))
     .sort((a, b) => b.count - a.count || a.layer - b.layer)
-    .slice(0, 10);
+    .slice(0, 10)
+    .sort((a, b) => b.layer - a.layer);
 }
 
 function renderLayerSuggestions() {
@@ -3573,10 +3574,9 @@ function renderLayerSuggestions() {
   }
   panel.innerHTML = `
     <div class="layer-suggestion-head">
-      <span>熱門層數</span>
-      <span class="layer-suggestion-hint">依資料筆數排序</span>
+      <span>快速選層</span>
     </div>
-    <div class="layer-suggestion-track" aria-label="熱門層數快捷選項">
+    <div class="layer-suggestion-track" aria-label="快速選層">
       ${suggestions.map(item => `
         <button class="layer-suggestion-chip" type="button" data-layer="${item.layer}" onclick="selectSuggestedLayer(${item.layer})">
           <span>${item.layer} 層</span>
