@@ -410,7 +410,13 @@ header {
   font-size: 0.62rem;
   letter-spacing: 0.08em;
 }
-.layer-suggestion-toggle {
+.layer-suggestion-head-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.layer-suggestion-back {
   appearance: none;
   border: 1px solid rgba(150,180,240,0.26);
   border-radius: 999px;
@@ -424,11 +430,18 @@ header {
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
-.layer-suggestion-toggle:hover,
-.layer-suggestion-toggle:focus-visible {
+.layer-suggestion-back:hover,
+.layer-suggestion-back:focus-visible {
   border-color: rgba(188,212,255,0.48);
   background: rgba(160,190,240,0.1);
   color: var(--text);
+}
+.layer-suggestion-hint {
+  flex: 0 0 auto;
+  color: rgba(176,200,232,0.54);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 .layer-suggestion-track {
   display: flex;
@@ -2643,7 +2656,7 @@ select.card-input option {
     margin-bottom: 0.36rem;
     font-size: 0.6rem;
   }
-  .layer-suggestion-toggle {
+  .layer-suggestion-back {
     font-size: 0.55rem;
     padding: 0.3rem 0.54rem;
   }
@@ -3174,7 +3187,7 @@ let activeEndlessCard = null;
 let layerOK = true;
 let currentData = [];
 let activeLayerFilters = { upper: [], lower: [] };
-let showAllLayerSuggestions = false;
+let activeLayerRangeKey = null;
 let panelPreviewData = [];
 let endlessPreviewData = [];
 let previewAutoFrame = null;
@@ -3518,7 +3531,7 @@ function selectOrbit(btn) {
   if (appLoading) return;
   const orbit = btn.dataset.orbit;
   activeLayerFilters = { upper: [], lower: [] };
-  showAllLayerSuggestions = false;
+  activeLayerRangeKey = null;
   clearLayerInput();
   if (activeOrbit === orbit) {
     activeOrbit = null;
@@ -3579,46 +3592,60 @@ function updateLayerInputState() {
   inp.placeholder = locked ? '請先選擇軌道' : '輸入層數';
 }
 
-function getLayerSuggestions() {
+function getLayerRanges() {
   if (!activeOrbit || !Array.isArray(DATA) || DATA.length === 0) return [];
-  const counts = new Map();
-  DATA.forEach(row => {
-    if (row.orbit !== activeOrbit || !Number.isFinite(row.layer)) return;
-    counts.set(row.layer, (counts.get(row.layer) || 0) + 1);
-  });
-  const allLayers = [...counts.entries()].map(([layer, count]) => ({ layer, count }));
-  const visibleLayers = showAllLayerSuggestions
-    ? allLayers
-    : [...allLayers].sort((a, b) => b.count - a.count || b.layer - a.layer).slice(0, 10);
+  const orbitLimit = Number.isFinite(LIMITS[activeOrbit]) ? LIMITS[activeOrbit] : Infinity;
+  const layers = [...new Set(DATA
+    .filter(row => row.orbit === activeOrbit && Number.isFinite(row.layer) && row.layer <= orbitLimit)
+    .map(row => row.layer))]
+    .sort((a, b) => a - b);
+  const ranges = new Map();
 
-  return visibleLayers.sort((a, b) => b.layer - a.layer);
+  layers.forEach(layer => {
+    const start = layer <= 60 ? 0 : 61 + Math.floor((layer - 61) / 60) * 60;
+    const end = Math.min(start === 0 ? 60 : start + 59, orbitLimit);
+    const key = `${start}-${end}`;
+    if (!ranges.has(key)) ranges.set(key, { key, start, end, layers: [] });
+    ranges.get(key).layers.push(layer);
+  });
+
+  return [...ranges.values()].sort((a, b) => a.start - b.start);
 }
 
 function renderLayerSuggestions() {
   const panel = document.getElementById('layerSuggestionPanel');
   if (!panel) return;
-  const suggestions = getLayerSuggestions();
-  const totalLayers = activeOrbit && Array.isArray(DATA)
-    ? new Set(DATA.filter(row => row.orbit === activeOrbit && Number.isFinite(row.layer)).map(row => row.layer)).size
-    : 0;
-  if (!activeOrbit || appLoading || suggestions.length === 0) {
+  const ranges = getLayerRanges();
+  const activeRange = ranges.find(range => range.key === activeLayerRangeKey) || null;
+  if (activeLayerRangeKey && !activeRange) activeLayerRangeKey = null;
+  const visibleItems = activeRange ? activeRange.layers : ranges;
+  const showSwipeHint = visibleItems.length > 1;
+
+  if (!activeOrbit || appLoading || visibleItems.length === 0) {
     panel.classList.remove('show');
     panel.replaceChildren();
     return;
   }
   panel.innerHTML = `
     <div class="layer-suggestion-head">
-      <span>快速選層</span>
-      ${totalLayers > 10 ? `
-        <button class="layer-suggestion-toggle" type="button" aria-expanded="${showAllLayerSuggestions ? 'true' : 'false'}" onclick="toggleLayerSuggestions()">
-          ${showAllLayerSuggestions ? '收合' : '全部層數'}
-        </button>
-      ` : ''}
+      <div class="layer-suggestion-head-main">
+        <span>快速選層</span>
+        ${activeRange ? `
+          <button class="layer-suggestion-back" type="button" aria-label="返回層數區間" onclick="backToLayerRanges()">
+            返回區間
+          </button>
+        ` : ''}
+      </div>
+      ${showSwipeHint ? '<span class="layer-suggestion-hint" aria-hidden="true">↔ 可左右滑動</span>' : ''}
     </div>
-    <div class="layer-suggestion-track" aria-label="快速選層">
-      ${suggestions.map(item => `
-        <button class="layer-suggestion-chip" type="button" data-layer="${item.layer}" onclick="selectSuggestedLayer(${item.layer})">
-          <span>${item.layer} 層</span>
+    <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
+      ${visibleItems.map(item => activeRange ? `
+        <button class="layer-suggestion-chip" type="button" data-layer="${item}" onclick="selectSuggestedLayer(${item})">
+          <span>${item} 層</span>
+        </button>
+      ` : `
+        <button class="layer-suggestion-chip" type="button" onclick="selectLayerRange('${item.key}')">
+          <span>${item.start}–${item.end}</span>
         </button>
       `).join('')}
     </div>
@@ -3626,8 +3653,14 @@ function renderLayerSuggestions() {
   panel.classList.add('show');
 }
 
-function toggleLayerSuggestions() {
-  showAllLayerSuggestions = !showAllLayerSuggestions;
+function selectLayerRange(rangeKey) {
+  if (appLoading || !activeOrbit) return;
+  activeLayerRangeKey = rangeKey;
+  renderLayerSuggestions();
+}
+
+function backToLayerRanges() {
+  activeLayerRangeKey = null;
   renderLayerSuggestions();
 }
 
@@ -4242,7 +4275,7 @@ function resetFilters() {
   if (appLoading) return;
   activeOrbit = null;
   activeLayerFilters = { upper: [], lower: [] };
-  showAllLayerSuggestions = false;
+  activeLayerRangeKey = null;
   document.querySelectorAll('#orbitChips .chip').forEach(c => c.classList.remove('active'));
   clearLayerInput();
   updateLayerInputState();
