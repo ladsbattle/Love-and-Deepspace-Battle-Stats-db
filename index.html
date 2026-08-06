@@ -329,13 +329,14 @@ header {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #c7dcf7;
 }
 .chip {
   padding: 0.56rem 0.4rem;
   border-radius: 10px;
   border: 1px solid rgba(150,180,240,0.22);
   background: rgba(255,255,255,0.03);
-  color: var(--text-muted);
+  color: #c7dcf7;
   font-size: 0.78rem;
   font-family: 'Noto Sans TC', sans-serif;
   cursor: pointer;
@@ -421,7 +422,7 @@ header {
   border: 1px solid rgba(150,180,240,0.26);
   border-radius: 999px;
   background: rgba(255,255,255,0.035);
-  color: rgba(191,211,239,0.82);
+  color: #c7dcf7;
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.58rem;
   letter-spacing: 0.06em;
@@ -464,7 +465,7 @@ header {
   border-radius: 999px;
   border: 1px solid rgba(150,180,240,0.24);
   background: rgba(255,255,255,0.035);
-  color: var(--text-muted);
+  color: #c7dcf7;
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.04em;
@@ -651,7 +652,7 @@ header {
   border-radius: 999px;
   border: 1px solid var(--border);
   background: transparent;
-  color: var(--text-muted);
+  color: #c7dcf7;
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.72rem;
   cursor: pointer;
@@ -3596,14 +3597,14 @@ function getLayerRanges() {
   if (!activeOrbit || !Array.isArray(DATA) || DATA.length === 0) return [];
   const orbitLimit = Number.isFinite(LIMITS[activeOrbit]) ? LIMITS[activeOrbit] : Infinity;
   const layers = [...new Set(DATA
-    .filter(row => row.orbit === activeOrbit && Number.isFinite(row.layer) && row.layer <= orbitLimit)
+    .filter(row => row.orbit === activeOrbit && Number.isFinite(row.layer) && row.layer >= 1 && row.layer <= orbitLimit)
     .map(row => row.layer))]
     .sort((a, b) => a - b);
   const ranges = new Map();
 
   layers.forEach(layer => {
-    const start = layer <= 60 ? 0 : 61 + Math.floor((layer - 61) / 60) * 60;
-    const end = Math.min(start === 0 ? 60 : start + 59, orbitLimit);
+    const start = layer <= 60 ? 1 : 61 + Math.floor((layer - 61) / 60) * 60;
+    const end = Math.min(start === 1 ? 60 : start + 59, orbitLimit);
     const key = `${start}-${end}`;
     if (!ranges.has(key)) ranges.set(key, { key, start, end, layers: [] });
     ranges.get(key).layers.push(layer);
@@ -3657,11 +3658,13 @@ function selectLayerRange(rangeKey) {
   if (appLoading || !activeOrbit) return;
   activeLayerRangeKey = rangeKey;
   renderLayerSuggestions();
+  applyFilters();
 }
 
 function backToLayerRanges() {
   activeLayerRangeKey = null;
   renderLayerSuggestions();
+  applyFilters();
 }
 
 function selectSuggestedLayer(layer) {
@@ -3715,10 +3718,11 @@ function dirLabel(dir) {
   return dir;
 }
 
-function getBasePanelData(layerNum, videoOnly) {
+function getBasePanelData(layerNum, videoOnly, layerRange = null) {
   return DATA.filter(d => {
     if (activeOrbit && d.orbit !== activeOrbit) return false;
     if (layerNum !== null && d.layer !== layerNum) return false;
+    if (layerNum === null && layerRange && (d.layer < layerRange.start || d.layer > layerRange.end)) return false;
     if (videoOnly && !d.hasVideo) return false;
     return true;
   });
@@ -4251,6 +4255,9 @@ function applyFilters() {
   }
   const layerVal = document.getElementById('layerInput').value.trim();
   const layerNum = layerVal !== '' ? parseInt(layerVal) : null;
+  const activeRange = layerNum === null && activeLayerRangeKey
+    ? getLayerRanges().find(range => range.key === activeLayerRangeKey) || null
+    : null;
   const videoOnly = document.getElementById('videoOnly').checked;
   const shouldSearch = Boolean(activeOrbit || videoOnly);
   if (!shouldSearch) {
@@ -4262,7 +4269,7 @@ function applyFilters() {
     renderCards();
     return;
   }
-  const baseData = getBasePanelData(layerNum, videoOnly);
+  const baseData = getBasePanelData(layerNum, videoOnly, activeRange);
   renderDynamicFilters(baseData, layerNum);
   currentData = baseData.filter(d => matchesLayerFilters(d, 'upper') && matchesLayerFilters(d, 'lower'));
   const noMatch = document.getElementById('dynamicNoMatch');
