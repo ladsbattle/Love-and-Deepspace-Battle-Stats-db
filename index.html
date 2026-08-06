@@ -3030,8 +3030,10 @@ select.card-input option {
     </div>
   </div>
 
-  <div class="results-info" id="resultsInfo"></div>
-  <div class="cards-grid" id="cardsGrid"></div>
+  <div class="results-view" id="panelResultsView">
+    <div class="results-info" id="resultsInfo"></div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
 </div>
 </div><!-- end section-panel -->
 
@@ -3095,8 +3097,10 @@ select.card-input option {
     </div>
   </div>
 
-  <div class="results-info" id="endlessInfo"></div>
-  <div class="endless-grid" id="endlessGrid"></div>
+  <div class="results-view" id="endlessResultsView">
+    <div class="results-info" id="endlessInfo"></div>
+    <div class="endless-grid" id="endlessGrid"></div>
+  </div>
 </div>
 </div><!-- end section-endless -->
 
@@ -3562,6 +3566,7 @@ function clearPanelResultsForInvalidLayer() {
   activeLayerFilters = { upper: [], lower: [] };
   currentData = [];
   const dynamicNoMatch = document.getElementById('dynamicNoMatch');
+  const resultsView = document.getElementById('panelResultsView');
   const info = document.getElementById('resultsInfo');
   const grid = document.getElementById('cardsGrid');
 
@@ -3574,12 +3579,14 @@ function clearPanelResultsForInvalidLayer() {
     fadeTimers['panel-results'] = null;
   }
   stopPreviewAutoScroll();
+  if (resultsView) {
+    resultsView.classList.remove('content-transition', 'is-fading');
+  }
   if (info) {
-    info.classList.remove('is-fading');
     info.innerHTML = '';
   }
   if (grid) {
-    grid.classList.remove('is-fading', 'preview-clearing');
+    grid.classList.remove('preview-clearing');
     grid.replaceChildren();
   }
   updateScrollButtons();
@@ -4555,6 +4562,7 @@ function cardLayerBlock(card, partner, dir, label) {
 }
 
 function renderCards() {
+  const resultsView = document.getElementById('panelResultsView');
   const grid = document.getElementById('cardsGrid');
   const info = document.getElementById('resultsInfo');
   const hasFilters = hasPanelFilters();
@@ -4562,7 +4570,8 @@ function renderCards() {
     ? `共找到 <span>${currentData.length}</span> 筆結果`
     : `目前收錄軌道資料 <span>${DATA.length}</span> 筆`;
   if (hasFilters) clearPreviewBeforeResults(grid);
-  fadeSwap('panel-results', [info, grid], () => {
+  fadeSwap('panel-results', [resultsView], () => {
+    grid.replaceChildren();
     info.innerHTML = infoText;
     if (!hasFilters) {
       renderPanelPreview();
@@ -4918,6 +4927,7 @@ function renderEndlessPreview() {
 }
 
 function renderEndless() {
+  const resultsView = document.getElementById('endlessResultsView');
   const grid = document.getElementById('endlessGrid');
   const info = document.getElementById('endlessInfo');
   const hasFixedResults = Boolean(activePartner);
@@ -4925,7 +4935,8 @@ function renderEndless() {
     ? `共找到 <span>${ENDLESS_DATA.length}</span> 筆結果`
     : `目前收錄無盡挑戰資料 <span>${ENDLESS_ALL.length}</span> 筆`;
   if (hasFixedResults) clearPreviewBeforeResults(grid);
-  fadeSwap('endless-results', [info, grid], () => {
+  fadeSwap('endless-results', [resultsView], () => {
+    grid.replaceChildren();
     info.innerHTML = infoText;
     if (!hasFixedResults) {
       renderEndlessPreview();
