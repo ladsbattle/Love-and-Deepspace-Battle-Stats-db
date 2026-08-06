@@ -24,7 +24,114 @@
   --col-metal:  #0e94a8; --col-metal-bg:  rgba(14,148,168,0.16);   --col-metal-border:  rgba(14,148,168,0.45);
 }
 
-/* Keep the committed query compact while retaining an explicit edit path. */
+/* Keep the two orbit-filter states in one frame and crossfade their content. */
+.filter-panel {
+  --filter-panel-height: 34rem;
+  box-sizing: border-box;
+  height: var(--filter-panel-height);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-state-stack {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.filter-state-stack > #primaryFilterControls,
+.filter-state-stack > #querySummary,
+.filter-state-stack > #dynamicFilterPanel {
+  position: absolute;
+  inset-inline: 0;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.filter-state-stack > #primaryFilterControls {
+  inset-block: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.35s ease, visibility 0s linear 0s;
+}
+
+.filter-state-stack > #querySummary {
+  top: 0;
+  display: flex !important;
+  min-height: 3.35rem;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.filter-state-stack > #dynamicFilterPanel {
+  top: 4.9rem;
+  bottom: 0;
+  display: block !important;
+  margin: 0;
+  padding-top: 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  border-top-color: transparent;
+  transition: opacity 0.35s ease, border-top-color 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.filter-state-stack > #dynamicFilterPanel.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  border-top-color: var(--border);
+  animation: none;
+}
+
+.filter-panel.is-committed > .filter-state-stack > #primaryFilterControls {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.filter-panel.is-committed > .filter-state-stack > #querySummary {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0.05s, 0s;
+}
+
+.filter-panel.is-committed > .filter-state-stack > #dynamicFilterPanel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  border-top-color: var(--border);
+  transition-delay: 0.1s, 0.1s, 0s;
+}
+
+.filter-panel:not(.is-committed) > .filter-state-stack > #querySummary,
+.filter-panel:not(.is-committed) > .filter-state-stack > #dynamicFilterPanel {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .filter-panel {
+    --filter-panel-height: 40rem;
+  }
+
+  .filter-state-stack > #dynamicFilterPanel {
+    top: 5.1rem;
+  }
+}
+
+/* Keep legacy hidden-state rules harmless; the visible state now crossfades in place. */
 .primary-filter-controls[hidden],
 .query-summary[hidden] {
   display: none !important;
@@ -68,35 +175,12 @@
   font-size: 1rem;
 }
 
-.query-edit-button {
-  flex: 0 0 auto;
-  min-height: 2.15rem;
-  padding: 0.32rem 0.72rem;
-  border: 1px solid var(--border-bright);
-  border-radius: 0.55rem;
-  color: var(--accent);
-  background: transparent;
-  font: inherit;
-  font-size: 0.78rem;
-  cursor: pointer;
-}
-
-.query-edit-button:hover,
-.query-edit-button:focus-visible {
-  color: var(--text);
-  background: rgba(184, 212, 255, 0.1);
-}
-
 @media (max-width: 640px) {
   .query-summary {
     align-items: stretch;
     flex-direction: column;
     gap: 0.55rem;
     margin-top: 0.65rem;
-  }
-
-  .query-edit-button {
-    align-self: flex-start;
   }
 }
 

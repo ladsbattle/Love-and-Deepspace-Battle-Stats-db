@@ -377,11 +377,11 @@ function commitExactQuery(layer) {
 function updateQuerySummary() {
   const controls = document.getElementById('primaryFilterControls');
   const summary = document.getElementById('querySummary');
+  const filterPanel = controls?.closest('.filter-panel');
   if (!controls || !summary) return;
   const layer = getExactLayerValue();
   const shouldCollapse = Boolean(activeOrbit && layer !== null && layerOK && !isEditingQuery);
-  controls.hidden = shouldCollapse;
-  summary.hidden = !shouldCollapse;
+  filterPanel?.classList.toggle('is-committed', shouldCollapse);
   if (!shouldCollapse) return;
 
   const orbitLabel = [...document.querySelectorAll('#orbitChips .chip')]
@@ -390,12 +390,6 @@ function updateQuerySummary() {
   const layerText = document.getElementById('querySummaryLayer');
   if (orbitText) orbitText.textContent = orbitLabel || ORBIT_LABEL[activeOrbit] || activeOrbit;
   if (layerText) layerText.textContent = `${layer} 層`;
-}
-
-function editQuery() {
-  isEditingQuery = true;
-  updateQuerySummary();
-  document.getElementById('layerInput')?.focus();
 }
 
 function onLayerCommit() {

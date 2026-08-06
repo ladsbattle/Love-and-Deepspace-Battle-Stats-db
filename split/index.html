@@ -50,6 +50,7 @@
       </button>
     </div>
 
+    <div class="filter-state-stack">
     <div id="primaryFilterControls" class="primary-filter-controls">
     <div class="orbit-group">
       <div class="orbit-label">軌道類型</div>
@@ -90,14 +91,13 @@
     </div>
     </div>
 
-    <div id="querySummary" class="query-summary" hidden aria-live="polite">
+    <div id="querySummary" class="query-summary" aria-live="polite">
       <div class="query-summary-main">
         <span class="query-summary-label">目前查詢</span>
         <span id="querySummaryOrbit" class="query-summary-orbit"></span>
         <span class="query-summary-separator" aria-hidden="true">·</span>
         <span id="querySummaryLayer" class="query-summary-layer"></span>
       </div>
-      <button id="editQueryButton" class="query-edit-button" type="button" onclick="editQuery()">修改查詢</button>
     </div>
 
     <div class="dynamic-filter-panel" id="dynamicFilterPanel">
@@ -116,6 +116,7 @@
         </div>
       </div>
       <div class="dynamic-no-match" id="dynamicNoMatch">找不到完全相符的結果，建議進行單層篩選或嘗試其他配置</div>
+    </div>
     </div>
   </div>
 
