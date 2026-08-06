@@ -50,6 +50,7 @@
       </button>
     </div>
 
+    <div id="primaryFilterControls" class="primary-filter-controls">
     <div class="orbit-group">
       <div class="orbit-label">軌道類型</div>
         <div class="orbit-chips" id="orbitChips">
@@ -72,7 +73,7 @@
       <div class="filter-group layer-group">
         <label>軌道層數</label>
         <div class="ios-input-shell">
-          <input class="layer-input" type="number" id="layerInput" placeholder="請先選擇軌道" min="1" oninput="onLayerInput()" disabled>
+          <input class="layer-input" type="number" id="layerInput" placeholder="請先選擇軌道" min="1" oninput="onLayerInput()" onchange="onLayerCommit()" onkeydown="if(event.key==='Enter'){event.preventDefault();onLayerCommit();}" disabled>
         </div>
         <div class="layer-error-msg" id="layerError">輸入內容無效</div>
       </div>
@@ -86,6 +87,17 @@
         </label>
       </div>
       <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
+    </div>
+    </div>
+
+    <div id="querySummary" class="query-summary" hidden aria-live="polite">
+      <div class="query-summary-main">
+        <span class="query-summary-label">目前查詢</span>
+        <span id="querySummaryOrbit" class="query-summary-orbit"></span>
+        <span class="query-summary-separator" aria-hidden="true">·</span>
+        <span id="querySummaryLayer" class="query-summary-layer"></span>
+      </div>
+      <button id="editQueryButton" class="query-edit-button" type="button" onclick="editQuery()">修改查詢</button>
     </div>
 
     <div class="dynamic-filter-panel" id="dynamicFilterPanel">

@@ -24,6 +24,82 @@
   --col-metal:  #0e94a8; --col-metal-bg:  rgba(14,148,168,0.16);   --col-metal-border:  rgba(14,148,168,0.45);
 }
 
+/* Keep the committed query compact while retaining an explicit edit path. */
+.primary-filter-controls[hidden],
+.query-summary[hidden] {
+  display: none !important;
+}
+
+.query-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.35rem;
+  margin: 0.85rem 0 1.15rem;
+  padding: 0.55rem 0.8rem 0.55rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: rgba(17, 30, 53, 0.42);
+}
+
+.query-summary-main {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.query-summary-label {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.query-summary-orbit,
+.query-summary-layer {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.query-summary-separator {
+  color: var(--text-dim);
+  font-size: 1rem;
+}
+
+.query-edit-button {
+  flex: 0 0 auto;
+  min-height: 2.15rem;
+  padding: 0.32rem 0.72rem;
+  border: 1px solid var(--border-bright);
+  border-radius: 0.55rem;
+  color: var(--accent);
+  background: transparent;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.query-edit-button:hover,
+.query-edit-button:focus-visible {
+  color: var(--text);
+  background: rgba(184, 212, 255, 0.1);
+}
+
+@media (max-width: 640px) {
+  .query-summary {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 0.65rem;
+  }
+
+  .query-edit-button {
+    align-self: flex-start;
+  }
+}
+
 .site-footer {
   text-align: center;
   font-size: 13px;
@@ -462,6 +538,18 @@ header {
   border-color: rgba(188,212,255,0.52);
   color: var(--text);
   background: rgba(160,190,240,0.12);
+}
+
+/* Touch browsers can keep a tapped chip focused after the range view changes. */
+@media (hover: none) {
+  .layer-suggestion-chip:focus,
+  .layer-suggestion-chip:focus-visible {
+    border-color: rgba(150,180,240,0.24);
+    color: #c7dcf7;
+    background: rgba(255,255,255,0.035);
+    outline: none;
+    box-shadow: none;
+  }
 }
 
 /* hide number input spinners */
@@ -2899,7 +2987,7 @@ select.card-input option {
     width: auto;
     min-height: 2.5rem;
   }
-  .endless-grid { grid-template-columns: 1fr; }
+.endless-grid { grid-template-columns: 1fr; }
 
   /* tab nav fits smaller screens */
   .tab-nav {
@@ -2919,4 +3007,3 @@ select.card-input option {
     padding: 0.36rem 0.65rem;
   }
 }
-

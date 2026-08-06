@@ -13,6 +13,9 @@ let layerOK = true;
 let currentData = [];
 let activeLayerFilters = { upper: [], lower: [] };
 let activeLayerRangeKey = null;
+let isEditingQuery = false;
+let committedOrbit = null;
+let committedLayer = null;
 let panelPreviewData = [];
 let endlessPreviewData = [];
 let previewAutoFrame = null;
@@ -355,8 +358,63 @@ async function init() {
   }
 }
 
+function getExactLayerValue() {
+  const input = document.getElementById('layerInput');
+  const value = Number.parseInt(input ? input.value.trim() : '', 10);
+  const limit = activeOrbit ? (LIMITS[activeOrbit] || Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
+  return Number.isInteger(value) && value >= 1 && value <= limit ? value : null;
+}
+
+function commitExactQuery(layer) {
+  if (committedOrbit !== activeOrbit || committedLayer !== layer) {
+    activeLayerFilters = { upper: [], lower: [] };
+  }
+  committedOrbit = activeOrbit;
+  committedLayer = layer;
+  isEditingQuery = false;
+}
+
+function updateQuerySummary() {
+  const controls = document.getElementById('primaryFilterControls');
+  const summary = document.getElementById('querySummary');
+  if (!controls || !summary) return;
+  const layer = getExactLayerValue();
+  const shouldCollapse = Boolean(activeOrbit && layer !== null && layerOK && !isEditingQuery);
+  controls.hidden = shouldCollapse;
+  summary.hidden = !shouldCollapse;
+  if (!shouldCollapse) return;
+
+  const orbitLabel = [...document.querySelectorAll('#orbitChips .chip')]
+    .find(chip => chip.dataset.orbit === activeOrbit)?.textContent?.trim();
+  const orbitText = document.getElementById('querySummaryOrbit');
+  const layerText = document.getElementById('querySummaryLayer');
+  if (orbitText) orbitText.textContent = orbitLabel || ORBIT_LABEL[activeOrbit] || activeOrbit;
+  if (layerText) layerText.textContent = `${layer} 層`;
+}
+
+function editQuery() {
+  isEditingQuery = true;
+  updateQuerySummary();
+  document.getElementById('layerInput')?.focus();
+}
+
+function onLayerCommit() {
+  if (appLoading) return;
+  const layer = getExactLayerValue();
+  if (layer === null) {
+    isEditingQuery = true;
+    updateQuerySummary();
+    return;
+  }
+  commitExactQuery(layer);
+  applyFilters();
+}
+
 function selectOrbit(btn) {
   if (appLoading) return;
+  isEditingQuery = true;
+  committedOrbit = null;
+  committedLayer = null;
   const orbit = btn.dataset.orbit;
   activeLayerFilters = { upper: [], lower: [] };
   activeLayerRangeKey = null;
@@ -484,10 +542,21 @@ function renderLayerSuggestions() {
   panel.classList.add('show');
 }
 
+function blurLayerSuggestionFocus() {
+  const focused = document.activeElement;
+  if (focused instanceof HTMLElement && focused.closest('#layerSuggestionPanel')) {
+    focused.blur();
+  }
+}
+
 function selectLayerRange(rangeKey) {
   if (appLoading || !activeOrbit) return;
   const range = getLayerRanges().find(item => item.key === rangeKey);
   if (!range) return;
+  blurLayerSuggestionFocus();
+  isEditingQuery = true;
+  committedOrbit = null;
+  committedLayer = null;
   clearLayerInput();
   activeLayerRangeKey = range.key;
   activeLayerFilters = { upper: [], lower: [] };
@@ -496,6 +565,10 @@ function selectLayerRange(rangeKey) {
 }
 
 function backToLayerRanges() {
+  blurLayerSuggestionFocus();
+  isEditingQuery = true;
+  committedOrbit = null;
+  committedLayer = null;
   clearLayerInput();
   activeLayerRangeKey = null;
   activeLayerFilters = { upper: [], lower: [] };
@@ -507,8 +580,11 @@ function selectSuggestedLayer(layer) {
   if (appLoading || !activeOrbit) return;
   const inp = document.getElementById('layerInput');
   if (!inp) return;
+  blurLayerSuggestionFocus();
   inp.value = String(layer);
+  activeLayerRangeKey = null;
   activeLayerFilters = { upper: [], lower: [] };
+  commitExactQuery(layer);
   validateLayer();
 }
 
@@ -544,6 +620,9 @@ function validateLayer() {
 
 function onLayerInput() {
   if (appLoading) return;
+  isEditingQuery = true;
+  committedOrbit = null;
+  committedLayer = null;
   activeLayerFilters = { upper: [], lower: [] };
   validateLayer();
 }
@@ -1085,6 +1164,7 @@ function matchesLayerFilters(d, side) {
 
 function applyFilters() {
   if (appLoading) return;
+  updateQuerySummary();
   if (!layerOK) {
     clearPanelResultsForInvalidLayer();
     return;
@@ -1116,6 +1196,9 @@ function applyFilters() {
 
 function resetFilters() {
   if (appLoading) return;
+  isEditingQuery = false;
+  committedOrbit = null;
+  committedLayer = null;
   activeOrbit = null;
   activeLayerFilters = { upper: [], lower: [] };
   activeLayerRangeKey = null;
