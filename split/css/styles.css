@@ -24,7 +24,7 @@
   --col-metal:  #0e94a8; --col-metal-bg:  rgba(14,148,168,0.16);   --col-metal-border:  rgba(14,148,168,0.45);
 }
 
-/* Let each filter state size the panel naturally while fading between states. */
+/* Let each filtering stage stay visible and extend the panel in normal flow. */
 .filter-panel {
   box-sizing: border-box;
   height: auto;
@@ -47,43 +47,13 @@
 
 .filter-state-stack > #primaryFilterControls {
   display: block;
-  animation: filterContentFade 0.28s ease both;
 }
 
-.filter-state-stack > #querySummary,
-.filter-state-stack > #dynamicFilterPanel {
+.filter-state-stack > #querySummary {
   display: none !important;
 }
 
-.filter-panel.is-committed > .filter-state-stack > #primaryFilterControls {
-  display: none;
-}
-
-.filter-panel.is-committed > .filter-state-stack > #querySummary {
-  display: flex !important;
-  border-color: var(--query-accent-border, var(--border));
-  animation: filterContentFade 0.28s ease both;
-}
-
-.filter-panel.is-committed .query-summary-orbit,
-.filter-panel.is-committed .query-summary-layer {
-  color: var(--query-accent, var(--text));
-}
-
-.filter-panel.is-committed > .filter-state-stack > #dynamicFilterPanel.show {
-  display: block !important;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top-color: var(--border);
-  animation: filterContentFade 0.28s ease 0.04s both;
-}
-
-@keyframes filterContentFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Keep legacy hidden-state rules harmless; the visible state now crossfades in place. */
+/* Keep hidden-state rules harmless while the stages remain in normal flow. */
 .primary-filter-controls[hidden],
 .query-summary[hidden] {
   display: none !important;

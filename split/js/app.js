@@ -375,39 +375,7 @@ function commitExactQuery(layer) {
 }
 
 function updateQuerySummary() {
-  const controls = document.getElementById('primaryFilterControls');
-  const summary = document.getElementById('querySummary');
-  const filterPanel = controls?.closest('.filter-panel');
-  if (!controls || !summary) return;
-  const layer = getExactLayerValue();
-  const shouldCollapse = Boolean(activeOrbit && layer !== null && layerOK && !isEditingQuery);
-  filterPanel?.classList.toggle('is-committed', shouldCollapse);
-  if (!shouldCollapse) return;
-
-const orbitNames = {
-  '開放': '開放穩定軌道',
-  '開放穩定': '開放穩定軌道',
-  '波動': '開放波動軌道',
-  '開放波動': '開放波動軌道',
-  '光': '光軌道',
-  '冰': '冰軌道',
-  '火': '火軌道',
-  '能量': '能量軌道',
-  '引力': '引力軌道',
-  '金屬': '金屬軌道'
-};
-  const selectedChip = [...document.querySelectorAll('#orbitChips .chip')]
-    .find(chip => chip.dataset.orbit === activeOrbit);
-  const selectedStyle = selectedChip ? getComputedStyle(selectedChip) : null;
-  const orbitText = document.getElementById('querySummaryOrbit');
-  const layerText = document.getElementById('querySummaryLayer');
-  filterPanel?.style.setProperty('--query-accent', selectedStyle?.color || 'var(--text)');
-  filterPanel?.style.setProperty(
-    '--query-accent-border',
-    selectedStyle?.borderTopColor || selectedStyle?.color || 'var(--border)'
-  );
-  if (orbitText) orbitText.textContent = orbitNames[activeOrbit] || ORBIT_LABEL[activeOrbit] || activeOrbit;
-  if (layerText) layerText.textContent = `${layer} 層`;
+  document.querySelector('.filter-panel')?.classList.remove('is-committed');
 }
 
 function onLayerCommit() {
