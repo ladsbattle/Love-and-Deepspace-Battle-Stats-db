@@ -13,6 +13,7 @@ let layerOK = true;
 let currentData = [];
 let activeLayerFilters = { upper: [], lower: [] };
 let activeLayerRangeKey = null;
+let layerSelectionMode = 'quick';
 let isEditingQuery = false;
 let committedOrbit = null;
 let committedLayer = null;
@@ -398,6 +399,7 @@ function selectOrbit(btn) {
   const orbit = btn.dataset.orbit;
   activeLayerFilters = { upper: [], lower: [] };
   activeLayerRangeKey = null;
+  layerSelectionMode = 'quick';
   clearLayerInput();
   if (activeOrbit === orbit) {
     activeOrbit = null;
@@ -407,8 +409,7 @@ function selectOrbit(btn) {
     activeOrbit = orbit;
     btn.classList.add('active');
   }
-  updateLayerInputState();
-  renderLayerSuggestions();
+  updateLayerSelectionModeUI();
   validateLayer();
 }
 
@@ -456,9 +457,52 @@ function clearPanelResultsForInvalidLayer() {
 function updateLayerInputState() {
   const inp = document.getElementById('layerInput');
   if (!inp) return;
-  const locked = !activeOrbit;
+  const locked = !activeOrbit || layerSelectionMode !== 'manual';
   inp.disabled = locked;
   inp.placeholder = locked ? '請先選擇軌道' : '輸入層數';
+}
+
+function updateLayerSelectionModeUI() {
+  const manualPanel = document.getElementById('manualLayerPanel');
+  const quickPanel = document.getElementById('layerSuggestionPanel');
+  const showManual = layerSelectionMode === 'manual' && Boolean(activeOrbit);
+
+  if (manualPanel) manualPanel.hidden = !showManual;
+  if (showManual) {
+    if (quickPanel) {
+      quickPanel.classList.remove('show');
+      quickPanel.replaceChildren();
+    }
+  } else {
+    renderLayerSuggestions();
+  }
+  updateLayerInputState();
+}
+
+function showManualLayerInput() {
+  if (appLoading || !activeOrbit) return;
+  blurLayerSuggestionFocus();
+  layerSelectionMode = 'manual';
+  activeLayerRangeKey = null;
+  activeLayerFilters = { upper: [], lower: [] };
+  committedOrbit = null;
+  committedLayer = null;
+  clearLayerInput();
+  updateLayerSelectionModeUI();
+  applyFilters();
+  requestAnimationFrame(() => document.getElementById('layerInput')?.focus());
+}
+
+function showQuickLayerSelection() {
+  if (appLoading || !activeOrbit) return;
+  layerSelectionMode = 'quick';
+  activeLayerRangeKey = null;
+  activeLayerFilters = { upper: [], lower: [] };
+  committedOrbit = null;
+  committedLayer = null;
+  clearLayerInput();
+  updateLayerSelectionModeUI();
+  applyFilters();
 }
 
 function getLayerRanges() {
@@ -490,7 +534,7 @@ function renderLayerSuggestions() {
   const visibleItems = activeRange ? activeRange.layers : ranges;
   const showSwipeHint = visibleItems.length > 1;
 
-  if (!activeOrbit || appLoading || visibleItems.length === 0) {
+  if (layerSelectionMode === 'manual' || !activeOrbit || appLoading || visibleItems.length === 0) {
     panel.classList.remove('show');
     panel.replaceChildren();
     return;
@@ -505,11 +549,14 @@ function renderLayerSuggestions() {
           </button>
         ` : ''}
       </div>
-      ${showSwipeHint ? '<span class="layer-suggestion-hint" aria-hidden="true">↔ 可左右滑動</span>' : ''}
+      <div class="layer-suggestion-head-actions">
+        <button class="layer-mode-link" type="button" onclick="showManualLayerInput()">直接輸入層數</button>
+        ${showSwipeHint ? '<span class="layer-suggestion-hint" aria-hidden="true">↔ 可左右滑動</span>' : ''}
+      </div>
     </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${visibleItems.map(item => activeRange ? `
-        <button class="layer-suggestion-chip" type="button" data-layer="${item}" onclick="selectSuggestedLayer(${item})">
+        <button class="layer-suggestion-chip${committedOrbit === activeOrbit && committedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${committedOrbit === activeOrbit && committedLayer === item}" onclick="selectSuggestedLayer(${item})">
           <span>${item} 層</span>
         </button>
       ` : `
@@ -562,10 +609,11 @@ function selectSuggestedLayer(layer) {
   if (!inp) return;
   blurLayerSuggestionFocus();
   inp.value = String(layer);
-  activeLayerRangeKey = null;
   activeLayerFilters = { upper: [], lower: [] };
   commitExactQuery(layer);
   validateLayer();
+  applyFilters();
+  renderLayerSuggestions();
 }
 
 function validateLayer() {
@@ -1182,10 +1230,10 @@ function resetFilters() {
   activeOrbit = null;
   activeLayerFilters = { upper: [], lower: [] };
   activeLayerRangeKey = null;
+  layerSelectionMode = 'quick';
   document.querySelectorAll('#orbitChips .chip').forEach(c => c.classList.remove('active'));
   clearLayerInput();
-  updateLayerInputState();
-  renderLayerSuggestions();
+  updateLayerSelectionModeUI();
   document.getElementById('videoOnly').checked = false;
   applyFilters();
 }

@@ -465,6 +465,22 @@ header {
 .layer-suggestion-panel.show {
   display: block;
 }
+.manual-layer-panel[hidden] {
+  display: none;
+}
+.manual-layer-panel {
+  width: 100%;
+}
+.manual-layer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
 .layer-suggestion-head {
   display: flex;
   align-items: center;
@@ -480,6 +496,29 @@ header {
   align-items: center;
   gap: 0.55rem;
   min-width: 0;
+}
+.layer-suggestion-head-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.layer-mode-link {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0.25rem 0;
+  color: #c7dcf7;
+  font: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+  cursor: pointer;
+}
+.layer-mode-link:hover,
+.layer-mode-link:focus-visible {
+  color: #f3f7ff;
 }
 .layer-suggestion-back {
   appearance: none;
@@ -559,6 +598,15 @@ header {
     outline: none;
     box-shadow: none;
   }
+}
+.layer-suggestion-chip.active,
+.layer-suggestion-chip.active:focus,
+.layer-suggestion-chip.active:focus-visible {
+  border-color: rgba(218,231,255,0.82);
+  background: rgba(175,202,246,0.22);
+  color: #f7faff;
+  box-shadow: inset 0 0 0 1px rgba(226,236,255,0.28), 0 0 14px rgba(150,185,240,0.18);
+  font-weight: 600;
 }
 
 /* hide number input spinners */

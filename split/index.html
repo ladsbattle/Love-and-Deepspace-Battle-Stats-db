@@ -78,14 +78,20 @@
     </div>
 
     <div class="filter-fields panel-filter-fields">
-      <div class="filter-group layer-group">
-        <label>軌道層數</label>
-        <div class="ios-input-shell">
-          <input class="layer-input" type="number" id="layerInput" placeholder="請先選擇軌道" min="1" oninput="onLayerInput()" onchange="onLayerCommit()" onkeydown="if(event.key==='Enter'){event.preventDefault();onLayerCommit();}" disabled>
+      <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
+      <div class="manual-layer-panel" id="manualLayerPanel" hidden>
+        <div class="manual-layer-head">
+          <span>直接輸入層數</span>
+          <button class="layer-mode-link" type="button" onclick="showQuickLayerSelection()">返回快速選層</button>
         </div>
-        <div class="layer-error-msg" id="layerError">輸入內容無效</div>
+        <div class="filter-group layer-group">
+          <label for="layerInput">軌道層數</label>
+          <div class="ios-input-shell">
+            <input class="layer-input" type="number" id="layerInput" placeholder="輸入層數" min="1" oninput="onLayerInput()" onchange="onLayerCommit()" onkeydown="if(event.key==='Enter'){event.preventDefault();onLayerCommit();}" disabled>
+          </div>
+          <div class="layer-error-msg" id="layerError">輸入內容無效</div>
+        </div>
       </div>
-          <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
     </div>
     </div>
 
