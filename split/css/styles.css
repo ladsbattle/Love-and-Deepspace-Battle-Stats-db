@@ -313,6 +313,14 @@ header {
   margin-bottom: 1.125rem;
 }
 
+.filter-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
 .filter-group {
   display: flex;
   flex-direction: column;
@@ -344,27 +352,22 @@ header {
   margin-top: 1.25rem;
 }
 .panel-filter-fields {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   margin-top: 1.25rem;
   width: 100%;
 }
-.panel-filter-fields .layer-group,
-.panel-filter-fields .video-group {
+.panel-filter-fields .layer-group {
   width: 100%;
 }
-.panel-filter-fields .ios-input-shell,
-.panel-filter-fields .video-toggle {
+.panel-filter-fields .ios-input-shell {
   width: 100%;
 }
 .endless-filter-fields {
+  grid-template-columns: 1fr;
   margin-top: 0;
 }
-.endless-filter-fields .partner-group,
-.endless-filter-fields .video-group {
+.endless-filter-fields .partner-group {
   min-width: 0;
-}
-.endless-filter-panel .filter-group.video-group {
-  flex: 0 1 170px;
 }
 
 /* 軌道 type chips — 開放（2欄）與定向（3欄x2列）分組，固定網格避免跑版 */
@@ -671,6 +674,35 @@ header {
   border-color: var(--border);
   background: var(--bg3);
   color: var(--text);
+}
+
+.video-toggle-compact {
+  width: auto;
+  height: 2rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.68rem;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 0.72rem;
+}
+.video-toggle-compact .video-switch {
+  width: 26px;
+  height: 15px;
+}
+.video-toggle-compact .video-switch::before {
+  width: 11px;
+  height: 11px;
+}
+.video-toggle-compact:has(input:checked) {
+  border-color: var(--border-bright);
+  background: rgba(184,212,255,0.1);
+  color: var(--text);
+}
+.video-toggle-compact:has(input:checked) .video-switch::before {
+  transform: translateX(11px);
+}
+.filter-header-actions .btn-reset-compact {
+  min-height: 2rem;
 }
 
 .dynamic-filter-panel {
@@ -2648,7 +2680,11 @@ select.card-input option {
 
   .filter-panel,
   .endless-filter-panel { padding: 1rem; }
-  .filter-header { margin-bottom: 0.875rem; }
+  .filter-header {
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+  }
+  .filter-header-actions { gap: 0.4rem; }
   .filter-title { font-size: 0.76rem; letter-spacing: 0.2em; }
   .btn-reset-compact {
     gap: 0.25rem;
@@ -2760,6 +2796,31 @@ select.card-input option {
   }
   .video-toggle:has(input:checked) .video-switch::before {
     transform: translateX(12px);
+  }
+  .filter-header-actions .btn-reset-compact,
+  .video-toggle-compact {
+    height: 1.85rem;
+    min-height: 1.85rem;
+  }
+  .video-toggle-compact {
+    gap: 0.3rem;
+    padding: 0.22rem 0.5rem;
+    font-size: 0.66rem;
+  }
+  .video-toggle-compact .video-switch {
+    width: 24px;
+    height: 14px;
+  }
+  .video-toggle-compact .video-switch::before {
+    width: 10px;
+    height: 10px;
+  }
+  .video-toggle-compact:has(input:checked) .video-switch::before {
+    transform: translateX(10px);
+  }
+  .panel-filter-fields,
+  .endless-filter-fields {
+    grid-template-columns: 1fr;
   }
   .dynamic-filter-grid {
     grid-template-columns: 1fr;

@@ -42,12 +42,19 @@
 <div class="container">
   <!-- Filter Panel -->
   <div class="filter-panel">
-    <div class="filter-header">
-      <div class="filter-title">✦ 篩選條件</div>
-      <button class="btn-reset btn-reset-compact" onclick="resetFilters()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
-        重設
-      </button>
+        <div class="filter-header">
+          <div class="filter-title">✦ 篩選條件</div>
+          <div class="filter-header-actions">
+            <label class="video-toggle video-toggle-compact">
+              <input type="checkbox" id="videoOnly" onchange="applyFilters()">
+              <span class="video-switch"></span>
+              <span>附影片</span>
+            </label>
+            <button class="btn-reset btn-reset-compact" onclick="resetFilters()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
+              重設
+            </button>
+          </div>
     </div>
 
     <div class="filter-state-stack">
@@ -78,16 +85,7 @@
         </div>
         <div class="layer-error-msg" id="layerError">輸入內容無效</div>
       </div>
-
-      <div class="filter-group video-group">
-        <label>影片狀態</label>
-        <label class="video-toggle">
-          <input type="checkbox" id="videoOnly" onchange="applyFilters()">
-          <span class="video-switch"></span>
-          <span>僅看附影片</span>
-        </label>
-      </div>
-      <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
+          <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
     </div>
     </div>
 
@@ -133,12 +131,19 @@
 
   <!-- Endless filter panel -->
   <div class="endless-filter-panel">
-    <div class="filter-header">
-      <div class="filter-title">✦ 篩選條件</div>
-      <button class="btn-reset btn-reset-compact" onclick="resetEndlessFilters()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
-        重設
-      </button>
+        <div class="filter-header">
+          <div class="filter-title">✦ 篩選條件</div>
+          <div class="filter-header-actions">
+            <label class="video-toggle video-toggle-compact">
+              <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
+              <span class="video-switch"></span>
+              <span>附影片</span>
+            </label>
+            <button class="btn-reset btn-reset-compact" onclick="resetEndlessFilters()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
+              重設
+            </button>
+          </div>
     </div>
     <div class="filter-fields endless-filter-fields">
       <div class="filter-group partner-group">
@@ -162,15 +167,7 @@
           <option value="冥羅之主">夏以晝．冥羅之主</option>
         </select>
      </div>
-      <div class="filter-group video-group">
-        <label>影片狀態</label>
-        <label class="video-toggle">
-          <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
-          <span class="video-switch"></span>
-          <span>僅看附影片</span>
-        </label>   
-      </div>
-    </div>
+        </div>
 
     <div class="dynamic-filter-panel" id="endlessDynamicFilterPanel">
       <div class="dynamic-filter-header">
