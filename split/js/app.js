@@ -12,6 +12,13 @@ let activeEndlessCard = null;
 let layerOK = true;
 let currentData = [];
 let activeLayerFilters = { upper: [], lower: [] };
+let currentDynamicBaseData = [];
+let dynamicFilterOrder = 0;
+const DYNAMIC_FILTER_CATEGORIES = [
+  { type: 'card', label: '日卡及階數' },
+  { type: 'partner', label: '搭檔' },
+  { type: 'dir', label: '對譜情形' }
+];
 let activeLayerRangeKey = null;
 let layerSelectionMode = 'quick';
 let isEditingQuery = false;
@@ -727,8 +734,8 @@ function collectLayerOptions(data, side) {
     .map(dir => dirMap.get(`dir:${dir}`))
     .filter(Boolean);
   const cards = sortCardsBySetAndRank([...cardMap.values()]);
-  const partners = [...partnerMap.values()].sort((a, b) => a.value.localeCompare(b.value, 'zh-Hant'));
-  return [...dirs, ...cards, ...partners];
+  const partners = [...partnerMap.values()];
+  return { card: cards, partner: partners, dir: dirs };
 }
 
 function isDynamicFilterActive(side, option) {
@@ -1121,17 +1128,78 @@ function renderFolderPanel() {
   }).join('');
 }
 
+function rowMatchesDynamicFilter(row, side, filter) {
+  const prefix = side === 'upper' ? 'upper' : 'lower';
+  if (filter.type === 'dir') return row[`${prefix}Dir`] === filter.value;
+  if (filter.type === 'card') return row[`${prefix}Card`] === filter.value;
+  if (filter.type === 'partner') return row[`${prefix}Partner`] === filter.value;
+  return true;
+}
+
+function rowMatchesDynamicFilterState(row, state) {
+  return ['upper', 'lower'].every(side =>
+    state[side].every(filter => rowMatchesDynamicFilter(row, side, filter))
+  );
+}
+
+function dynamicStateHasMatches(baseData, state) {
+  return baseData.some(row => rowMatchesDynamicFilterState(row, state));
+}
+
+function cloneDynamicFilterState() {
+  return {
+    upper: activeLayerFilters.upper.map(filter => ({ ...filter })),
+    lower: activeLayerFilters.lower.map(filter => ({ ...filter }))
+  };
+}
+
+function isDynamicOptionCompatible(side, option) {
+  const next = cloneDynamicFilterState();
+  next[side] = next[side].filter(filter => filter.type !== option.type);
+  next[side].push({ type: option.type, value: option.value });
+  return dynamicStateHasMatches(currentDynamicBaseData, next);
+}
+
 function toggleDynamicFilter(side, type, value) {
   if (appLoading) return;
-  const filters = activeLayerFilters[side];
-  const idx = filters.findIndex(f => f.type === type && f.value === value);
-  if (idx >= 0) {
-    filters.splice(idx, 1);
-  } else {
-    const sameTypeIdx = filters.findIndex(f => f.type === type);
-    if (sameTypeIdx >= 0) filters.splice(sameTypeIdx, 1);
-    filters.push({ type, value });
+  const selected = activeLayerFilters[side].find(
+    filter => filter.type === type && filter.value === value
+  );
+
+  if (selected) {
+    activeLayerFilters[side] = activeLayerFilters[side].filter(
+      filter => filter.type !== type
+    );
+    applyFilters();
+    return;
   }
+
+  const next = { upper: [], lower: [] };
+  next[side].push({ type, value, order: ++dynamicFilterOrder });
+
+  const candidates = ['upper', 'lower']
+    .flatMap(candidateSide =>
+      activeLayerFilters[candidateSide]
+        .filter(filter => !(candidateSide === side && filter.type === type))
+        .map(filter => ({ side: candidateSide, filter }))
+    )
+    .sort((a, b) => (b.filter.order || 0) - (a.filter.order || 0));
+
+  candidates.forEach(({ side: candidateSide, filter }) => {
+    const trial = {
+      upper: next.upper.map(item => ({ ...item })),
+      lower: next.lower.map(item => ({ ...item }))
+    };
+    trial[candidateSide] = trial[candidateSide]
+      .filter(item => item.type !== filter.type);
+    trial[candidateSide].push({ ...filter });
+    if (dynamicStateHasMatches(currentDynamicBaseData, trial)) {
+      next.upper = trial.upper;
+      next.lower = trial.lower;
+    }
+  });
+
+  activeLayerFilters = next;
   applyFilters();
 }
 
@@ -1145,22 +1213,40 @@ function clearDynamicFilters() {
   applyFilters();
 }
 
-function renderDynamicFilterSide(side, options) {
+function renderDynamicFilterSide(side, optionsByType) {
   const el = document.getElementById(side === 'upper' ? 'upperDynamicChips' : 'lowerDynamicChips');
   if (!el) return;
-  if (options.length === 0) {
-    el.innerHTML = '<span class="dynamic-empty">目前無可用條件</span>';
+  const hasOptions = DYNAMIC_FILTER_CATEGORIES.some(
+    category => optionsByType[category.type]?.length
+  );
+  if (!hasOptions) {
+    el.innerHTML = '<span class="dynamic-empty">無此層配置</span>';
     return;
   }
-  el.innerHTML = options.map(option => `
-    <button class="dynamic-chip ${isDynamicFilterActive(side, option) ? 'active' : ''}"
-      data-side="${side}"
-      data-type="${option.type}"
-      data-value="${escapeHtml(option.value)}"
-      onclick="toggleDynamicFilterFromButton(this)">
-      ${escapeHtml(option.label)}
-    </button>
-  `).join('');
+  el.innerHTML = DYNAMIC_FILTER_CATEGORIES.map(category => {
+    const options = optionsByType[category.type] || [];
+    if (options.length === 0) return '';
+    return `
+      <div class="dynamic-filter-category">
+        <div class="dynamic-filter-category-label">${category.label}</div>
+        <div class="dynamic-filter-options">
+          ${options.map(option => {
+            const active = isDynamicFilterActive(side, option);
+            const compatible = active || isDynamicOptionCompatible(side, option);
+            return `
+              <button class="dynamic-chip ${active ? 'active' : ''} ${compatible ? '' : 'is-conflicting'}"
+                data-side="${side}"
+                data-type="${option.type}"
+                data-value="${escapeHtml(option.value)}"
+                onclick="toggleDynamicFilterFromButton(this)">
+                ${escapeHtml(option.label)}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderDynamicFilters(baseData, layerNum) {
@@ -1171,9 +1257,11 @@ function renderDynamicFilters(baseData, layerNum) {
   panel.classList.toggle('show', shouldShow);
   if (!shouldShow) {
     activeLayerFilters = { upper: [], lower: [] };
+    currentDynamicBaseData = [];
     if (noMatch) noMatch.classList.remove('show');
     return;
   }
+  currentDynamicBaseData = baseData;
   renderDynamicFilterSide('upper', collectLayerOptions(baseData, 'upper'));
   renderDynamicFilterSide('lower', collectLayerOptions(baseData, 'lower'));
 }
@@ -1181,13 +1269,7 @@ function renderDynamicFilters(baseData, layerNum) {
 function matchesLayerFilters(d, side) {
   const filters = activeLayerFilters[side];
   if (filters.length === 0) return true;
-  const prefix = side === 'upper' ? 'upper' : 'lower';
-  return filters.every(filter => {
-    if (filter.type === 'dir') return d[`${prefix}Dir`] === filter.value;
-    if (filter.type === 'card') return d[`${prefix}Card`] === filter.value;
-    if (filter.type === 'partner') return d[`${prefix}Partner`] === filter.value;
-    return true;
-  });
+  return filters.every(filter => rowMatchesDynamicFilter(d, side, filter));
 }
 
 function applyFilters() {
