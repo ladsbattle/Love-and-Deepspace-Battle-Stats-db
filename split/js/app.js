@@ -6,7 +6,7 @@ const ORBIT_LABEL = { 開放:'開放穩定', 波動:'開放波動', 光:'光', �
 let DATA = [];
 let ENDLESS_DATA = [];
 let ENDLESS_ALL = [];
-const DYNAMIC_FILTER_CATEGORIES = ['card', 'partner', 'dir'];
+const DYNAMIC_FILTER_CATEGORIES = ['dir', 'card', 'partner'];
 const state = {
   panel: {
     orbit: null,
@@ -16,7 +16,6 @@ const state = {
     dynamicFilterOrder: 0,
     rangeKey: null,
     layerMode: 'quick',
-    isEditing: false,
     committedOrbit: null,
     committedLayer: null,
     layerValid: true
@@ -111,7 +110,7 @@ function setSearchControlsDisabled(disabled) {
     .endless-filter-panel input,
     .endless-filter-panel select
   `).forEach(el => { el.disabled = disabled; });
-  if (!disabled) updateLayerInputState();
+  if (!disabled) updateLayerSelectionModeUI();
 }
 
 function markCsvLoaded() {
@@ -198,30 +197,6 @@ function showBootLoadError() {
   document.getElementById('endlessInfo').innerHTML = message;
   document.getElementById('cardsGrid').replaceChildren();
   document.getElementById('endlessGrid').replaceChildren();
-}
-
-function fadeSwap(key, elements, update, afterUpdate) {
-  const targets = elements.filter(Boolean);
-  fadeVersions[key] = (fadeVersions[key] || 0) + 1;
-  const version = fadeVersions[key];
-  if (fadeTimers[key]) {
-    window.clearTimeout(fadeTimers[key]);
-    fadeTimers[key] = null;
-  }
-  targets.forEach(el => {
-    el.classList.add('content-transition');
-    el.classList.add('is-fading');
-  });
-  fadeTimers[key] = window.setTimeout(() => {
-    fadeTimers[key] = null;
-    if (version !== fadeVersions[key]) return;
-    update();
-    window.requestAnimationFrame(() => {
-      if (version !== fadeVersions[key]) return;
-      targets.forEach(el => el.classList.remove('is-fading'));
-      if (afterUpdate) afterUpdate();
-    });
-  }, CONTENT_FADE_MS);
 }
 
 function formatTaipeiDateTime(value) {
@@ -382,93 +357,12 @@ function commitExactQuery(layer) {
   }
   state.panel.committedOrbit = state.panel.orbit;
   state.panel.committedLayer = layer;
-  state.panel.isEditing = false;
-}
-
-function updateQuerySummary() {
-  document.querySelector('.filter-panel')?.classList.remove('is-committed');
-  renderFilterBreadcrumb();
-}
-
-function getFilterBreadcrumbSteps() {
-  const activeRange = state.panel.rangeKey
-    ? getLayerRanges().find(range => range.key === state.panel.rangeKey) || null
-    : null;
-  const exactLayer = getExactLayerValue();
-  const advancedCount = state.panel.layerFilters.upper.length + state.panel.layerFilters.lower.length;
-  const currentStep = !state.panel.orbit
-    ? 'orbit'
-    : state.panel.layerMode === 'manual' && exactLayer === null
-      ? 'layer'
-      : !activeRange && exactLayer === null
-        ? 'range'
-        : exactLayer === null
-          ? 'layer'
-          : 'advanced';
-  return [
-    { key: 'orbit', label: '軌道', value: state.panel.orbit ? (ORBIT_LABEL[state.panel.orbit] || state.panel.orbit) : '', enabled: true },
-    { key: 'range', label: '區間', value: activeRange ? `${activeRange.start}–${activeRange.end}` : '', enabled: Boolean(state.panel.orbit) },
-    { key: 'layer', label: '層數', value: exactLayer === null ? '' : `${exactLayer} 層`, enabled: Boolean(state.panel.orbit) },
-    { key: 'advanced', label: '進階篩選', value: advancedCount ? `${advancedCount} 項` : '', enabled: exactLayer !== null }
-  ].map(step => ({ ...step, current: step.key === currentStep }));
-}
-
-function renderFilterBreadcrumb() {
-  const nav = document.getElementById('panelFilterBreadcrumb');
-  if (!nav) return;
-  const steps = getFilterBreadcrumbSteps();
-  const currentIndex = steps.findIndex(step => step.current);
-  nav.innerHTML = steps.map((step, index) => `
-    ${index ? '<span class="breadcrumb-separator" aria-hidden="true">›</span>' : ''}
-    <button class="breadcrumb-step${step.current ? ' is-current' : ''}${index < currentIndex ? ' is-complete' : ''}"
-      type="button" ${step.enabled ? '' : 'disabled'}
-      ${step.current ? 'aria-current="step"' : ''}
-      onclick="navigateFilterStep('${step.key}')">
-      <span class="breadcrumb-index">${index + 1}</span>
-      <span>${step.label}</span>
-      ${step.value ? `<span class="breadcrumb-value">${escapeHtml(step.value)}</span>` : ''}
-    </button>
-  `).join('');
-}
-
-function navigateFilterStep(step) {
-  if (appLoading) return;
-  if (step === 'orbit') {
-    state.panel.orbit = null;
-    state.panel.rangeKey = null;
-    state.panel.committedOrbit = null;
-    state.panel.committedLayer = null;
-    state.panel.layerFilters = { upper: [], lower: [] };
-    state.panel.layerMode = 'quick';
-    document.querySelectorAll('#orbitChips .chip').forEach(chip => {
-      chip.classList.remove('active');
-      chip.setAttribute('aria-pressed', 'false');
-    });
-    clearLayerInput();
-  } else if (step === 'range' && state.panel.orbit) {
-    state.panel.rangeKey = null;
-    state.panel.committedOrbit = null;
-    state.panel.committedLayer = null;
-    state.panel.layerFilters = { upper: [], lower: [] };
-    state.panel.layerMode = 'quick';
-    clearLayerInput();
-  } else if (step === 'layer' && state.panel.orbit) {
-    state.panel.committedOrbit = null;
-    state.panel.committedLayer = null;
-    state.panel.layerFilters = { upper: [], lower: [] };
-    clearLayerInput();
-    if (!state.panel.rangeKey) state.panel.layerMode = 'manual';
-  }
-  updateLayerSelectionModeUI();
-  applyFilters();
 }
 
 function onLayerCommit() {
   if (appLoading) return;
   const layer = getExactLayerValue();
   if (layer === null) {
-    state.panel.isEditing = true;
-    updateQuerySummary();
     return;
   }
   commitExactQuery(layer);
@@ -477,7 +371,6 @@ function onLayerCommit() {
 
 function selectOrbit(btn) {
   if (appLoading) return;
-  state.panel.isEditing = true;
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   const orbit = btn.dataset.orbit;
@@ -537,7 +430,7 @@ function clearPanelResultsForInvalidLayer() {
     info.innerHTML = '';
   }
   if (grid) {
-    grid.classList.remove('content-transition', 'is-fading', 'preview-clearing');
+    grid.classList.remove('content-transition', 'is-fading');
     grid.replaceChildren();
   }
   updateScrollButtons();
@@ -552,9 +445,21 @@ function updateLayerInputState() {
 }
 
 function updateLayerSelectionModeUI() {
+  const panelSection = document.getElementById('section-panel');
   const manualPanel = document.getElementById('manualLayerPanel');
   const quickPanel = document.getElementById('layerSuggestionPanel');
   const showManual = state.panel.layerMode === 'manual' && Boolean(state.panel.orbit);
+
+  if (panelSection) {
+    if (state.panel.orbit) panelSection.dataset.orbitTheme = state.panel.orbit;
+    else delete panelSection.dataset.orbitTheme;
+  }
+  document.querySelectorAll('#layerModeToggle [data-layer-mode]').forEach(button => {
+    const active = button.dataset.layerMode === state.panel.layerMode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.disabled = appLoading || !state.panel.orbit;
+  });
 
   if (manualPanel) manualPanel.hidden = !showManual;
   if (showManual) {
@@ -622,7 +527,6 @@ function renderLayerSuggestions() {
   const selectedLayer = getExactLayerValue();
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
-  const showSwipeHint = visibleItems.length > 1;
 
   if (state.panel.layerMode === 'manual' || !state.panel.orbit || appLoading || visibleItems.length === 0) {
     panel.classList.remove('show');
@@ -630,20 +534,13 @@ function renderLayerSuggestions() {
     return;
   }
   panel.innerHTML = `
-    <div class="layer-suggestion-head">
-      <div class="layer-suggestion-head-main">
-        <span>快速選層</span>
-        ${activeRange ? `
-          <button class="layer-suggestion-back" type="button" data-layer-action="back" aria-label="返回層數區間">
-            返回區間
-          </button>
-        ` : ''}
+    ${activeRange ? `
+      <div class="layer-suggestion-toolbar">
+        <button class="layer-suggestion-back" type="button" data-layer-action="back" aria-label="返回層數區間">
+          返回區間
+        </button>
       </div>
-      <div class="layer-suggestion-head-actions">
-        <button class="layer-mode-link" type="button" data-layer-action="manual">直接輸入層數</button>
-        ${showSwipeHint ? '<span class="layer-suggestion-hint" aria-hidden="true">↔ 可左右滑動</span>' : ''}
-      </div>
-    </div>
+    ` : ''}
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${visibleItems.map(item => activeRange ? `
         <button class="layer-suggestion-chip${selectedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${selectedLayer === item}">
@@ -671,7 +568,6 @@ function selectLayerRange(rangeKey) {
   const range = getLayerRanges().find(item => item.key === rangeKey);
   if (!range) return;
   blurLayerSuggestionFocus();
-  state.panel.isEditing = true;
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   clearLayerInput();
@@ -683,7 +579,6 @@ function selectLayerRange(rangeKey) {
 
 function backToLayerRanges() {
   blurLayerSuggestionFocus();
-  state.panel.isEditing = true;
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   clearLayerInput();
@@ -738,7 +633,6 @@ function validateLayer() {
 
 function onLayerInput() {
   if (appLoading) return;
-  state.panel.isEditing = true;
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.layerFilters = { upper: [], lower: [] };
@@ -1286,12 +1180,6 @@ function toggleDynamicFilter(side, type, value) {
   applyFilters();
 }
 
-function clearDynamicFilters() {
-  if (appLoading) return;
-  state.panel.layerFilters = { upper: [], lower: [] };
-  applyFilters();
-}
-
 function renderDynamicFilterSide(side, optionsByType) {
   const el = document.getElementById(side === 'upper' ? 'upperDynamicChips' : 'lowerDynamicChips');
   if (!el) return;
@@ -1346,7 +1234,6 @@ function matchesLayerFilters(d, side) {
 
 function applyFilters() {
   if (appLoading) return;
-  updateQuerySummary();
   if (!state.panel.layerValid) {
     clearPanelResultsForInvalidLayer();
     return;
@@ -1378,7 +1265,6 @@ function applyFilters() {
 
 function resetFilters() {
   if (appLoading) return;
-  state.panel.isEditing = false;
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.orbit = null;
@@ -1481,10 +1367,16 @@ function openResultCard(type, index) {
 }
 
 function bindDelegatedInteractions() {
+  document.getElementById('layerModeToggle')?.addEventListener('click', event => {
+    const button = event.target.closest('[data-layer-mode]');
+    if (!button || button.disabled) return;
+    if (button.dataset.layerMode === 'manual') showManualLayerInput();
+    else showQuickLayerSelection();
+  });
+
   document.getElementById('layerSuggestionPanel')?.addEventListener('click', event => {
     const actionButton = event.target.closest('[data-layer-action]');
     if (actionButton?.dataset.layerAction === 'back') backToLayerRanges();
-    if (actionButton?.dataset.layerAction === 'manual') showManualLayerInput();
 
     const layerButton = event.target.closest('[data-layer]');
     if (layerButton) selectSuggestedLayer(Number(layerButton.dataset.layer));
@@ -1562,16 +1454,6 @@ function stopPreviewAutoScroll() {
   if (!state.preview.autoFrame) return;
   window.cancelAnimationFrame(state.preview.autoFrame);
   state.preview.autoFrame = null;
-}
-
-function clearPreviewBeforeResults(grid) {
-  if (!grid || !grid.querySelector('.panel-preview')) return;
-  stopPreviewAutoScroll();
-  grid.classList.add('preview-clearing');
-  void grid.offsetHeight;
-  grid.replaceChildren();
-  grid.classList.remove('is-fading', 'preview-clearing');
-  void grid.offsetHeight;
 }
 
 function setupPreviewScroll(selector, itemCount) {
@@ -1769,12 +1651,6 @@ function renderCards() {
   });
 }
 
-function dirTag(dir) {
-  if (!dir || dir === 'N/A') return '<span class="dir-tag dir-na">—</span>';
-  const safeDir = dir === '順' || dir === '逆' ? dir : '';
-  return safeDir ? `<span class="dir-tag dir-${safeDir}">${safeDir}</span>` : '<span class="dir-tag dir-na">—</span>';
-}
-
 function videoBadgeMarkup() {
   return '<span class="video-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>附影片</span>';
 }
@@ -1803,13 +1679,6 @@ function companionInlineMarkup(partner) {
 
 function modalLayerTitleMarkup(label) {
   return `<span class="modal-config-layer">${escapeHtml(label)}</span>`;
-}
-
-function modalDirFieldMarkup(dir) {
-  if (dir === '順' || dir === '逆') {
-    return `<span class="modal-config-dir dir-${dir}">${dir}譜</span>`;
-  }
-  return '<span class="modal-config-dir dir-na">—</span>';
 }
 
 function modalDirBadgeMarkup(dir, hidden = false) {

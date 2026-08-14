@@ -52,8 +52,6 @@
           </div>
     </div>
 
-    <nav class="filter-breadcrumb" id="panelFilterBreadcrumb" aria-label="軌道篩選路徑"></nav>
-
     <div class="filter-state-stack">
     <div id="primaryFilterControls" class="primary-filter-controls">
     <div class="orbit-group">
@@ -75,12 +73,12 @@
     </div>
 
     <div class="filter-fields panel-filter-fields">
+      <div class="layer-mode-toggle" id="layerModeToggle" role="group" aria-label="層數選擇方式">
+        <button class="layer-mode-option active" type="button" data-layer-mode="quick" aria-pressed="true" disabled>快速選層</button>
+        <button class="layer-mode-option" type="button" data-layer-mode="manual" aria-pressed="false" disabled>手動輸入層數</button>
+      </div>
       <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
       <div class="manual-layer-panel" id="manualLayerPanel" hidden>
-        <div class="manual-layer-head">
-          <span>直接輸入層數</span>
-          <button class="layer-mode-link" type="button" onclick="showQuickLayerSelection()">返回快速選層</button>
-        </div>
         <div class="filter-group layer-group">
           <label for="layerInput">軌道層數</label>
           <div class="ios-input-shell">
@@ -90,15 +88,6 @@
         </div>
       </div>
     </div>
-    </div>
-
-    <div id="querySummary" class="query-summary" aria-live="polite">
-      <div class="query-summary-main">
-        <span class="query-summary-label">目前查詢</span>
-        <span id="querySummaryOrbit" class="query-summary-orbit"></span>
-        <span class="query-summary-separator" aria-hidden="true">·</span>
-        <span id="querySummaryLayer" class="query-summary-layer"></span>
-      </div>
     </div>
 
         <div class="dynamic-filter-panel" id="dynamicFilterPanel">
@@ -281,10 +270,7 @@
   <a href="https://line.me/ti/g2/gw9Ds6tjgN1mPRRCKbc7pLofd4Wzd1MJoR71eQ" target="_blank" rel="noopener">
     戀與深空戰鬥討論群
   </a>
-  , created by 
-  <a href="https://www.facebook.com/groups/1655830235133299/user/61579601102041" target="_blank" rel="noopener">
-    Ting Ting Wang
-  </a>
+  <span class="site-footer-credit">, created by <a href="https://www.facebook.com/groups/1655830235133299/user/61579601102041" target="_blank" rel="noopener">Ting Ting Wang</a></span>
   <div id="lastUpdated"></div>
 </footer>
 
