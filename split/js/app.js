@@ -6,29 +6,32 @@ const ORBIT_LABEL = { 開放:'開放穩定', 波動:'開放波動', 光:'光', �
 let DATA = [];
 let ENDLESS_DATA = [];
 let ENDLESS_ALL = [];
-let activeOrbit = null;
-let activePartner = null;
-let activeEndlessCard = null;
-let layerOK = true;
-let currentData = [];
-let activeLayerFilters = { upper: [], lower: [] };
-let currentDynamicBaseData = [];
-let dynamicFilterOrder = 0;
-const DYNAMIC_FILTER_CATEGORIES = [
-  { type: 'card', label: '日卡及階數' },
-  { type: 'partner', label: '搭檔' },
-  { type: 'dir', label: '對譜情形' }
-];
-let activeLayerRangeKey = null;
-let layerSelectionMode = 'quick';
-let isEditingQuery = false;
-let committedOrbit = null;
-let committedLayer = null;
-let panelPreviewData = [];
-let endlessPreviewData = [];
-let previewAutoFrame = null;
-let previewLastTime = 0;
-let previewModalPaused = false;
+const DYNAMIC_FILTER_CATEGORIES = ['card', 'partner', 'dir'];
+const state = {
+  panel: {
+    orbit: null,
+    results: [],
+    layerFilters: { upper: [], lower: [] },
+    dynamicBaseData: [],
+    dynamicFilterOrder: 0,
+    rangeKey: null,
+    layerMode: 'quick',
+    isEditing: false,
+    committedOrbit: null,
+    committedLayer: null,
+    layerValid: true
+  },
+  endless: {
+    partner: null,
+    card: null
+  },
+  preview: {
+    items: { panel: [], endless: [] },
+    autoFrame: null,
+    lastTime: 0,
+    modalPaused: false
+  }
+};
 const PANEL_PREVIEW_SPEED = 0.075;
 const CONTENT_FADE_MS = 150;
 const fadeTimers = {};
@@ -350,13 +353,13 @@ async function init() {
     ];
 
     await Promise.all(csvTasks);
-    panelPreviewData = samplePanelPreviewData();
-    endlessPreviewData = sampleEndlessPreviewData();
+    previewModule.prime('panel');
+    previewModule.prime('endless');
     await preloadInitialImages();
 
     appLoading = false;
     setSearchControlsDisabled(false);
-    activePartner = null;
+    state.endless.partner = null;
     renderLayerSuggestions();
     applyFilters();
     applyEndlessFilters();
@@ -369,28 +372,102 @@ async function init() {
 function getExactLayerValue() {
   const input = document.getElementById('layerInput');
   const value = Number.parseInt(input ? input.value.trim() : '', 10);
-  const limit = activeOrbit ? (LIMITS[activeOrbit] || Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
+  const limit = state.panel.orbit ? (LIMITS[state.panel.orbit] || Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
   return Number.isInteger(value) && value >= 1 && value <= limit ? value : null;
 }
 
 function commitExactQuery(layer) {
-  if (committedOrbit !== activeOrbit || committedLayer !== layer) {
-    activeLayerFilters = { upper: [], lower: [] };
+  if (state.panel.committedOrbit !== state.panel.orbit || state.panel.committedLayer !== layer) {
+    state.panel.layerFilters = { upper: [], lower: [] };
   }
-  committedOrbit = activeOrbit;
-  committedLayer = layer;
-  isEditingQuery = false;
+  state.panel.committedOrbit = state.panel.orbit;
+  state.panel.committedLayer = layer;
+  state.panel.isEditing = false;
 }
 
 function updateQuerySummary() {
   document.querySelector('.filter-panel')?.classList.remove('is-committed');
+  renderFilterBreadcrumb();
+}
+
+function getFilterBreadcrumbSteps() {
+  const activeRange = state.panel.rangeKey
+    ? getLayerRanges().find(range => range.key === state.panel.rangeKey) || null
+    : null;
+  const exactLayer = getExactLayerValue();
+  const advancedCount = state.panel.layerFilters.upper.length + state.panel.layerFilters.lower.length;
+  const currentStep = !state.panel.orbit
+    ? 'orbit'
+    : state.panel.layerMode === 'manual' && exactLayer === null
+      ? 'layer'
+      : !activeRange && exactLayer === null
+        ? 'range'
+        : exactLayer === null
+          ? 'layer'
+          : 'advanced';
+  return [
+    { key: 'orbit', label: '軌道', value: state.panel.orbit ? (ORBIT_LABEL[state.panel.orbit] || state.panel.orbit) : '', enabled: true },
+    { key: 'range', label: '區間', value: activeRange ? `${activeRange.start}–${activeRange.end}` : '', enabled: Boolean(state.panel.orbit) },
+    { key: 'layer', label: '層數', value: exactLayer === null ? '' : `${exactLayer} 層`, enabled: Boolean(state.panel.orbit) },
+    { key: 'advanced', label: '進階篩選', value: advancedCount ? `${advancedCount} 項` : '', enabled: exactLayer !== null }
+  ].map(step => ({ ...step, current: step.key === currentStep }));
+}
+
+function renderFilterBreadcrumb() {
+  const nav = document.getElementById('panelFilterBreadcrumb');
+  if (!nav) return;
+  const steps = getFilterBreadcrumbSteps();
+  const currentIndex = steps.findIndex(step => step.current);
+  nav.innerHTML = steps.map((step, index) => `
+    ${index ? '<span class="breadcrumb-separator" aria-hidden="true">›</span>' : ''}
+    <button class="breadcrumb-step${step.current ? ' is-current' : ''}${index < currentIndex ? ' is-complete' : ''}"
+      type="button" ${step.enabled ? '' : 'disabled'}
+      ${step.current ? 'aria-current="step"' : ''}
+      onclick="navigateFilterStep('${step.key}')">
+      <span class="breadcrumb-index">${index + 1}</span>
+      <span>${step.label}</span>
+      ${step.value ? `<span class="breadcrumb-value">${escapeHtml(step.value)}</span>` : ''}
+    </button>
+  `).join('');
+}
+
+function navigateFilterStep(step) {
+  if (appLoading) return;
+  if (step === 'orbit') {
+    state.panel.orbit = null;
+    state.panel.rangeKey = null;
+    state.panel.committedOrbit = null;
+    state.panel.committedLayer = null;
+    state.panel.layerFilters = { upper: [], lower: [] };
+    state.panel.layerMode = 'quick';
+    document.querySelectorAll('#orbitChips .chip').forEach(chip => {
+      chip.classList.remove('active');
+      chip.setAttribute('aria-pressed', 'false');
+    });
+    clearLayerInput();
+  } else if (step === 'range' && state.panel.orbit) {
+    state.panel.rangeKey = null;
+    state.panel.committedOrbit = null;
+    state.panel.committedLayer = null;
+    state.panel.layerFilters = { upper: [], lower: [] };
+    state.panel.layerMode = 'quick';
+    clearLayerInput();
+  } else if (step === 'layer' && state.panel.orbit) {
+    state.panel.committedOrbit = null;
+    state.panel.committedLayer = null;
+    state.panel.layerFilters = { upper: [], lower: [] };
+    clearLayerInput();
+    if (!state.panel.rangeKey) state.panel.layerMode = 'manual';
+  }
+  updateLayerSelectionModeUI();
+  applyFilters();
 }
 
 function onLayerCommit() {
   if (appLoading) return;
   const layer = getExactLayerValue();
   if (layer === null) {
-    isEditingQuery = true;
+    state.panel.isEditing = true;
     updateQuerySummary();
     return;
   }
@@ -400,21 +477,26 @@ function onLayerCommit() {
 
 function selectOrbit(btn) {
   if (appLoading) return;
-  isEditingQuery = true;
-  committedOrbit = null;
-  committedLayer = null;
+  state.panel.isEditing = true;
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
   const orbit = btn.dataset.orbit;
-  activeLayerFilters = { upper: [], lower: [] };
-  activeLayerRangeKey = null;
-  layerSelectionMode = 'quick';
+  state.panel.layerFilters = { upper: [], lower: [] };
+  state.panel.rangeKey = null;
+  state.panel.layerMode = 'quick';
   clearLayerInput();
-  if (activeOrbit === orbit) {
-    activeOrbit = null;
+  if (state.panel.orbit === orbit) {
+    state.panel.orbit = null;
     btn.classList.remove('active');
+    btn.setAttribute('aria-pressed', 'false');
   } else {
-    document.querySelectorAll('#orbitChips .chip').forEach(c => c.classList.remove('active'));
-    activeOrbit = orbit;
+    document.querySelectorAll('#orbitChips .chip').forEach(c => {
+      c.classList.remove('active');
+      c.setAttribute('aria-pressed', 'false');
+    });
+    state.panel.orbit = orbit;
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
   }
   updateLayerSelectionModeUI();
   validateLayer();
@@ -428,12 +510,12 @@ function clearLayerInput() {
     inp.classList.remove('error-input');
   }
   if (errEl) errEl.classList.remove('show');
-  layerOK = true;
+  state.panel.layerValid = true;
 }
 
 function clearPanelResultsForInvalidLayer() {
-  activeLayerFilters = { upper: [], lower: [] };
-  currentData = [];
+  state.panel.layerFilters = { upper: [], lower: [] };
+  state.panel.results = [];
   const dynamicNoMatch = document.getElementById('dynamicNoMatch');
   const resultsView = document.getElementById('panelResultsView');
   const info = document.getElementById('resultsInfo');
@@ -464,7 +546,7 @@ function clearPanelResultsForInvalidLayer() {
 function updateLayerInputState() {
   const inp = document.getElementById('layerInput');
   if (!inp) return;
-  const locked = !activeOrbit || layerSelectionMode !== 'manual';
+  const locked = !state.panel.orbit || state.panel.layerMode !== 'manual';
   inp.disabled = locked;
   inp.placeholder = locked ? '請先選擇軌道' : '輸入層數';
 }
@@ -472,7 +554,7 @@ function updateLayerInputState() {
 function updateLayerSelectionModeUI() {
   const manualPanel = document.getElementById('manualLayerPanel');
   const quickPanel = document.getElementById('layerSuggestionPanel');
-  const showManual = layerSelectionMode === 'manual' && Boolean(activeOrbit);
+  const showManual = state.panel.layerMode === 'manual' && Boolean(state.panel.orbit);
 
   if (manualPanel) manualPanel.hidden = !showManual;
   if (showManual) {
@@ -487,13 +569,13 @@ function updateLayerSelectionModeUI() {
 }
 
 function showManualLayerInput() {
-  if (appLoading || !activeOrbit) return;
+  if (appLoading || !state.panel.orbit) return;
   blurLayerSuggestionFocus();
-  layerSelectionMode = 'manual';
-  activeLayerRangeKey = null;
-  activeLayerFilters = { upper: [], lower: [] };
-  committedOrbit = null;
-  committedLayer = null;
+  state.panel.layerMode = 'manual';
+  state.panel.rangeKey = null;
+  state.panel.layerFilters = { upper: [], lower: [] };
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
   clearLayerInput();
   updateLayerSelectionModeUI();
   applyFilters();
@@ -501,22 +583,22 @@ function showManualLayerInput() {
 }
 
 function showQuickLayerSelection() {
-  if (appLoading || !activeOrbit) return;
-  layerSelectionMode = 'quick';
-  activeLayerRangeKey = null;
-  activeLayerFilters = { upper: [], lower: [] };
-  committedOrbit = null;
-  committedLayer = null;
+  if (appLoading || !state.panel.orbit) return;
+  state.panel.layerMode = 'quick';
+  state.panel.rangeKey = null;
+  state.panel.layerFilters = { upper: [], lower: [] };
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
   clearLayerInput();
   updateLayerSelectionModeUI();
   applyFilters();
 }
 
 function getLayerRanges() {
-  if (!activeOrbit || !Array.isArray(DATA) || DATA.length === 0) return [];
-  const orbitLimit = Number.isFinite(LIMITS[activeOrbit]) ? LIMITS[activeOrbit] : Infinity;
+  if (!state.panel.orbit || !Array.isArray(DATA) || DATA.length === 0) return [];
+  const orbitLimit = Number.isFinite(LIMITS[state.panel.orbit]) ? LIMITS[state.panel.orbit] : Infinity;
   const layers = [...new Set(DATA
-    .filter(row => row.orbit === activeOrbit && Number.isFinite(row.layer) && row.layer >= 1 && row.layer <= orbitLimit)
+    .filter(row => row.orbit === state.panel.orbit && Number.isFinite(row.layer) && row.layer >= 1 && row.layer <= orbitLimit)
     .map(row => row.layer))]
     .sort((a, b) => a - b);
   const ranges = new Map();
@@ -536,12 +618,13 @@ function renderLayerSuggestions() {
   const panel = document.getElementById('layerSuggestionPanel');
   if (!panel) return;
   const ranges = getLayerRanges();
-  const activeRange = ranges.find(range => range.key === activeLayerRangeKey) || null;
-  if (activeLayerRangeKey && !activeRange) activeLayerRangeKey = null;
+  const activeRange = ranges.find(range => range.key === state.panel.rangeKey) || null;
+  const selectedLayer = getExactLayerValue();
+  if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
   const showSwipeHint = visibleItems.length > 1;
 
-  if (layerSelectionMode === 'manual' || !activeOrbit || appLoading || visibleItems.length === 0) {
+  if (state.panel.layerMode === 'manual' || !state.panel.orbit || appLoading || visibleItems.length === 0) {
     panel.classList.remove('show');
     panel.replaceChildren();
     return;
@@ -551,23 +634,23 @@ function renderLayerSuggestions() {
       <div class="layer-suggestion-head-main">
         <span>快速選層</span>
         ${activeRange ? `
-          <button class="layer-suggestion-back" type="button" aria-label="返回層數區間" onclick="backToLayerRanges()">
+          <button class="layer-suggestion-back" type="button" data-layer-action="back" aria-label="返回層數區間">
             返回區間
           </button>
         ` : ''}
       </div>
       <div class="layer-suggestion-head-actions">
-        <button class="layer-mode-link" type="button" onclick="showManualLayerInput()">直接輸入層數</button>
+        <button class="layer-mode-link" type="button" data-layer-action="manual">直接輸入層數</button>
         ${showSwipeHint ? '<span class="layer-suggestion-hint" aria-hidden="true">↔ 可左右滑動</span>' : ''}
       </div>
     </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${visibleItems.map(item => activeRange ? `
-        <button class="layer-suggestion-chip${committedOrbit === activeOrbit && committedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${committedOrbit === activeOrbit && committedLayer === item}" onclick="selectSuggestedLayer(${item})">
-          <span>${item} 層</span>
+        <button class="layer-suggestion-chip${selectedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${selectedLayer === item}">
+          <span>${item}</span>
         </button>
       ` : `
-        <button class="layer-suggestion-chip" type="button" onclick="selectLayerRange('${item.key}')">
+        <button class="layer-suggestion-chip" type="button" data-layer-range="${item.key}">
           <span>${item.start}–${item.end}</span>
         </button>
       `).join('')}
@@ -584,39 +667,39 @@ function blurLayerSuggestionFocus() {
 }
 
 function selectLayerRange(rangeKey) {
-  if (appLoading || !activeOrbit) return;
+  if (appLoading || !state.panel.orbit) return;
   const range = getLayerRanges().find(item => item.key === rangeKey);
   if (!range) return;
   blurLayerSuggestionFocus();
-  isEditingQuery = true;
-  committedOrbit = null;
-  committedLayer = null;
+  state.panel.isEditing = true;
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
   clearLayerInput();
-  activeLayerRangeKey = range.key;
-  activeLayerFilters = { upper: [], lower: [] };
+  state.panel.rangeKey = range.key;
+  state.panel.layerFilters = { upper: [], lower: [] };
   renderLayerSuggestions();
   applyFilters();
 }
 
 function backToLayerRanges() {
   blurLayerSuggestionFocus();
-  isEditingQuery = true;
-  committedOrbit = null;
-  committedLayer = null;
+  state.panel.isEditing = true;
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
   clearLayerInput();
-  activeLayerRangeKey = null;
-  activeLayerFilters = { upper: [], lower: [] };
+  state.panel.rangeKey = null;
+  state.panel.layerFilters = { upper: [], lower: [] };
   renderLayerSuggestions();
   applyFilters();
 }
 
 function selectSuggestedLayer(layer) {
-  if (appLoading || !activeOrbit) return;
+  if (appLoading || !state.panel.orbit) return;
   const inp = document.getElementById('layerInput');
   if (!inp) return;
   blurLayerSuggestionFocus();
   inp.value = String(layer);
-  activeLayerFilters = { upper: [], lower: [] };
+  state.panel.layerFilters = { upper: [], lower: [] };
   commitExactQuery(layer);
   validateLayer();
   applyFilters();
@@ -628,15 +711,15 @@ function validateLayer() {
   const val = document.getElementById('layerInput').value.trim();
   const errEl = document.getElementById('layerError');
   const inp = document.getElementById('layerInput');
-  layerOK = true;
+  state.panel.layerValid = true;
   if (val !== '') {
     const num = parseInt(val);
-    const limit = activeOrbit ? (LIMITS[activeOrbit] || 9999) : 9999;
+    const limit = state.panel.orbit ? (LIMITS[state.panel.orbit] || 9999) : 9999;
     if (isNaN(num) || num < 1 || num > limit) {
-      layerOK = false;
+      state.panel.layerValid = false;
       inp.classList.add('error-input');
       if (errEl) {
-        errEl.textContent = !isNaN(num) && activeOrbit && num > limit
+        errEl.textContent = !isNaN(num) && state.panel.orbit && num > limit
           ? `此軌道目前最高開放至 ${limit} 層`
           : '請輸入有效層數';
       }
@@ -650,15 +733,15 @@ function validateLayer() {
     inp.classList.remove('error-input');
     errEl.classList.remove('show');
   }
-  if (layerOK) applyFilters();
+  if (state.panel.layerValid) applyFilters();
 }
 
 function onLayerInput() {
   if (appLoading) return;
-  isEditingQuery = true;
-  committedOrbit = null;
-  committedLayer = null;
-  activeLayerFilters = { upper: [], lower: [] };
+  state.panel.isEditing = true;
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
+  state.panel.layerFilters = { upper: [], lower: [] };
   validateLayer();
 }
 
@@ -670,7 +753,7 @@ function dirLabel(dir) {
 
 function getBasePanelData(layerNum, videoOnly, layerRange = null) {
   return DATA.filter(d => {
-    if (activeOrbit && d.orbit !== activeOrbit) return false;
+    if (state.panel.orbit && d.orbit !== state.panel.orbit) return false;
     if (layerNum !== null && d.layer !== layerNum) return false;
     if (layerNum === null && layerRange && (d.layer < layerRange.start || d.layer > layerRange.end)) return false;
     if (videoOnly && !d.hasVideo) return false;
@@ -739,7 +822,7 @@ function collectLayerOptions(data, side) {
 }
 
 function isDynamicFilterActive(side, option) {
-  return activeLayerFilters[side].some(f => f.type === option.type && f.value === option.value);
+  return state.panel.layerFilters[side].some(f => f.type === option.type && f.value === option.value);
 }
 
 function escapeHtml(value) {
@@ -1148,8 +1231,8 @@ function dynamicStateHasMatches(baseData, state) {
 
 function cloneDynamicFilterState() {
   return {
-    upper: activeLayerFilters.upper.map(filter => ({ ...filter })),
-    lower: activeLayerFilters.lower.map(filter => ({ ...filter }))
+    upper: state.panel.layerFilters.upper.map(filter => ({ ...filter })),
+    lower: state.panel.layerFilters.lower.map(filter => ({ ...filter }))
   };
 }
 
@@ -1157,17 +1240,17 @@ function isDynamicOptionCompatible(side, option) {
   const next = cloneDynamicFilterState();
   next[side] = next[side].filter(filter => filter.type !== option.type);
   next[side].push({ type: option.type, value: option.value });
-  return dynamicStateHasMatches(currentDynamicBaseData, next);
+  return dynamicStateHasMatches(state.panel.dynamicBaseData, next);
 }
 
 function toggleDynamicFilter(side, type, value) {
   if (appLoading) return;
-  const selected = activeLayerFilters[side].find(
+  const selected = state.panel.layerFilters[side].find(
     filter => filter.type === type && filter.value === value
   );
 
   if (selected) {
-    activeLayerFilters[side] = activeLayerFilters[side].filter(
+    state.panel.layerFilters[side] = state.panel.layerFilters[side].filter(
       filter => filter.type !== type
     );
     applyFilters();
@@ -1175,11 +1258,11 @@ function toggleDynamicFilter(side, type, value) {
   }
 
   const next = { upper: [], lower: [] };
-  next[side].push({ type, value, order: ++dynamicFilterOrder });
+  next[side].push({ type, value, order: ++state.panel.dynamicFilterOrder });
 
   const candidates = ['upper', 'lower']
     .flatMap(candidateSide =>
-      activeLayerFilters[candidateSide]
+      state.panel.layerFilters[candidateSide]
         .filter(filter => !(candidateSide === side && filter.type === type))
         .map(filter => ({ side: candidateSide, filter }))
     )
@@ -1193,23 +1276,19 @@ function toggleDynamicFilter(side, type, value) {
     trial[candidateSide] = trial[candidateSide]
       .filter(item => item.type !== filter.type);
     trial[candidateSide].push({ ...filter });
-    if (dynamicStateHasMatches(currentDynamicBaseData, trial)) {
+    if (dynamicStateHasMatches(state.panel.dynamicBaseData, trial)) {
       next.upper = trial.upper;
       next.lower = trial.lower;
     }
   });
 
-  activeLayerFilters = next;
+  state.panel.layerFilters = next;
   applyFilters();
-}
-
-function toggleDynamicFilterFromButton(btn) {
-  toggleDynamicFilter(btn.dataset.side, btn.dataset.type, btn.dataset.value);
 }
 
 function clearDynamicFilters() {
   if (appLoading) return;
-  activeLayerFilters = { upper: [], lower: [] };
+  state.panel.layerFilters = { upper: [], lower: [] };
   applyFilters();
 }
 
@@ -1217,35 +1296,28 @@ function renderDynamicFilterSide(side, optionsByType) {
   const el = document.getElementById(side === 'upper' ? 'upperDynamicChips' : 'lowerDynamicChips');
   if (!el) return;
   const hasOptions = DYNAMIC_FILTER_CATEGORIES.some(
-    category => optionsByType[category.type]?.length
+    type => optionsByType[type]?.length
   );
   if (!hasOptions) {
     el.innerHTML = '<span class="dynamic-empty">無此層配置</span>';
     return;
   }
-  el.innerHTML = DYNAMIC_FILTER_CATEGORIES.map(category => {
-    const options = optionsByType[category.type] || [];
+  el.innerHTML = DYNAMIC_FILTER_CATEGORIES.flatMap(type => {
+    const options = optionsByType[type] || [];
     if (options.length === 0) return '';
-    return `
-      <div class="dynamic-filter-category">
-        <div class="dynamic-filter-category-label">${category.label}</div>
-        <div class="dynamic-filter-options">
-          ${options.map(option => {
-            const active = isDynamicFilterActive(side, option);
-            const compatible = active || isDynamicOptionCompatible(side, option);
-            return `
-              <button class="dynamic-chip ${active ? 'active' : ''} ${compatible ? '' : 'is-conflicting'}"
-                data-side="${side}"
-                data-type="${option.type}"
-                data-value="${escapeHtml(option.value)}"
-                onclick="toggleDynamicFilterFromButton(this)">
-                ${escapeHtml(option.label)}
-              </button>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    `;
+    return options.map(option => {
+      const active = isDynamicFilterActive(side, option);
+      const compatible = active || isDynamicOptionCompatible(side, option);
+      return `
+        <button class="dynamic-chip ${active ? 'active' : ''} ${compatible ? '' : 'is-unavailable'}"
+          data-side="${side}"
+          data-type="${option.type}"
+          data-value="${escapeHtml(option.value)}"
+          aria-pressed="${active}">
+          ${escapeHtml(option.label)}
+        </button>
+      `;
+    });
   }).join('');
 }
 
@@ -1253,21 +1325,21 @@ function renderDynamicFilters(baseData, layerNum) {
   const panel = document.getElementById('dynamicFilterPanel');
   const noMatch = document.getElementById('dynamicNoMatch');
   if (!panel) return;
-  const shouldShow = activeOrbit && layerNum !== null && layerOK;
+  const shouldShow = state.panel.orbit && layerNum !== null && state.panel.layerValid;
   panel.classList.toggle('show', shouldShow);
   if (!shouldShow) {
-    activeLayerFilters = { upper: [], lower: [] };
-    currentDynamicBaseData = [];
+    state.panel.layerFilters = { upper: [], lower: [] };
+    state.panel.dynamicBaseData = [];
     if (noMatch) noMatch.classList.remove('show');
     return;
   }
-  currentDynamicBaseData = baseData;
+  state.panel.dynamicBaseData = baseData;
   renderDynamicFilterSide('upper', collectLayerOptions(baseData, 'upper'));
   renderDynamicFilterSide('lower', collectLayerOptions(baseData, 'lower'));
 }
 
 function matchesLayerFilters(d, side) {
-  const filters = activeLayerFilters[side];
+  const filters = state.panel.layerFilters[side];
   if (filters.length === 0) return true;
   return filters.every(filter => rowMatchesDynamicFilter(d, side, filter));
 }
@@ -1275,20 +1347,20 @@ function matchesLayerFilters(d, side) {
 function applyFilters() {
   if (appLoading) return;
   updateQuerySummary();
-  if (!layerOK) {
+  if (!state.panel.layerValid) {
     clearPanelResultsForInvalidLayer();
     return;
   }
   const layerVal = document.getElementById('layerInput').value.trim();
   const layerNum = layerVal !== '' ? parseInt(layerVal) : null;
-  const activeRange = layerNum === null && activeLayerRangeKey
-    ? getLayerRanges().find(range => range.key === activeLayerRangeKey) || null
+  const activeRange = layerNum === null && state.panel.rangeKey
+    ? getLayerRanges().find(range => range.key === state.panel.rangeKey) || null
     : null;
   const videoOnly = document.getElementById('videoOnly').checked;
-  const shouldSearch = Boolean(activeOrbit || activeLayerRangeKey || videoOnly);
+  const shouldSearch = Boolean(state.panel.orbit || state.panel.rangeKey || videoOnly);
   if (!shouldSearch) {
-    activeLayerFilters = { upper: [], lower: [] };
-    currentData = [...DATA];
+    state.panel.layerFilters = { upper: [], lower: [] };
+    state.panel.results = [...DATA];
     const noMatch = document.getElementById('dynamicNoMatch');
     if (noMatch) noMatch.classList.remove('show');
     renderDynamicFilters([], null);
@@ -1297,80 +1369,177 @@ function applyFilters() {
   }
   const baseData = getBasePanelData(layerNum, videoOnly, activeRange);
   renderDynamicFilters(baseData, layerNum);
-  currentData = baseData.filter(d => matchesLayerFilters(d, 'upper') && matchesLayerFilters(d, 'lower'));
+  state.panel.results = baseData.filter(d => matchesLayerFilters(d, 'upper') && matchesLayerFilters(d, 'lower'));
   const noMatch = document.getElementById('dynamicNoMatch');
-  const hasSelectedDynamicFilters = activeLayerFilters.upper.length > 0 || activeLayerFilters.lower.length > 0;
-  if (noMatch) noMatch.classList.toggle('show', hasSelectedDynamicFilters && currentData.length === 0);
+  const hasSelectedDynamicFilters = state.panel.layerFilters.upper.length > 0 || state.panel.layerFilters.lower.length > 0;
+  if (noMatch) noMatch.classList.toggle('show', hasSelectedDynamicFilters && state.panel.results.length === 0);
   renderCards();
 }
 
 function resetFilters() {
   if (appLoading) return;
-  isEditingQuery = false;
-  committedOrbit = null;
-  committedLayer = null;
-  activeOrbit = null;
-  activeLayerFilters = { upper: [], lower: [] };
-  activeLayerRangeKey = null;
-  layerSelectionMode = 'quick';
-  document.querySelectorAll('#orbitChips .chip').forEach(c => c.classList.remove('active'));
+  state.panel.isEditing = false;
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
+  state.panel.orbit = null;
+  state.panel.layerFilters = { upper: [], lower: [] };
+  state.panel.rangeKey = null;
+  state.panel.layerMode = 'quick';
+  document.querySelectorAll('#orbitChips .chip').forEach(c => {
+    c.classList.remove('active');
+    c.setAttribute('aria-pressed', 'false');
+  });
   clearLayerInput();
   updateLayerSelectionModeUI();
   document.getElementById('videoOnly').checked = false;
   applyFilters();
 }
 
-function samplePanelPreviewData(count = 10) {
-  const pool = [...DATA];
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+const PREVIEW_ADAPTERS = {
+  panel: {
+    source: () => DATA,
+    gridId: 'cardsGrid',
+    emptyText: '目前尚無軌道資料',
+    sectionSelector: '#section-panel.active .panel-preview-viewport',
+    renderCard: (item, index) => panelCardMarkup(item, { previewType: 'panel', previewIndex: index }),
+    openDetail: openPanelDetail
+  },
+  endless: {
+    source: () => ENDLESS_ALL,
+    gridId: 'endlessGrid',
+    emptyText: '目前尚無無盡挑戰資料',
+    sectionSelector: '#section-endless.active .panel-preview-viewport',
+    renderCard: (item, index) => endlessCardMarkup(item, { previewType: 'endless', previewIndex: index }),
+    openDetail: openEndlessDetail
   }
-  return pool.slice(0, Math.min(count, pool.length));
+};
+
+const previewModule = {
+  sample(source, count = 10) {
+    const pool = [...source];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, Math.min(count, pool.length));
+  },
+
+  prime(type, count = 10) {
+    const adapter = PREVIEW_ADAPTERS[type];
+    if (!adapter) return [];
+    state.preview.items[type] = this.sample(adapter.source(), count);
+    return state.preview.items[type];
+  },
+
+  get(type) {
+    const adapter = PREVIEW_ADAPTERS[type];
+    if (!adapter) return [];
+    if (state.preview.items[type].length === 0 && adapter.source().length > 0) {
+      this.prime(type);
+    }
+    return state.preview.items[type];
+  },
+
+  render(type, targetGrid = null) {
+    const adapter = PREVIEW_ADAPTERS[type];
+    if (!adapter) return;
+    const grid = targetGrid || document.getElementById(adapter.gridId);
+    if (!grid) return;
+    const previewData = this.get(type);
+    if (previewData.length === 0) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>${adapter.emptyText}</p></div>`;
+      updateScrollButtons();
+      return;
+    }
+    const loopData = previewData.length > 1 ? [...previewData, ...previewData, ...previewData] : previewData;
+    grid.innerHTML = `
+      <div class="panel-preview">
+        <div class="panel-preview-viewport">
+          <div class="panel-preview-track">
+            ${loopData.map((item, index) => adapter.renderCard(item, index % previewData.length)).join('')}
+          </div>
+        </div>
+      </div>`;
+    setupPreviewScroll(adapter.sectionSelector, previewData.length);
+    updateScrollButtons();
+  },
+
+  open(type, index) {
+    const adapter = PREVIEW_ADAPTERS[type];
+    const item = this.get(type)[index];
+    if (!adapter || !item) return;
+    state.preview.modalPaused = true;
+    adapter.openDetail(item);
+  }
+};
+
+function openResultCard(type, index) {
+  const adapter = PREVIEW_ADAPTERS[type];
+  const items = type === 'panel' ? state.panel.results : ENDLESS_DATA;
+  const item = items[index];
+  if (adapter && item) adapter.openDetail(item);
 }
 
-function sampleEndlessPreviewData(count = 10) {
-  const pool = [...ENDLESS_ALL];
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
-  return pool.slice(0, Math.min(count, pool.length));
-}
+function bindDelegatedInteractions() {
+  document.getElementById('layerSuggestionPanel')?.addEventListener('click', event => {
+    const actionButton = event.target.closest('[data-layer-action]');
+    if (actionButton?.dataset.layerAction === 'back') backToLayerRanges();
+    if (actionButton?.dataset.layerAction === 'manual') showManualLayerInput();
 
-function getPanelPreviewData() {
-  if (panelPreviewData.length === 0 && DATA.length > 0) {
-    panelPreviewData = samplePanelPreviewData();
-  }
-  return panelPreviewData;
-}
+    const layerButton = event.target.closest('[data-layer]');
+    if (layerButton) selectSuggestedLayer(Number(layerButton.dataset.layer));
 
-function getEndlessPreviewData() {
-  if (endlessPreviewData.length === 0 && ENDLESS_ALL.length > 0) {
-    endlessPreviewData = sampleEndlessPreviewData();
-  }
-  return endlessPreviewData;
+    const rangeButton = event.target.closest('[data-layer-range]');
+    if (rangeButton) selectLayerRange(rangeButton.dataset.layerRange);
+  });
+
+  document.getElementById('dynamicFilterPanel')?.addEventListener('click', event => {
+    const button = event.target.closest('.dynamic-chip[data-side][data-type][data-value]');
+    if (button) toggleDynamicFilter(button.dataset.side, button.dataset.type, button.dataset.value);
+  });
+
+  document.getElementById('endlessDynamicFilterPanel')?.addEventListener('click', event => {
+    const button = event.target.closest('.dynamic-chip[data-endless-card]');
+    if (button) toggleEndlessCardFilter(button.dataset.endlessCard);
+  });
+
+  const handleResultActivation = event => {
+    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+    if (event.target.closest('a, button')) return;
+    const card = event.target.closest('[data-result-type][data-result-index]');
+    if (!card || !event.currentTarget.contains(card)) return;
+    if (event.type === 'keydown') event.preventDefault();
+    openResultCard(card.dataset.resultType, Number(card.dataset.resultIndex));
+  };
+
+  ['panelResultsView', 'endlessResultsView'].forEach(id => {
+    const view = document.getElementById(id);
+    view?.addEventListener('click', handleResultActivation);
+    view?.addEventListener('keydown', handleResultActivation);
+  });
 }
 
 function hasPanelFilters() {
   const videoOnly = document.getElementById('videoOnly');
   return Boolean(
-    activeOrbit ||
-    activeLayerRangeKey ||
+    state.panel.orbit ||
+    state.panel.rangeKey ||
     (videoOnly && videoOnly.checked) ||
-    activeLayerFilters.upper.length > 0 ||
-    activeLayerFilters.lower.length > 0
+    state.panel.layerFilters.upper.length > 0 ||
+    state.panel.layerFilters.lower.length > 0
   );
 }
 
-function panelCardMarkup(d, action, previewType = '', previewIndex = null) {
+function panelCardMarkup(d, { resultIndex = null, previewType = '', previewIndex = null } = {}) {
   const folderItem = panelFolderItem(d);
   const orbit = escapeHtml(d.orbit);
   const orbitLabel = escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit);
-  const actionAttr = action ? ` onclick="${action}"` : '';
   const previewAttrs = previewType ? ` data-preview-type="${previewType}" data-preview-index="${previewIndex}"` : '';
+  const resultAttrs = Number.isInteger(resultIndex)
+    ? ` data-result-type="panel" data-result-index="${resultIndex}" role="button" tabindex="0"`
+    : '';
   return `
-    <div class="panel-card${viewedCardClass(folderItem)}" data-view-key="${escapeHtml(encodedItemKey(folderItem))}" data-orbit="${orbit}"${previewAttrs}${actionAttr}>
+    <div class="panel-card${viewedCardClass(folderItem)}" data-view-key="${escapeHtml(encodedItemKey(folderItem))}" data-orbit="${orbit}"${previewAttrs}${resultAttrs}>
       ${viewedCardMarkup(folderItem)}
       <div class="card-orbit-bar">
         <div class="card-labels panel-card-title">
@@ -1389,48 +1558,10 @@ function panelCardMarkup(d, action, previewType = '', previewIndex = null) {
     </div>`;
 }
 
-function openPanelPreview(idx) {
-  const item = panelPreviewData[idx];
-  if (item) {
-    previewModalPaused = true;
-    openPanelDetail(item);
-  }
-}
-
-function openEndlessPreview(idx) {
-  const item = endlessPreviewData[idx];
-  if (item) {
-    previewModalPaused = true;
-    openEndlessDetail(item);
-  }
-}
-
-function renderPanelPreview(targetGrid = null) {
-  const grid = targetGrid || document.getElementById('cardsGrid');
-  if (!grid) return;
-  const previewData = getPanelPreviewData();
-  if (previewData.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>目前尚無軌道資料</p></div>`;
-    updateScrollButtons();
-    return;
-  }
-  const loopData = previewData.length > 1 ? [...previewData, ...previewData, ...previewData] : previewData;
-  grid.innerHTML = `
-    <div class="panel-preview">
-      <div class="panel-preview-viewport">
-        <div class="panel-preview-track">
-          ${loopData.map((d, i) => panelCardMarkup(d, '', 'panel', i % previewData.length)).join('')}
-        </div>
-      </div>
-    </div>`;
-  setupPreviewScroll('#section-panel.active .panel-preview-viewport', previewData.length);
-  updateScrollButtons();
-}
-
 function stopPreviewAutoScroll() {
-  if (!previewAutoFrame) return;
-  window.cancelAnimationFrame(previewAutoFrame);
-  previewAutoFrame = null;
+  if (!state.preview.autoFrame) return;
+  window.cancelAnimationFrame(state.preview.autoFrame);
+  state.preview.autoFrame = null;
 }
 
 function clearPreviewBeforeResults(grid) {
@@ -1467,7 +1598,7 @@ function setupPreviewScroll(selector, itemCount) {
     window.clearTimeout(resumeAutoTimer);
     resumeAutoTimer = window.setTimeout(() => {
       isAutoPaused = false;
-      previewLastTime = performance.now();
+      state.preview.lastTime = performance.now();
     }, delay);
   };
 
@@ -1512,8 +1643,7 @@ function setupPreviewScroll(selector, itemCount) {
     if (!moved && deltaX < 8 && deltaY < 8 && pressedPreviewCard) {
       event.preventDefault();
       const idx = Number(pressedPreviewCard.dataset.previewIndex);
-      if (pressedPreviewCard.dataset.previewType === 'panel') openPanelPreview(idx);
-      if (pressedPreviewCard.dataset.previewType === 'endless') openEndlessPreview(idx);
+      previewModule.open(pressedPreviewCard.dataset.previewType, idx);
     }
     pressedPreviewCard = null;
     resumeAutoScroll();
@@ -1545,17 +1675,17 @@ function setupPreviewScroll(selector, itemCount) {
   requestAnimationFrame(() => {
     if (itemCount <= 1) return;
     viewport.scrollLeft = getLoopWidth();
-    previewLastTime = performance.now();
+    state.preview.lastTime = performance.now();
     const autoScroll = time => {
-      const elapsed = Math.min(time - previewLastTime, 80);
-      previewLastTime = time;
-      if (!document.hidden && !isAutoPaused && !previewModalPaused) {
+      const elapsed = Math.min(time - state.preview.lastTime, 80);
+      state.preview.lastTime = time;
+      if (!document.hidden && !isAutoPaused && !state.preview.modalPaused) {
         viewport.scrollLeft += elapsed * PANEL_PREVIEW_SPEED;
         wrapScrollPosition();
       }
-      previewAutoFrame = window.requestAnimationFrame(autoScroll);
+      state.preview.autoFrame = window.requestAnimationFrame(autoScroll);
     };
-    previewAutoFrame = window.requestAnimationFrame(autoScroll);
+    state.preview.autoFrame = window.requestAnimationFrame(autoScroll);
   });
 }
 
@@ -1621,13 +1751,13 @@ function swapResultsGrid(view, infoId, gridId, gridClass, infoText, key, renderG
 function renderCards() {
   const resultsView = document.getElementById('panelResultsView');
   const hasFilters = hasPanelFilters();
-  const dataSnapshot = [...currentData];
+  const dataSnapshot = [...state.panel.results];
   const infoText = hasFilters
     ? `共找到 <span>${dataSnapshot.length}</span> 筆結果`
     : `目前收錄軌道資料 <span>${DATA.length}</span> 筆`;
   swapResultsGrid(resultsView, 'resultsInfo', 'cardsGrid', 'cards-grid', infoText, 'panel-results', grid => {
     if (!hasFilters) {
-      renderPanelPreview(grid);
+      previewModule.render('panel', grid);
       return;
     }
     stopPreviewAutoScroll();
@@ -1635,7 +1765,7 @@ function renderCards() {
       grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div style="font-size:2rem;margin-bottom:0.5rem;opacity:0.3">✦</div><p>找不到符合條件的結果，期待您成為第一位分享者</p></div>`;
       return;
     }
-    grid.innerHTML = dataSnapshot.map((d, i) => panelCardMarkup(d, `openModal(${i})`)).join('');
+    grid.innerHTML = dataSnapshot.map((d, i) => panelCardMarkup(d, { resultIndex: i })).join('');
   });
 }
 
@@ -1746,7 +1876,7 @@ function openPanelDetail(d, recordHistory = true) {
   modalEl.classList.remove('endless-detail');
   modalEl.dataset.orbit = d.orbit;
 
-  document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}軌道</span>`;
+  document.getElementById('mOrbit').innerHTML = `<span class="orbit-badge" data-orbit="${escapeHtml(d.orbit)}">${escapeHtml(ORBIT_LABEL[d.orbit] || d.orbit)}</span>`;
   document.getElementById('mLayer').innerHTML = `<span class="modal-layer-num">${escapeHtml(String(d.layer))}</span><span class="modal-layer-unit">層</span>`;
   const orbitColors = {
     開放: 'var(--col-open)', 光: 'var(--col-light)', 冰: 'var(--col-ice)',
@@ -1784,15 +1914,11 @@ function openPanelDetail(d, recordHistory = true) {
   document.getElementById('modalOverlay').classList.add('show');
 }
 
-function openModal(idx) {
-  openPanelDetail(currentData[idx]);
-}
-
 function restartActivePreview(tab) {
   if (tab === 'panel' && !hasPanelFilters()) {
-    setupPreviewScroll('#section-panel.active .panel-preview-viewport', getPanelPreviewData().length);
-  } else if (tab === 'endless' && !activePartner) {
-    setupPreviewScroll('#section-endless.active .panel-preview-viewport', getEndlessPreviewData().length);
+    setupPreviewScroll(PREVIEW_ADAPTERS.panel.sectionSelector, previewModule.get('panel').length);
+  } else if (tab === 'endless' && !state.endless.partner) {
+    setupPreviewScroll(PREVIEW_ADAPTERS.endless.sectionSelector, previewModule.get('endless').length);
   } else {
     stopPreviewAutoScroll();
   }
@@ -1843,8 +1969,8 @@ function switchTab(tab, btn) {
 
 function selectPartnerDropdown(value) {
   if (appLoading) return;
-  activePartner = value || null;
-  activeEndlessCard = null;
+  state.endless.partner = value || null;
+  state.endless.card = null;
   applyEndlessFilters();
 }
 
@@ -1859,10 +1985,10 @@ function renderEndlessDynamicFilters(baseData) {
   const chips = document.getElementById('endlessCardChips');
   const noMatch = document.getElementById('endlessDynamicNoMatch');
   if (!panel || !chips) return;
-  const shouldShow = Boolean(activePartner);
+  const shouldShow = Boolean(state.endless.partner);
   panel.classList.toggle('show', shouldShow);
   if (!shouldShow) {
-    activeEndlessCard = null;
+    state.endless.card = null;
     if (noMatch) noMatch.classList.remove('show');
     return;
   }
@@ -1873,9 +1999,10 @@ function renderEndlessDynamicFilters(baseData) {
     return;
   }
   chips.innerHTML = options.map(option => `
-    <button class="dynamic-chip ${activeEndlessCard === option.value ? 'active' : ''}"
+    <button class="dynamic-chip ${state.endless.card === option.value ? 'active' : ''}"
       data-value="${escapeHtml(option.value)}"
-      onclick="toggleEndlessCardFilter(this.dataset.value)">
+      data-endless-card="${escapeHtml(option.value)}"
+      aria-pressed="${state.endless.card === option.value}">
       ${escapeHtml(option.label)}
     </button>
   `).join('');
@@ -1883,13 +2010,13 @@ function renderEndlessDynamicFilters(baseData) {
 
 function toggleEndlessCardFilter(value) {
   if (appLoading) return;
-  activeEndlessCard = activeEndlessCard === value ? null : value;
+  state.endless.card = state.endless.card === value ? null : value;
   applyEndlessFilters();
 }
 
 function clearEndlessDynamicFilters() {
   if (appLoading) return;
-  activeEndlessCard = null;
+  state.endless.card = null;
   applyEndlessFilters();
 }
 
@@ -1897,21 +2024,21 @@ function applyEndlessFilters() {
   if (appLoading) return;
   const videoOnly = document.getElementById('endlessVideoOnly').checked;
   const baseData = ENDLESS_ALL.filter(d => {
-    if (activePartner && d.partner !== activePartner) return false;
+    if (state.endless.partner && d.partner !== state.endless.partner) return false;
     if (videoOnly && !d.hasVideo) return false;
     return true;
   });
   renderEndlessDynamicFilters(baseData);
-  ENDLESS_DATA = baseData.filter(d => !activeEndlessCard || d.card === activeEndlessCard);
+  ENDLESS_DATA = baseData.filter(d => !state.endless.card || d.card === state.endless.card);
   const noMatch = document.getElementById('endlessDynamicNoMatch');
-  if (noMatch) noMatch.classList.toggle('show', Boolean(activeEndlessCard) && ENDLESS_DATA.length === 0);
+  if (noMatch) noMatch.classList.toggle('show', Boolean(state.endless.card) && ENDLESS_DATA.length === 0);
   renderEndless();
 }
 
 function resetEndlessFilters() {
   if (appLoading) return;
-  activePartner = null;
-  activeEndlessCard = null;
+  state.endless.partner = null;
+  state.endless.card = null;
   document.getElementById('partnerSelect').value = '';
   document.getElementById('endlessVideoOnly').checked = false;
   ENDLESS_DATA = [...ENDLESS_ALL];
@@ -1925,15 +2052,17 @@ function fmtScore(s) {
   return n.toLocaleString();
 }
 
-function endlessCardMarkup(d, action, previewType = '', previewIndex = null) {
+function endlessCardMarkup(d, { resultIndex = null, previewType = '', previewIndex = null } = {}) {
   const folderItem = endlessFolderItem(d);
   const partner = escapeHtml(d.partner);
   const card = `${escapeHtml(d.card)}${rankIconMarkup(d.card)}`;
   const combo = escapeHtml(d.combo);
-  const actionAttr = action ? ` onclick="${action}"` : '';
   const previewAttrs = previewType ? ` data-preview-type="${previewType}" data-preview-index="${previewIndex}"` : '';
+  const resultAttrs = Number.isInteger(resultIndex)
+    ? ` data-result-type="endless" data-result-index="${resultIndex}" role="button" tabindex="0"`
+    : '';
   return `
-    <div class="endless-card${viewedCardClass(folderItem)}" data-view-key="${escapeHtml(encodedItemKey(folderItem))}" data-partner="${partner}"${previewAttrs}${actionAttr}>
+    <div class="endless-card${viewedCardClass(folderItem)}" data-view-key="${escapeHtml(encodedItemKey(folderItem))}" data-partner="${partner}"${previewAttrs}${resultAttrs}>
       ${viewedCardMarkup(folderItem)}
       <div class="endless-card-header">
         <div class="card-labels">
@@ -1958,38 +2087,16 @@ function endlessCardMarkup(d, action, previewType = '', previewIndex = null) {
     </div>`;
 }
 
-function renderEndlessPreview(targetGrid = null) {
-  const grid = targetGrid || document.getElementById('endlessGrid');
-  if (!grid) return;
-  const previewData = getEndlessPreviewData();
-  if (previewData.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><p>目前尚無無盡挑戰資料</p></div>`;
-    updateScrollButtons();
-    return;
-  }
-  const loopData = previewData.length > 1 ? [...previewData, ...previewData, ...previewData] : previewData;
-  grid.innerHTML = `
-    <div class="panel-preview">
-      <div class="panel-preview-viewport">
-        <div class="panel-preview-track">
-          ${loopData.map((d, i) => endlessCardMarkup(d, '', 'endless', i % previewData.length)).join('')}
-        </div>
-      </div>
-    </div>`;
-  setupPreviewScroll('#section-endless.active .panel-preview-viewport', previewData.length);
-  updateScrollButtons();
-}
-
 function renderEndless() {
   const resultsView = document.getElementById('endlessResultsView');
-  const hasFixedResults = Boolean(activePartner);
+  const hasFixedResults = Boolean(state.endless.partner);
   const dataSnapshot = [...ENDLESS_DATA];
   const infoText = hasFixedResults
     ? `共找到 <span>${dataSnapshot.length}</span> 筆結果`
     : `目前收錄無盡挑戰資料 <span>${ENDLESS_ALL.length}</span> 筆`;
   swapResultsGrid(resultsView, 'endlessInfo', 'endlessGrid', 'endless-grid', infoText, 'endless-results', grid => {
     if (!hasFixedResults) {
-      renderEndlessPreview(grid);
+      previewModule.render('endless', grid);
       return;
     }
     stopPreviewAutoScroll();
@@ -1997,7 +2104,7 @@ function renderEndless() {
       grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div style="font-size:2rem;margin-bottom:0.5rem;opacity:0.3">✦</div><p>找不到符合條件的結果，期待您成為第一位分享者</p></div>`;
       return;
     }
-    grid.innerHTML = dataSnapshot.map((d, i) => endlessCardMarkup(d, `openEndlessModal(${i})`)).join('');
+    grid.innerHTML = dataSnapshot.map((d, i) => endlessCardMarkup(d, { resultIndex: i })).join('');
   });
 }
 
@@ -2034,10 +2141,6 @@ function openEndlessDetail(d, recordHistory = true) {
   document.getElementById('modalOverlay').classList.add('show');
 }
 
-function openEndlessModal(idx) {
-  openEndlessDetail(ENDLESS_DATA[idx]);
-}
-
 function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalDirect(); }
 function closeModalDirect() {
   document.getElementById('modalOverlay').classList.remove('show');
@@ -2049,8 +2152,8 @@ function closeModalDirect() {
   modalEl.style.removeProperty('--modal-orbit-bg-strong');
   modalEl.style.removeProperty('--modal-orbit-border');
   modalEl.style.removeProperty('--modal-orbit-button-text');
-  previewModalPaused = false;
-  previewLastTime = performance.now();
+  state.preview.modalPaused = false;
+  state.preview.lastTime = performance.now();
   setModalViewed(false);
   document.getElementById('mUpperBlock').classList.remove('modal-config-table-wrap');
   document.getElementById('mLowerBlock').style.display = '';
@@ -2099,5 +2202,6 @@ if (document.fonts?.ready) {
   document.fonts.ready.then(updatePrimaryTabSlider).catch(() => {});
 }
 
+bindDelegatedInteractions();
 init();
 updateScrollButtons();

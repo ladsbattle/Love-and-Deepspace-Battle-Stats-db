@@ -45,17 +45,14 @@
         <div class="filter-header">
           <div class="filter-title">✦ 篩選條件</div>
           <div class="filter-header-actions">
-            <label class="video-toggle video-toggle-compact">
-              <input type="checkbox" id="videoOnly" onchange="applyFilters()">
-              <span class="video-switch"></span>
-              <span>附影片</span>
-            </label>
             <button class="btn-reset btn-reset-compact" onclick="resetFilters()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
               重設
             </button>
           </div>
     </div>
+
+    <nav class="filter-breadcrumb" id="panelFilterBreadcrumb" aria-label="軌道篩選路徑"></nav>
 
     <div class="filter-state-stack">
     <div id="primaryFilterControls" class="primary-filter-controls">
@@ -124,7 +121,14 @@
   </div>
 
   <div class="results-view" id="panelResultsView">
-    <div class="results-info" id="resultsInfo"></div>
+    <div class="results-toolbar">
+      <div class="results-info" id="resultsInfo"></div>
+      <label class="video-toggle video-toggle-compact results-video-toggle">
+        <input type="checkbox" id="videoOnly" onchange="applyFilters()">
+        <span class="video-switch"></span>
+        <span>附影片</span>
+      </label>
+    </div>
     <div class="cards-grid" id="cardsGrid"></div>
   </div>
 </div>
@@ -139,11 +143,6 @@
         <div class="filter-header">
           <div class="filter-title">✦ 篩選條件</div>
           <div class="filter-header-actions">
-            <label class="video-toggle video-toggle-compact">
-              <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
-              <span class="video-switch"></span>
-              <span>附影片</span>
-            </label>
             <button class="btn-reset btn-reset-compact" onclick="resetEndlessFilters()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
               重設
@@ -181,7 +180,6 @@
       </div>
       <div class="dynamic-filter-grid single-column">
         <div class="dynamic-layer-box">
-          <div class="dynamic-layer-title">日卡選擇</div>
           <div class="dynamic-chip-row" id="endlessCardChips"></div>
         </div>
       </div>
@@ -190,7 +188,14 @@
   </div>
 
   <div class="results-view" id="endlessResultsView">
-    <div class="results-info" id="endlessInfo"></div>
+    <div class="results-toolbar">
+      <div class="results-info" id="endlessInfo"></div>
+      <label class="video-toggle video-toggle-compact results-video-toggle">
+        <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
+        <span class="video-switch"></span>
+        <span>附影片</span>
+      </label>
+    </div>
     <div class="endless-grid" id="endlessGrid"></div>
   </div>
 </div>
