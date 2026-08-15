@@ -82,19 +82,19 @@
   <div class="results-view" id="panelResultsView">
     <div class="results-toolbar">
       <div class="results-info" id="resultsInfo"></div>
-      <button class="advanced-filter-toggle" id="advancedFilterToggle" type="button" aria-expanded="false" aria-controls="advancedFilterPanel" onclick="toggleAdvancedFilters()">
-        <span>進階篩選<span id="advancedFilterCount"></span></span>
-        <span class="advanced-filter-chevron" id="advancedFilterChevron" aria-hidden="true">⌄</span>
-      </button>
-    </div>
-    <div class="advanced-filter-panel" id="advancedFilterPanel" hidden>
-      <div class="advanced-filter-controls">
-        <label class="video-toggle video-toggle-compact advanced-video-toggle">
+      <div class="panel-results-controls" id="panelResultsControls" hidden>
+        <label class="video-toggle video-toggle-compact panel-video-toggle">
           <input type="checkbox" id="videoOnly" onchange="applyFilters()">
           <span class="video-switch"></span>
           <span>附影片</span>
         </label>
+        <button class="advanced-filter-toggle" id="advancedFilterToggle" type="button" aria-expanded="false" aria-controls="advancedFilterPanel" onclick="toggleAdvancedFilters()">
+          <span>進階篩選<span id="advancedFilterCount"></span></span>
+          <span class="advanced-filter-chevron" id="advancedFilterChevron" aria-hidden="true">⌄</span>
+        </button>
       </div>
+    </div>
+    <div class="advanced-filter-panel" id="advancedFilterPanel" hidden>
       <div class="dynamic-filter-panel" id="dynamicFilterPanel">
         <div class="dynamic-filter-grid">
           <div class="dynamic-layer-box">

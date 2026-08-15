@@ -399,8 +399,15 @@ header {
   gap: 0.55rem;
   margin-bottom: 0.55rem;
 }
+.layer-suggestion-toolbar .orbit-label {
+  margin-bottom: 0;
+  line-height: 1.5;
+}
 .layer-suggestion-back {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
   border: 1px solid rgba(150,180,240,0.26);
   border-radius: var(--pill-radius);
   background: rgba(255,255,255,0.035);
@@ -424,6 +431,15 @@ header {
   flex-wrap: wrap;
   gap: 0.45rem;
   padding: 0.05rem 0 0.15rem;
+}
+.layer-suggestion-placeholder {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.05rem 0 0.15rem;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
 }
 .layer-suggestion-chip {
   flex: 0 0 auto;
@@ -723,6 +739,14 @@ header {
   gap: 0.75rem;
   margin-bottom: 0.8rem;
 }
+.panel-results-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.panel-results-controls[hidden] {
+  display: none;
+}
 .results-info {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -773,17 +797,11 @@ header {
   background: rgba(17,30,53,0.42);
   animation: sectionFadeIn 0.2s ease both;
 }
-.advanced-filter-controls {
-  display: flex;
-  justify-content: flex-end;
-}
 #panelResultsView .dynamic-filter-panel {
-  margin-top: 0.85rem;
-  padding-top: 0.85rem;
+  margin-top: 0;
+  padding-top: 0;
 }
-.advanced-video-toggle {
-  flex: 0 0 auto;
-}
+.panel-video-toggle,
 .results-video-toggle {
   flex: 0 0 auto;
 }

@@ -370,6 +370,9 @@ function selectOrbit(btn) {
   state.panel.rangeKey = null;
   if (state.panel.orbit === orbit) {
     state.panel.orbit = null;
+    state.panel.advancedFilterOpen = false;
+    const videoOnly = document.getElementById('videoOnly');
+    if (videoOnly) videoOnly.checked = false;
     btn.classList.remove('active');
     btn.setAttribute('aria-pressed', 'false');
   } else {
@@ -418,15 +421,27 @@ function getLayerRanges() {
 function renderLayerSuggestions() {
   const panel = document.getElementById('layerSuggestionPanel');
   if (!panel) return;
+  if (appLoading) {
+    panel.classList.remove('show');
+    panel.replaceChildren();
+    return;
+  }
   const ranges = getLayerRanges();
   const activeRange = ranges.find(range => range.key === state.panel.rangeKey) || null;
   const selectedLayer = getExactLayerValue();
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
 
-  if (!state.panel.orbit || appLoading || visibleItems.length === 0) {
-    panel.classList.remove('show');
-    panel.replaceChildren();
+  if (!state.panel.orbit || visibleItems.length === 0) {
+    panel.innerHTML = `
+      <div class="layer-suggestion-toolbar">
+        <span class="orbit-label">快速選層</span>
+      </div>
+      <div class="layer-suggestion-placeholder">
+        ${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}
+      </div>
+    `;
+    panel.classList.add('show');
     return;
   }
   panel.innerHTML = `
@@ -1048,7 +1063,10 @@ function renderDynamicFilterSide(side, optionsByType) {
     if (options.length === 0) return '';
     return options.map(option => {
       const active = isDynamicFilterActive(side, option);
-      const compatible = active || isDynamicOptionCompatible(side, option);
+      const hasActiveSibling = state.panel.layerFilters[side].some(
+        filter => filter.type === option.type && filter.value !== option.value
+      );
+      const compatible = active || (!hasActiveSibling && isDynamicOptionCompatible(side, option));
       return `
         <button class="dynamic-chip ${active ? 'active' : ''} ${compatible ? '' : 'is-unavailable'}"
           data-side="${side}"
@@ -1081,15 +1099,17 @@ function renderDynamicFilters(baseData, layerNum) {
 
 function updateAdvancedFilterControl() {
   const panel = document.getElementById('advancedFilterPanel');
+  const controls = document.getElementById('panelResultsControls');
   const toggle = document.getElementById('advancedFilterToggle');
   const count = document.getElementById('advancedFilterCount');
   const chevron = document.getElementById('advancedFilterChevron');
-  const videoOnly = document.getElementById('videoOnly');
   const activeCount = state.panel.layerFilters.upper.length
-    + state.panel.layerFilters.lower.length
-    + (videoOnly?.checked ? 1 : 0);
+    + state.panel.layerFilters.lower.length;
+  const shouldShowControls = Boolean(state.panel.orbit);
 
-  if (panel) panel.hidden = !state.panel.advancedFilterOpen;
+  if (!shouldShowControls) state.panel.advancedFilterOpen = false;
+  if (controls) controls.hidden = !shouldShowControls;
+  if (panel) panel.hidden = !shouldShowControls || !state.panel.advancedFilterOpen;
   if (toggle) toggle.setAttribute('aria-expanded', String(state.panel.advancedFilterOpen));
   if (count) count.textContent = activeCount > 0 ? ` · ${activeCount}` : '';
   if (chevron) chevron.textContent = state.panel.advancedFilterOpen ? '⌃' : '⌄';
