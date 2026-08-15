@@ -1101,22 +1101,22 @@ function updateAdvancedFilterControl() {
   const panel = document.getElementById('advancedFilterPanel');
   const controls = document.getElementById('panelResultsControls');
   const toggle = document.getElementById('advancedFilterToggle');
-  const count = document.getElementById('advancedFilterCount');
   const chevron = document.getElementById('advancedFilterChevron');
-  const activeCount = state.panel.layerFilters.upper.length
-    + state.panel.layerFilters.lower.length;
   const shouldShowControls = Boolean(state.panel.orbit);
+  const shouldShowAdvanced = getExactLayerValue() !== null;
 
-  if (!shouldShowControls) state.panel.advancedFilterOpen = false;
+  if (!shouldShowAdvanced) state.panel.advancedFilterOpen = false;
   if (controls) controls.hidden = !shouldShowControls;
-  if (panel) panel.hidden = !shouldShowControls || !state.panel.advancedFilterOpen;
-  if (toggle) toggle.setAttribute('aria-expanded', String(state.panel.advancedFilterOpen));
-  if (count) count.textContent = activeCount > 0 ? ` · ${activeCount}` : '';
+  if (panel) panel.hidden = !shouldShowAdvanced || !state.panel.advancedFilterOpen;
+  if (toggle) {
+    toggle.hidden = !shouldShowAdvanced;
+    toggle.setAttribute('aria-expanded', String(state.panel.advancedFilterOpen));
+  }
   if (chevron) chevron.textContent = state.panel.advancedFilterOpen ? '⌃' : '⌄';
 }
 
 function toggleAdvancedFilters() {
-  if (appLoading) return;
+  if (appLoading || getExactLayerValue() === null) return;
   state.panel.advancedFilterOpen = !state.panel.advancedFilterOpen;
   updateAdvancedFilterControl();
 }

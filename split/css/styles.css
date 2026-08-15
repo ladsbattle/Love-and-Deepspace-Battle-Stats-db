@@ -762,13 +762,16 @@ header {
   min-height: 2rem;
   padding: 0.3rem 0.68rem;
   border: 1px solid var(--border);
-  border-radius: var(--pill-radius);
+  border-radius: 12px;
   background: transparent;
   color: #c7dcf7;
   font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.72rem;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.advanced-filter-toggle[hidden] {
+  display: none;
 }
 .advanced-filter-toggle:hover,
 .advanced-filter-toggle:focus-visible,
