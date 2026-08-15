@@ -73,38 +73,8 @@
     </div>
 
     <div class="filter-fields panel-filter-fields">
-      <div class="layer-mode-toggle" id="layerModeToggle" role="group" aria-label="層數選擇方式">
-        <button class="layer-mode-option active" type="button" data-layer-mode="quick" aria-pressed="true" disabled>快速選層</button>
-        <button class="layer-mode-option" type="button" data-layer-mode="manual" aria-pressed="false" disabled>手動輸入層數</button>
-      </div>
       <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
-      <div class="manual-layer-panel" id="manualLayerPanel" hidden>
-        <div class="filter-group layer-group">
-          <label for="layerInput">軌道層數</label>
-          <div class="ios-input-shell">
-            <input class="layer-input" type="number" id="layerInput" placeholder="輸入層數" min="1" oninput="onLayerInput()" onchange="onLayerCommit()" onkeydown="if(event.key==='Enter'){event.preventDefault();onLayerCommit();}" disabled>
-          </div>
-          <div class="layer-error-msg" id="layerError">輸入內容無效</div>
-        </div>
-      </div>
     </div>
-    </div>
-
-        <div class="dynamic-filter-panel" id="dynamicFilterPanel">
-          <div class="dynamic-filter-header">
-            <div class="dynamic-filter-title">✦ 配置篩選</div>
-          </div>
-      <div class="dynamic-filter-grid">
-        <div class="dynamic-layer-box">
-          <div class="dynamic-layer-title">▲ 上層</div>
-          <div class="dynamic-chip-row" id="upperDynamicChips"></div>
-        </div>
-        <div class="dynamic-layer-box">
-          <div class="dynamic-layer-title">▼ 下層</div>
-          <div class="dynamic-chip-row" id="lowerDynamicChips"></div>
-        </div>
-      </div>
-      <div class="dynamic-no-match" id="dynamicNoMatch">找不到完全相符的結果，建議進行單層篩選或嘗試其他配置</div>
     </div>
     </div>
   </div>
@@ -112,11 +82,32 @@
   <div class="results-view" id="panelResultsView">
     <div class="results-toolbar">
       <div class="results-info" id="resultsInfo"></div>
-      <label class="video-toggle video-toggle-compact results-video-toggle">
-        <input type="checkbox" id="videoOnly" onchange="applyFilters()">
-        <span class="video-switch"></span>
-        <span>附影片</span>
-      </label>
+      <button class="advanced-filter-toggle" id="advancedFilterToggle" type="button" aria-expanded="false" aria-controls="advancedFilterPanel" onclick="toggleAdvancedFilters()">
+        <span>進階篩選<span id="advancedFilterCount"></span></span>
+        <span class="advanced-filter-chevron" id="advancedFilterChevron" aria-hidden="true">⌄</span>
+      </button>
+    </div>
+    <div class="advanced-filter-panel" id="advancedFilterPanel" hidden>
+      <div class="advanced-filter-controls">
+        <label class="video-toggle video-toggle-compact advanced-video-toggle">
+          <input type="checkbox" id="videoOnly" onchange="applyFilters()">
+          <span class="video-switch"></span>
+          <span>附影片</span>
+        </label>
+      </div>
+      <div class="dynamic-filter-panel" id="dynamicFilterPanel">
+        <div class="dynamic-filter-grid">
+          <div class="dynamic-layer-box">
+            <div class="dynamic-layer-title">▲ 上層</div>
+            <div class="dynamic-chip-row" id="upperDynamicChips"></div>
+          </div>
+          <div class="dynamic-layer-box">
+            <div class="dynamic-layer-title">▼ 下層</div>
+            <div class="dynamic-chip-row" id="lowerDynamicChips"></div>
+          </div>
+        </div>
+        <div class="dynamic-no-match" id="dynamicNoMatch">找不到完全相符的結果，建議進行單層篩選或嘗試其他配置</div>
+      </div>
     </div>
     <div class="cards-grid" id="cardsGrid"></div>
   </div>

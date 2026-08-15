@@ -15,10 +15,9 @@ const state = {
     dynamicBaseData: [],
     dynamicFilterOrder: 0,
     rangeKey: null,
-    layerMode: 'quick',
+    advancedFilterOpen: false,
     committedOrbit: null,
-    committedLayer: null,
-    layerValid: true
+    committedLayer: null
   },
   endless: {
     partner: null,
@@ -110,7 +109,9 @@ function setSearchControlsDisabled(disabled) {
     .endless-filter-panel input,
     .endless-filter-panel select
   `).forEach(el => { el.disabled = disabled; });
-  if (!disabled) updateLayerSelectionModeUI();
+  const advancedToggle = document.getElementById('advancedFilterToggle');
+  if (advancedToggle) advancedToggle.disabled = disabled;
+  if (!disabled) updatePanelFilterUI();
 }
 
 function markCsvLoaded() {
@@ -345,8 +346,9 @@ async function init() {
 }
 
 function getExactLayerValue() {
-  const input = document.getElementById('layerInput');
-  const value = Number.parseInt(input ? input.value.trim() : '', 10);
+  const value = state.panel.committedOrbit === state.panel.orbit
+    ? state.panel.committedLayer
+    : null;
   const limit = state.panel.orbit ? (LIMITS[state.panel.orbit] || Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
   return Number.isInteger(value) && value >= 1 && value <= limit ? value : null;
 }
@@ -359,16 +361,6 @@ function commitExactQuery(layer) {
   state.panel.committedLayer = layer;
 }
 
-function onLayerCommit() {
-  if (appLoading) return;
-  const layer = getExactLayerValue();
-  if (layer === null) {
-    return;
-  }
-  commitExactQuery(layer);
-  applyFilters();
-}
-
 function selectOrbit(btn) {
   if (appLoading) return;
   state.panel.committedOrbit = null;
@@ -376,8 +368,6 @@ function selectOrbit(btn) {
   const orbit = btn.dataset.orbit;
   state.panel.layerFilters = { upper: [], lower: [] };
   state.panel.rangeKey = null;
-  state.panel.layerMode = 'quick';
-  clearLayerInput();
   if (state.panel.orbit === orbit) {
     state.panel.orbit = null;
     btn.classList.remove('active');
@@ -391,112 +381,18 @@ function selectOrbit(btn) {
     btn.classList.add('active');
     btn.setAttribute('aria-pressed', 'true');
   }
-  updateLayerSelectionModeUI();
-  validateLayer();
+  updatePanelFilterUI();
+  applyFilters();
 }
 
-function clearLayerInput() {
-  const inp = document.getElementById('layerInput');
-  const errEl = document.getElementById('layerError');
-  if (inp) {
-    inp.value = '';
-    inp.classList.remove('error-input');
-  }
-  if (errEl) errEl.classList.remove('show');
-  state.panel.layerValid = true;
-}
-
-function clearPanelResultsForInvalidLayer() {
-  state.panel.layerFilters = { upper: [], lower: [] };
-  state.panel.results = [];
-  const dynamicNoMatch = document.getElementById('dynamicNoMatch');
-  const resultsView = document.getElementById('panelResultsView');
-  const info = document.getElementById('resultsInfo');
-  const grid = document.getElementById('cardsGrid');
-
-  renderDynamicFilters([], null);
-  if (dynamicNoMatch) dynamicNoMatch.classList.remove('show');
-
-  fadeVersions['panel-results'] = (fadeVersions['panel-results'] || 0) + 1;
-  if (fadeTimers['panel-results']) {
-    window.clearTimeout(fadeTimers['panel-results']);
-    fadeTimers['panel-results'] = null;
-  }
-  stopPreviewAutoScroll();
-  if (resultsView) {
-    resultsView.classList.remove('content-transition', 'is-fading');
-  }
-  if (info) {
-    info.innerHTML = '';
-  }
-  if (grid) {
-    grid.classList.remove('content-transition', 'is-fading');
-    grid.replaceChildren();
-  }
-  updateScrollButtons();
-}
-
-function updateLayerInputState() {
-  const inp = document.getElementById('layerInput');
-  if (!inp) return;
-  const locked = !state.panel.orbit || state.panel.layerMode !== 'manual';
-  inp.disabled = locked;
-  inp.placeholder = locked ? '請先選擇軌道' : '輸入層數';
-}
-
-function updateLayerSelectionModeUI() {
+function updatePanelFilterUI() {
   const panelSection = document.getElementById('section-panel');
-  const manualPanel = document.getElementById('manualLayerPanel');
-  const quickPanel = document.getElementById('layerSuggestionPanel');
-  const showManual = state.panel.layerMode === 'manual' && Boolean(state.panel.orbit);
 
   if (panelSection) {
     if (state.panel.orbit) panelSection.dataset.orbitTheme = state.panel.orbit;
     else delete panelSection.dataset.orbitTheme;
   }
-  document.querySelectorAll('#layerModeToggle [data-layer-mode]').forEach(button => {
-    const active = button.dataset.layerMode === state.panel.layerMode;
-    button.classList.toggle('active', active);
-    button.setAttribute('aria-pressed', String(active));
-    button.disabled = appLoading || !state.panel.orbit;
-  });
-
-  if (manualPanel) manualPanel.hidden = !showManual;
-  if (showManual) {
-    if (quickPanel) {
-      quickPanel.classList.remove('show');
-      quickPanel.replaceChildren();
-    }
-  } else {
-    renderLayerSuggestions();
-  }
-  updateLayerInputState();
-}
-
-function showManualLayerInput() {
-  if (appLoading || !state.panel.orbit) return;
-  blurLayerSuggestionFocus();
-  state.panel.layerMode = 'manual';
-  state.panel.rangeKey = null;
-  state.panel.layerFilters = { upper: [], lower: [] };
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  clearLayerInput();
-  updateLayerSelectionModeUI();
-  applyFilters();
-  requestAnimationFrame(() => document.getElementById('layerInput')?.focus());
-}
-
-function showQuickLayerSelection() {
-  if (appLoading || !state.panel.orbit) return;
-  state.panel.layerMode = 'quick';
-  state.panel.rangeKey = null;
-  state.panel.layerFilters = { upper: [], lower: [] };
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  clearLayerInput();
-  updateLayerSelectionModeUI();
-  applyFilters();
+  renderLayerSuggestions();
 }
 
 function getLayerRanges() {
@@ -528,19 +424,20 @@ function renderLayerSuggestions() {
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
 
-  if (state.panel.layerMode === 'manual' || !state.panel.orbit || appLoading || visibleItems.length === 0) {
+  if (!state.panel.orbit || appLoading || visibleItems.length === 0) {
     panel.classList.remove('show');
     panel.replaceChildren();
     return;
   }
   panel.innerHTML = `
-    ${activeRange ? `
-      <div class="layer-suggestion-toolbar">
+    <div class="layer-suggestion-toolbar">
+      <span class="orbit-label">快速選層</span>
+      ${activeRange ? `
         <button class="layer-suggestion-back" type="button" data-layer-action="back" aria-label="返回層數區間">
           返回區間
         </button>
-      </div>
-    ` : ''}
+      ` : ''}
+    </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${visibleItems.map(item => activeRange ? `
         <button class="layer-suggestion-chip${selectedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${selectedLayer === item}">
@@ -570,7 +467,6 @@ function selectLayerRange(rangeKey) {
   blurLayerSuggestionFocus();
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
-  clearLayerInput();
   state.panel.rangeKey = range.key;
   state.panel.layerFilters = { upper: [], lower: [] };
   renderLayerSuggestions();
@@ -581,7 +477,6 @@ function backToLayerRanges() {
   blurLayerSuggestionFocus();
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
-  clearLayerInput();
   state.panel.rangeKey = null;
   state.panel.layerFilters = { upper: [], lower: [] };
   renderLayerSuggestions();
@@ -590,53 +485,11 @@ function backToLayerRanges() {
 
 function selectSuggestedLayer(layer) {
   if (appLoading || !state.panel.orbit) return;
-  const inp = document.getElementById('layerInput');
-  if (!inp) return;
   blurLayerSuggestionFocus();
-  inp.value = String(layer);
   state.panel.layerFilters = { upper: [], lower: [] };
   commitExactQuery(layer);
-  validateLayer();
   applyFilters();
   renderLayerSuggestions();
-}
-
-function validateLayer() {
-  if (appLoading) return;
-  const val = document.getElementById('layerInput').value.trim();
-  const errEl = document.getElementById('layerError');
-  const inp = document.getElementById('layerInput');
-  state.panel.layerValid = true;
-  if (val !== '') {
-    const num = parseInt(val);
-    const limit = state.panel.orbit ? (LIMITS[state.panel.orbit] || 9999) : 9999;
-    if (isNaN(num) || num < 1 || num > limit) {
-      state.panel.layerValid = false;
-      inp.classList.add('error-input');
-      if (errEl) {
-        errEl.textContent = !isNaN(num) && state.panel.orbit && num > limit
-          ? `此軌道目前最高開放至 ${limit} 層`
-          : '請輸入有效層數';
-      }
-      errEl.classList.add('show');
-      clearPanelResultsForInvalidLayer();
-    } else {
-      inp.classList.remove('error-input');
-      errEl.classList.remove('show');
-    }
-  } else {
-    inp.classList.remove('error-input');
-    errEl.classList.remove('show');
-  }
-  if (state.panel.layerValid) applyFilters();
-}
-
-function onLayerInput() {
-  if (appLoading) return;
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  state.panel.layerFilters = { upper: [], lower: [] };
-  validateLayer();
 }
 
 function dirLabel(dir) {
@@ -1213,7 +1066,7 @@ function renderDynamicFilters(baseData, layerNum) {
   const panel = document.getElementById('dynamicFilterPanel');
   const noMatch = document.getElementById('dynamicNoMatch');
   if (!panel) return;
-  const shouldShow = state.panel.orbit && layerNum !== null && state.panel.layerValid;
+  const shouldShow = state.panel.orbit && layerNum !== null;
   panel.classList.toggle('show', shouldShow);
   if (!shouldShow) {
     state.panel.layerFilters = { upper: [], lower: [] };
@@ -1226,6 +1079,28 @@ function renderDynamicFilters(baseData, layerNum) {
   renderDynamicFilterSide('lower', collectLayerOptions(baseData, 'lower'));
 }
 
+function updateAdvancedFilterControl() {
+  const panel = document.getElementById('advancedFilterPanel');
+  const toggle = document.getElementById('advancedFilterToggle');
+  const count = document.getElementById('advancedFilterCount');
+  const chevron = document.getElementById('advancedFilterChevron');
+  const videoOnly = document.getElementById('videoOnly');
+  const activeCount = state.panel.layerFilters.upper.length
+    + state.panel.layerFilters.lower.length
+    + (videoOnly?.checked ? 1 : 0);
+
+  if (panel) panel.hidden = !state.panel.advancedFilterOpen;
+  if (toggle) toggle.setAttribute('aria-expanded', String(state.panel.advancedFilterOpen));
+  if (count) count.textContent = activeCount > 0 ? ` · ${activeCount}` : '';
+  if (chevron) chevron.textContent = state.panel.advancedFilterOpen ? '⌃' : '⌄';
+}
+
+function toggleAdvancedFilters() {
+  if (appLoading) return;
+  state.panel.advancedFilterOpen = !state.panel.advancedFilterOpen;
+  updateAdvancedFilterControl();
+}
+
 function matchesLayerFilters(d, side) {
   const filters = state.panel.layerFilters[side];
   if (filters.length === 0) return true;
@@ -1234,12 +1109,7 @@ function matchesLayerFilters(d, side) {
 
 function applyFilters() {
   if (appLoading) return;
-  if (!state.panel.layerValid) {
-    clearPanelResultsForInvalidLayer();
-    return;
-  }
-  const layerVal = document.getElementById('layerInput').value.trim();
-  const layerNum = layerVal !== '' ? parseInt(layerVal) : null;
+  const layerNum = getExactLayerValue();
   const activeRange = layerNum === null && state.panel.rangeKey
     ? getLayerRanges().find(range => range.key === state.panel.rangeKey) || null
     : null;
@@ -1251,6 +1121,7 @@ function applyFilters() {
     const noMatch = document.getElementById('dynamicNoMatch');
     if (noMatch) noMatch.classList.remove('show');
     renderDynamicFilters([], null);
+    updateAdvancedFilterControl();
     renderCards();
     return;
   }
@@ -1260,6 +1131,7 @@ function applyFilters() {
   const noMatch = document.getElementById('dynamicNoMatch');
   const hasSelectedDynamicFilters = state.panel.layerFilters.upper.length > 0 || state.panel.layerFilters.lower.length > 0;
   if (noMatch) noMatch.classList.toggle('show', hasSelectedDynamicFilters && state.panel.results.length === 0);
+  updateAdvancedFilterControl();
   renderCards();
 }
 
@@ -1270,13 +1142,12 @@ function resetFilters() {
   state.panel.orbit = null;
   state.panel.layerFilters = { upper: [], lower: [] };
   state.panel.rangeKey = null;
-  state.panel.layerMode = 'quick';
+  state.panel.advancedFilterOpen = false;
   document.querySelectorAll('#orbitChips .chip').forEach(c => {
     c.classList.remove('active');
     c.setAttribute('aria-pressed', 'false');
   });
-  clearLayerInput();
-  updateLayerSelectionModeUI();
+  updatePanelFilterUI();
   document.getElementById('videoOnly').checked = false;
   applyFilters();
 }
@@ -1367,13 +1238,6 @@ function openResultCard(type, index) {
 }
 
 function bindDelegatedInteractions() {
-  document.getElementById('layerModeToggle')?.addEventListener('click', event => {
-    const button = event.target.closest('[data-layer-mode]');
-    if (!button || button.disabled) return;
-    if (button.dataset.layerMode === 'manual') showManualLayerInput();
-    else showQuickLayerSelection();
-  });
-
   document.getElementById('layerSuggestionPanel')?.addEventListener('click', event => {
     const actionButton = event.target.closest('[data-layer-action]');
     if (actionButton?.dataset.layerAction === 'back') backToLayerRanges();
