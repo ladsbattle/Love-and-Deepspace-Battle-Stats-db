@@ -433,10 +433,16 @@ header {
   padding: 0.05rem 0 0.15rem;
 }
 .layer-suggestion-placeholder {
-  min-height: 2.5rem;
+  position: relative;
+  min-height: 0;
+  padding: 0;
+}
+.layer-suggestion-placeholder-text {
+  position: absolute;
+  inset: 0 auto auto 0;
+  height: 2.05rem;
   display: flex;
   align-items: center;
-  padding: 0.05rem 0 0.15rem;
   color: var(--text-dim);
   font-size: 0.72rem;
   letter-spacing: 0.05em;
@@ -459,6 +465,14 @@ header {
   justify-content: center;
   gap: 0.4rem;
   transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+}
+.layer-suggestion-chip > span {
+  font-size: inherit;
+  line-height: 1;
+}
+.layer-suggestion-chip.is-placeholder {
+  visibility: hidden;
+  pointer-events: none;
 }
 .layer-suggestion-chip:hover {
   border-color: rgba(188,212,255,0.52);
@@ -800,11 +814,19 @@ header {
   background: rgba(17,30,53,0.42);
   animation: sectionFadeIn 0.2s ease both;
 }
-#panelResultsView .dynamic-filter-panel {
-  margin-top: 0;
-  padding-top: 0;
+.advanced-filter-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.55rem;
 }
-.panel-video-toggle,
+#panelResultsView .dynamic-filter-panel {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+}
+.advanced-video-toggle,
+.advanced-filter-reset,
 .results-video-toggle {
   flex: 0 0 auto;
 }

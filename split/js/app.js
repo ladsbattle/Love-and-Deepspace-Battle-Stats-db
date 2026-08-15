@@ -366,13 +366,11 @@ function selectOrbit(btn) {
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   const orbit = btn.dataset.orbit;
-  state.panel.layerFilters = { upper: [], lower: [] };
+  clearAdvancedFilterState();
   state.panel.rangeKey = null;
   if (state.panel.orbit === orbit) {
     state.panel.orbit = null;
     state.panel.advancedFilterOpen = false;
-    const videoOnly = document.getElementById('videoOnly');
-    if (videoOnly) videoOnly.checked = false;
     btn.classList.remove('active');
     btn.setAttribute('aria-pressed', 'false');
   } else {
@@ -431,6 +429,10 @@ function renderLayerSuggestions() {
   const selectedLayer = getExactLayerValue();
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
+  const slotCount = Math.max(6, ranges.length, ...ranges.map(range => range.layers.length));
+  const placeholderChips = count => Array.from({ length: count }, () =>
+    '<span class="layer-suggestion-chip is-placeholder" aria-hidden="true"></span>'
+  ).join('');
 
   if (!state.panel.orbit || visibleItems.length === 0) {
     panel.innerHTML = `
@@ -438,7 +440,8 @@ function renderLayerSuggestions() {
         <span class="orbit-label">快速選層</span>
       </div>
       <div class="layer-suggestion-placeholder">
-        ${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}
+        <span class="layer-suggestion-placeholder-text">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
+        <div class="layer-suggestion-track" aria-hidden="true">${placeholderChips(slotCount)}</div>
       </div>
     `;
     panel.classList.add('show');
@@ -463,6 +466,7 @@ function renderLayerSuggestions() {
           <span>${item.start}–${item.end}</span>
         </button>
       `).join('')}
+      ${placeholderChips(Math.max(0, slotCount - visibleItems.length))}
     </div>
   `;
   panel.classList.add('show');
@@ -483,7 +487,7 @@ function selectLayerRange(rangeKey) {
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.rangeKey = range.key;
-  state.panel.layerFilters = { upper: [], lower: [] };
+  clearAdvancedFilterState();
   renderLayerSuggestions();
   applyFilters();
 }
@@ -493,7 +497,7 @@ function backToLayerRanges() {
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.rangeKey = null;
-  state.panel.layerFilters = { upper: [], lower: [] };
+  clearAdvancedFilterState();
   renderLayerSuggestions();
   applyFilters();
 }
@@ -501,7 +505,7 @@ function backToLayerRanges() {
 function selectSuggestedLayer(layer) {
   if (appLoading || !state.panel.orbit) return;
   blurLayerSuggestionFocus();
-  state.panel.layerFilters = { upper: [], lower: [] };
+  clearAdvancedFilterState();
   commitExactQuery(layer);
   applyFilters();
   renderLayerSuggestions();
@@ -1102,11 +1106,10 @@ function updateAdvancedFilterControl() {
   const controls = document.getElementById('panelResultsControls');
   const toggle = document.getElementById('advancedFilterToggle');
   const chevron = document.getElementById('advancedFilterChevron');
-  const shouldShowControls = Boolean(state.panel.orbit);
   const shouldShowAdvanced = getExactLayerValue() !== null;
 
   if (!shouldShowAdvanced) state.panel.advancedFilterOpen = false;
-  if (controls) controls.hidden = !shouldShowControls;
+  if (controls) controls.hidden = !shouldShowAdvanced;
   if (panel) panel.hidden = !shouldShowAdvanced || !state.panel.advancedFilterOpen;
   if (toggle) {
     toggle.hidden = !shouldShowAdvanced;
@@ -1119,6 +1122,18 @@ function toggleAdvancedFilters() {
   if (appLoading || getExactLayerValue() === null) return;
   state.panel.advancedFilterOpen = !state.panel.advancedFilterOpen;
   updateAdvancedFilterControl();
+}
+
+function clearAdvancedFilterState() {
+  state.panel.layerFilters = { upper: [], lower: [] };
+  const videoOnly = document.getElementById('videoOnly');
+  if (videoOnly) videoOnly.checked = false;
+}
+
+function resetAdvancedFilters() {
+  if (appLoading || getExactLayerValue() === null) return;
+  clearAdvancedFilterState();
+  applyFilters();
 }
 
 function matchesLayerFilters(d, side) {
