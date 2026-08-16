@@ -433,6 +433,7 @@ function renderLayerSuggestions() {
   const selectedLayer = getExactLayerValue();
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
+  const suggestionItems = !activeRange && state.panel.manualEntryOpen ? [] : visibleItems;
 
   if (!state.panel.orbit || visibleItems.length === 0) {
     panel.innerHTML = `
@@ -470,7 +471,7 @@ function renderLayerSuggestions() {
       ` : '<span class="layer-suggestion-back is-placeholder" aria-hidden="true">返回區間</span>'}
     </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
-      ${visibleItems.map(item => activeRange ? `
+      ${suggestionItems.map(item => activeRange ? `
         <button class="layer-suggestion-chip${selectedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${selectedLayer === item}">
           <span>${item}</span>
         </button>
