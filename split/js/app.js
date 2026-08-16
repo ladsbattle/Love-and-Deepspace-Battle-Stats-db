@@ -473,8 +473,10 @@ function renderLayerSuggestions() {
 }
 
 function blurLayerSuggestionFocus() {
+  const panel = document.getElementById('layerSuggestionPanel');
+  panel?.classList.add('suppress-hover');
   const focused = document.activeElement;
-  if (focused instanceof HTMLElement && focused.closest('#layerSuggestionPanel')) {
+  if (focused instanceof HTMLElement && panel?.contains(focused)) {
     focused.blur();
   }
 }
@@ -1273,7 +1275,8 @@ function openResultCard(type, index) {
 }
 
 function bindDelegatedInteractions() {
-  document.getElementById('layerSuggestionPanel')?.addEventListener('click', event => {
+  const layerSuggestionPanel = document.getElementById('layerSuggestionPanel');
+  layerSuggestionPanel?.addEventListener('click', event => {
     const actionButton = event.target.closest('[data-layer-action]');
     if (actionButton?.dataset.layerAction === 'back') backToLayerRanges();
 
@@ -1282,6 +1285,12 @@ function bindDelegatedInteractions() {
 
     const rangeButton = event.target.closest('[data-layer-range]');
     if (rangeButton) selectLayerRange(rangeButton.dataset.layerRange);
+  });
+  layerSuggestionPanel?.addEventListener('pointermove', () => {
+    layerSuggestionPanel.classList.remove('suppress-hover');
+  });
+  layerSuggestionPanel?.addEventListener('pointerleave', () => {
+    layerSuggestionPanel.classList.remove('suppress-hover');
   });
 
   document.getElementById('dynamicFilterPanel')?.addEventListener('click', event => {
