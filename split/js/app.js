@@ -15,6 +15,7 @@ const state = {
     dynamicBaseData: [],
     dynamicFilterOrder: 0,
     rangeKey: null,
+    manualEntryOpen: false,
     advancedFilterOpen: false,
     committedOrbit: null,
     committedLayer: null
@@ -365,6 +366,7 @@ function selectOrbit(btn) {
   if (appLoading) return;
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
+  state.panel.manualEntryOpen = false;
   const orbit = btn.dataset.orbit;
   clearAdvancedFilterState();
   state.panel.rangeKey = null;
@@ -429,7 +431,7 @@ function renderLayerSuggestions() {
   const selectedLayer = getExactLayerValue();
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
-  const slotCount = Math.max(6, ranges.length, ...ranges.map(range => range.layers.length));
+  const slotCount = Math.max(6, ranges.length + 1, ...ranges.map(range => range.layers.length + 1));
   const placeholderChips = count => Array.from({ length: count }, () =>
     '<span class="layer-suggestion-chip is-placeholder" aria-hidden="true"></span>'
   ).join('');
@@ -448,6 +450,19 @@ function renderLayerSuggestions() {
     panel.classList.add('show');
     return;
   }
+  const manualControl = state.panel.manualEntryOpen ? `
+    <div class="layer-manual-controls">
+      <div class="layer-manual-entry">
+        <input class="layer-manual-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="輸入層數" aria-label="手動輸入層數">
+        <button class="layer-manual-submit" type="button" data-layer-action="manual-submit">查看</button>
+      </div>
+      <button class="layer-manual-return" type="button" data-layer-action="manual-close">返回快速選層</button>
+    </div>
+  ` : `
+    <button class="layer-suggestion-chip layer-manual-trigger" type="button" data-layer-action="manual-open">
+      <span>＋ 手動輸入</span>
+    </button>
+  `;
   panel.innerHTML = `
     <div class="layer-suggestion-toolbar">
       <span class="orbit-label">快速選層</span>
@@ -467,7 +482,8 @@ function renderLayerSuggestions() {
           <span>${item.start}–${item.end}</span>
         </button>
       `).join('')}
-      ${placeholderChips(Math.max(0, slotCount - visibleItems.length))}
+      ${manualControl}
+      ${placeholderChips(Math.max(0, slotCount - visibleItems.length - 1))}
     </div>
   `;
   panel.classList.add('show');
@@ -489,6 +505,7 @@ function selectLayerRange(rangeKey) {
   blurLayerSuggestionFocus();
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
+  state.panel.manualEntryOpen = false;
   state.panel.rangeKey = range.key;
   clearAdvancedFilterState();
   renderLayerSuggestions();
@@ -499,6 +516,7 @@ function backToLayerRanges() {
   blurLayerSuggestionFocus();
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
+  state.panel.manualEntryOpen = false;
   state.panel.rangeKey = null;
   clearAdvancedFilterState();
   renderLayerSuggestions();
@@ -508,7 +526,63 @@ function backToLayerRanges() {
 function selectSuggestedLayer(layer) {
   if (appLoading || !state.panel.orbit) return;
   blurLayerSuggestionFocus();
+  state.panel.manualEntryOpen = false;
   clearAdvancedFilterState();
+  commitExactQuery(layer);
+  applyFilters();
+  renderLayerSuggestions();
+}
+
+function openManualLayerEntry() {
+  if (appLoading || !state.panel.orbit) return;
+  state.panel.manualEntryOpen = true;
+  renderLayerSuggestions();
+  window.requestAnimationFrame(() => {
+    document.querySelector('#layerSuggestionPanel .layer-manual-input')?.focus();
+  });
+}
+
+function closeManualLayerEntry() {
+  state.panel.manualEntryOpen = false;
+  renderLayerSuggestions();
+  window.requestAnimationFrame(() => {
+    document.querySelector('#layerSuggestionPanel .layer-manual-trigger')?.focus();
+  });
+}
+
+function clearManualLayerError(input) {
+  if (!input) return;
+  input.removeAttribute('aria-invalid');
+  input.placeholder = '輸入層數';
+  input.closest('.layer-manual-entry')?.classList.remove('has-error');
+}
+
+function showManualLayerError(input) {
+  const limit = LIMITS[state.panel.orbit] || 300;
+  input.value = '';
+  input.placeholder = `請輸入 1–${limit}`;
+  input.setAttribute('aria-invalid', 'true');
+  input.closest('.layer-manual-entry')?.classList.add('has-error');
+  input.focus();
+}
+
+function submitManualLayerEntry() {
+  if (appLoading || !state.panel.orbit) return;
+  const input = document.querySelector('#layerSuggestionPanel .layer-manual-input');
+  if (!input) return;
+  const rawValue = input.value.trim();
+  const layer = Number(rawValue);
+  const limit = LIMITS[state.panel.orbit] || Number.POSITIVE_INFINITY;
+  if (!rawValue || !Number.isInteger(layer) || layer < 1 || layer > limit) {
+    showManualLayerError(input);
+    return;
+  }
+
+  blurLayerSuggestionFocus();
+  clearAdvancedFilterState();
+  const targetRange = getLayerRanges().find(range => layer >= range.start && layer <= range.end);
+  state.panel.rangeKey = targetRange?.key || null;
+  state.panel.manualEntryOpen = false;
   commitExactQuery(layer);
   applyFilters();
   renderLayerSuggestions();
@@ -1180,6 +1254,7 @@ function resetFilters() {
   state.panel.orbit = null;
   state.panel.layerFilters = { upper: [], lower: [] };
   state.panel.rangeKey = null;
+  state.panel.manualEntryOpen = false;
   state.panel.advancedFilterOpen = false;
   document.querySelectorAll('#orbitChips .chip').forEach(c => {
     c.classList.remove('active');
@@ -1279,13 +1354,30 @@ function bindDelegatedInteractions() {
   const layerSuggestionPanel = document.getElementById('layerSuggestionPanel');
   layerSuggestionPanel?.addEventListener('click', event => {
     const actionButton = event.target.closest('[data-layer-action]');
-    if (actionButton?.dataset.layerAction === 'back') backToLayerRanges();
+    const action = actionButton?.dataset.layerAction;
+    if (action === 'back') return backToLayerRanges();
+    if (action === 'manual-open') return openManualLayerEntry();
+    if (action === 'manual-close') return closeManualLayerEntry();
+    if (action === 'manual-submit') return submitManualLayerEntry();
 
     const layerButton = event.target.closest('[data-layer]');
     if (layerButton) selectSuggestedLayer(Number(layerButton.dataset.layer));
 
     const rangeButton = event.target.closest('[data-layer-range]');
     if (rangeButton) selectLayerRange(rangeButton.dataset.layerRange);
+  });
+  layerSuggestionPanel?.addEventListener('keydown', event => {
+    if (!event.target.matches('.layer-manual-input')) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      submitManualLayerEntry();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeManualLayerEntry();
+    }
+  });
+  layerSuggestionPanel?.addEventListener('input', event => {
+    if (event.target.matches('.layer-manual-input')) clearManualLayerError(event.target);
   });
   layerSuggestionPanel?.addEventListener('pointermove', () => {
     layerSuggestionPanel.classList.remove('suppress-hover');

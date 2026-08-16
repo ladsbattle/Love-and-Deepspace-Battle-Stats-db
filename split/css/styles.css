@@ -453,15 +453,15 @@ header {
   letter-spacing: 0.05em;
 }
 .layer-suggestion-placeholder.is-empty .layer-suggestion-placeholder-text {
-  inset: 0 auto auto 50%;
-  transform: translateX(-50%);
-  justify-content: center;
-  padding: 0 0.85rem;
-  border: 1px solid rgba(184,212,255,0.18);
-  border-radius: 12px;
-  background: rgba(184,212,255,0.045);
-  color: #c7dcf7;
+  inset: 0 auto auto 0;
+  transform: none;
+  justify-content: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #bcd0e9;
   font-weight: 500;
+  text-shadow: 0 0 8px rgba(184,212,255,0.12);
   white-space: nowrap;
 }
 .layer-suggestion-chip {
@@ -486,6 +486,94 @@ header {
 .layer-suggestion-chip > span {
   font-size: inherit;
   line-height: 1;
+}
+.layer-manual-trigger {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+.layer-manual-controls {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.layer-manual-entry {
+  flex: 0 1 12rem;
+  width: 12rem;
+  min-width: 9.5rem;
+  height: 2.05rem;
+  padding: 0.16rem 0.2rem 0.16rem 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid rgba(150,180,240,0.36);
+  border-radius: var(--pill-radius);
+  background: rgba(255,255,255,0.035);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.layer-manual-entry:focus-within {
+  border-color: var(--filter-theme-border);
+  background: var(--filter-theme-bg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--filter-theme-color) 18%, transparent);
+}
+.layer-manual-entry.has-error {
+  border-color: rgba(255,145,155,0.7);
+  background: rgba(255,100,120,0.07);
+}
+.layer-manual-input {
+  width: 100%;
+  min-width: 3.5rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+.layer-manual-input::placeholder {
+  color: var(--text-dim);
+  opacity: 1;
+}
+.layer-manual-entry.has-error .layer-manual-input::placeholder {
+  color: #ffb4bc;
+}
+.layer-manual-submit {
+  appearance: none;
+  flex: 0 0 auto;
+  height: 1.55rem;
+  padding: 0 0.58rem;
+  border: 1px solid var(--filter-theme-border);
+  border-radius: var(--pill-radius);
+  background: var(--filter-theme-bg);
+  color: var(--filter-theme-color);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.6rem;
+  cursor: pointer;
+}
+.layer-manual-submit:hover,
+.layer-manual-submit:focus-visible {
+  filter: brightness(1.18);
+  outline: none;
+}
+.layer-manual-return {
+  appearance: none;
+  flex: 0 0 auto;
+  padding: 0.25rem 0.1rem;
+  border: 0;
+  background: transparent;
+  color: #9bb4d7;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.56rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.layer-manual-return:hover,
+.layer-manual-return:focus-visible {
+  color: var(--text);
+  outline: none;
 }
 .layer-suggestion-chip.is-placeholder {
   visibility: hidden;
@@ -2321,7 +2409,7 @@ body.is-app-loading .endless-filter-panel select {
 /* partner colour top bar */
 .endless-card[data-partner="逐光騎士"]::before, .endless-card[data-partner="光獵"]::before, .endless-card[data-partner="暗蝕國王"]::before { background: var(--col-light); }
 .endless-card[data-partner="永恆先知"]::before, .endless-card[data-partner="九黎司命"]::before, .endless-card[data-partner="終末之神"]::before { background: var(--col-ice); }
-.endless-card[data-partner="深海潛行者"]::before, .endless-card[data-partner="潮汐之神"]::before, .endless-card[data-partner="利莫里亞海神"]::before { background: var(--col-fire); }
+.endless-card[data-partner="深海潛行者"]::before, .endless-card[data-partner="潮汐之神"]::before, .endless-card[data-partner="利莫里亞海神"]::before, .endless-card[data-partner="赤霄武神"]::before { background: var(--col-fire); }
 .endless-card[data-partner="無盡掠奪者"]::before, .endless-card[data-partner="深淵主宰"]::before, .endless-card[data-partner="銀翼惡魔"]::before { background: var(--col-energy); }
 .endless-card[data-partner="遠空執艦官"]::before, .endless-card[data-partner="終極兵器X-02"]::before, .endless-card[data-partner="冥羅之主"]::before { background: var(--col-gravity); }
 .endless-card[data-partner="夜行狼王"]::before, .endless-card[data-partner="敬請期待1.0"]::before, .endless-card[data-partner="敬請期待2.0"]::before { background: var(--col-metal); }
@@ -2343,7 +2431,7 @@ body.is-app-loading .endless-filter-panel select {
   { color: var(--col-light);   border-color: var(--col-light-border);   background: var(--col-light-bg); }
 .partner-badge[data-partner="永恆先知"], .partner-badge[data-partner="九黎司命"], .partner-badge[data-partner="終末之神"]
   { color: var(--col-ice);     border-color: var(--col-ice-border);     background: var(--col-ice-bg); }
-.partner-badge[data-partner="深海潛行者"], .partner-badge[data-partner="潮汐之神"], .partner-badge[data-partner="利莫里亞海神"]
+.partner-badge[data-partner="深海潛行者"], .partner-badge[data-partner="潮汐之神"], .partner-badge[data-partner="利莫里亞海神"], .partner-badge[data-partner="赤霄武神"]
   { color: var(--col-fire);    border-color: var(--col-fire-border);    background: var(--col-fire-bg); }
 .partner-badge[data-partner="無盡掠奪者"], .partner-badge[data-partner="深淵主宰"], .partner-badge[data-partner="銀翼惡魔"]
   { color: var(--col-energy);  border-color: var(--col-energy-border);  background: var(--col-energy-bg); }
@@ -2362,7 +2450,7 @@ body.is-app-loading .endless-filter-panel select {
 }
 .endless-card[data-partner="逐光騎士"] .endless-score, .endless-card[data-partner="光獵"] .endless-score, .endless-card[data-partner="暗蝕國王"] .endless-score { color: var(--col-light); }
 .endless-card[data-partner="永恆先知"] .endless-score, .endless-card[data-partner="九黎司命"] .endless-score, .endless-card[data-partner="終末之神"] .endless-score { color: var(--col-ice); }
-.endless-card[data-partner="深海潛行者"] .endless-score, .endless-card[data-partner="潮汐之神"] .endless-score, .endless-card[data-partner="利莫里亞海神"] .endless-score { color: var(--col-fire); }
+.endless-card[data-partner="深海潛行者"] .endless-score, .endless-card[data-partner="潮汐之神"] .endless-score, .endless-card[data-partner="利莫里亞海神"] .endless-score, .endless-card[data-partner="赤霄武神"] .endless-score { color: var(--col-fire); }
 .endless-card[data-partner="無盡掠奪者"] .endless-score, .endless-card[data-partner="深淵主宰"] .endless-score, .endless-card[data-partner="銀翼惡魔"] .endless-score { color: var(--col-energy); }
 .endless-card[data-partner="遠空執艦官"] .endless-score, .endless-card[data-partner="終極兵器X-02"] .endless-score, .endless-card[data-partner="冥羅之主"] .endless-score { color: var(--col-gravity); }
 .endless-card[data-partner="夜行狼王"] .endless-score, .endless-card[data-partner="敬請期待1.0"] .endless-score, .endless-card[data-partner="敬請期待2.0"] .endless-score { color: var(--col-metal); }
@@ -2774,6 +2862,11 @@ select.card-input option {
   .layer-suggestion-panel {
     margin-top: 0;
   }
+  .layer-suggestion-placeholder.is-empty .layer-suggestion-placeholder-text {
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center;
+  }
   .layer-suggestion-back {
     font-size: 0.55rem;
     padding: 0.3rem 0.54rem;
@@ -2787,6 +2880,27 @@ select.card-input option {
     padding: 0 0.58rem;
     font-size: 0.66rem;
     gap: 0.3rem;
+  }
+  .layer-manual-controls {
+    max-width: 100%;
+    gap: 0.32rem;
+  }
+  .layer-manual-entry {
+    width: 10.8rem;
+    min-width: 8.8rem;
+    height: 1.92rem;
+    padding-left: 0.58rem;
+  }
+  .layer-manual-input {
+    font-size: 0.66rem;
+  }
+  .layer-manual-submit {
+    height: 1.42rem;
+    padding: 0 0.48rem;
+    font-size: 0.56rem;
+  }
+  .layer-manual-return {
+    font-size: 0.53rem;
   }
   .video-toggle {
     height: 2rem;
