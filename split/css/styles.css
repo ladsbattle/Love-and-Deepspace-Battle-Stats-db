@@ -864,6 +864,10 @@ header {
   align-items: center;
   gap: 0.55rem;
 }
+.panel-results-controls.is-placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
 .panel-results-controls[hidden] {
   display: none;
 }

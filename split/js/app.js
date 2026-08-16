@@ -450,7 +450,7 @@ function renderLayerSuggestions() {
     panel.classList.add('show');
     return;
   }
-  const manualControl = state.panel.manualEntryOpen ? `
+  const manualControl = activeRange ? '' : (state.panel.manualEntryOpen ? `
     <div class="layer-manual-controls">
       <div class="layer-manual-entry">
         <input class="layer-manual-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="輸入層數" aria-label="手動輸入層數">
@@ -462,7 +462,7 @@ function renderLayerSuggestions() {
     <button class="layer-suggestion-chip layer-manual-trigger" type="button" data-layer-action="manual-open">
       <span>＋ 手動輸入</span>
     </button>
-  `;
+  `);
   panel.innerHTML = `
     <div class="layer-suggestion-toolbar">
       <span class="orbit-label">快速選層</span>
@@ -483,7 +483,7 @@ function renderLayerSuggestions() {
         </button>
       `).join('')}
       ${manualControl}
-      ${placeholderChips(Math.max(0, slotCount - visibleItems.length - 1))}
+      ${placeholderChips(Math.max(0, slotCount - visibleItems.length - (activeRange ? 0 : 1)))}
     </div>
   `;
   panel.classList.add('show');
@@ -1186,10 +1186,15 @@ function updateAdvancedFilterControl() {
   const shouldShowAdvanced = getExactLayerValue() !== null;
 
   if (!shouldShowAdvanced) state.panel.advancedFilterOpen = false;
-  if (controls) controls.hidden = !shouldShowAdvanced;
+  if (controls) {
+    controls.hidden = false;
+    controls.classList.toggle('is-placeholder', !shouldShowAdvanced);
+    controls.setAttribute('aria-hidden', String(!shouldShowAdvanced));
+  }
   if (panel) panel.hidden = !shouldShowAdvanced || !state.panel.advancedFilterOpen;
   if (toggle) {
-    toggle.hidden = !shouldShowAdvanced;
+    toggle.hidden = false;
+    toggle.disabled = !shouldShowAdvanced;
     toggle.setAttribute('aria-expanded', String(state.panel.advancedFilterOpen));
   }
   if (chevron) chevron.textContent = state.panel.advancedFilterOpen ? '⌃' : '⌄';
