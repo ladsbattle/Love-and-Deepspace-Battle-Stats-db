@@ -438,8 +438,9 @@ function renderLayerSuggestions() {
     panel.innerHTML = `
       <div class="layer-suggestion-toolbar">
         <span class="orbit-label">快速選層</span>
+        <span class="layer-suggestion-back is-placeholder" aria-hidden="true">返回區間</span>
       </div>
-      <div class="layer-suggestion-placeholder">
+      <div class="layer-suggestion-placeholder${state.panel.orbit ? '' : ' is-empty'}">
         <span class="layer-suggestion-placeholder-text">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
         <div class="layer-suggestion-track" aria-hidden="true">${placeholderChips(slotCount)}</div>
       </div>
@@ -454,7 +455,7 @@ function renderLayerSuggestions() {
         <button class="layer-suggestion-back" type="button" data-layer-action="back" aria-label="返回層數區間">
           返回區間
         </button>
-      ` : ''}
+      ` : '<span class="layer-suggestion-back is-placeholder" aria-hidden="true">返回區間</span>'}
     </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${visibleItems.map(item => activeRange ? `
