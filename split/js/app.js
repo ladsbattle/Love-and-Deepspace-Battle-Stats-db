@@ -433,10 +433,6 @@ function renderLayerSuggestions() {
   const selectedLayer = getExactLayerValue();
   if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
-  const slotCount = Math.max(6, ranges.length + 1, ...ranges.map(range => range.layers.length + 1));
-  const placeholderChips = count => Array.from({ length: count }, () =>
-    '<span class="layer-suggestion-chip is-placeholder" aria-hidden="true"></span>'
-  ).join('');
 
   if (!state.panel.orbit || visibleItems.length === 0) {
     panel.innerHTML = `
@@ -446,7 +442,6 @@ function renderLayerSuggestions() {
       </div>
       <div class="layer-suggestion-placeholder${state.panel.orbit ? '' : ' is-empty'}">
         <span class="layer-suggestion-placeholder-text">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
-        <div class="layer-suggestion-track" aria-hidden="true">${placeholderChips(slotCount)}</div>
       </div>
     `;
     panel.classList.add('show');
@@ -485,7 +480,6 @@ function renderLayerSuggestions() {
         </button>
       `).join('')}
       ${manualControl}
-      ${placeholderChips(Math.max(0, slotCount - visibleItems.length - (activeRange ? 0 : 1)))}
     </div>
   `;
   panel.classList.add('show');
