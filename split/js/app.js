@@ -16,6 +16,7 @@ const state = {
     dynamicFilterOrder: 0,
     rangeKey: null,
     manualEntryOpen: false,
+    manualLayerValue: '',
     advancedFilterOpen: false,
     committedOrbit: null,
     committedLayer: null
@@ -367,6 +368,7 @@ function selectOrbit(btn) {
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.manualEntryOpen = false;
+  state.panel.manualLayerValue = '';
   const orbit = btn.dataset.orbit;
   clearAdvancedFilterState();
   state.panel.rangeKey = null;
@@ -453,7 +455,7 @@ function renderLayerSuggestions() {
   const manualControl = activeRange ? '' : (state.panel.manualEntryOpen ? `
     <div class="layer-manual-controls">
       <div class="layer-manual-entry">
-        <input class="layer-manual-input" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="輸入層數" aria-label="手動輸入層數">
+        <input class="layer-manual-input" type="text" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(state.panel.manualLayerValue)}" placeholder="輸入層數" aria-label="手動輸入層數">
         <button class="layer-manual-submit" type="button" data-layer-action="manual-submit">查看</button>
       </div>
       <button class="layer-manual-return" type="button" data-layer-action="manual-close">返回快速選層</button>
@@ -506,6 +508,7 @@ function selectLayerRange(rangeKey) {
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.manualEntryOpen = false;
+  state.panel.manualLayerValue = '';
   state.panel.rangeKey = range.key;
   clearAdvancedFilterState();
   renderLayerSuggestions();
@@ -517,6 +520,7 @@ function backToLayerRanges() {
   state.panel.committedOrbit = null;
   state.panel.committedLayer = null;
   state.panel.manualEntryOpen = false;
+  state.panel.manualLayerValue = '';
   state.panel.rangeKey = null;
   clearAdvancedFilterState();
   renderLayerSuggestions();
@@ -527,6 +531,7 @@ function selectSuggestedLayer(layer) {
   if (appLoading || !state.panel.orbit) return;
   blurLayerSuggestionFocus();
   state.panel.manualEntryOpen = false;
+  state.panel.manualLayerValue = '';
   clearAdvancedFilterState();
   commitExactQuery(layer);
   applyFilters();
@@ -560,7 +565,8 @@ function clearManualLayerError(input) {
 function showManualLayerError(input) {
   const limit = LIMITS[state.panel.orbit] || 300;
   input.value = '';
-  input.placeholder = `請輸入 1–${limit}`;
+  state.panel.manualLayerValue = '';
+  input.placeholder = `此軌道範圍為1–${limit}`;
   input.setAttribute('aria-invalid', 'true');
   input.closest('.layer-manual-entry')?.classList.add('has-error');
   input.focus();
@@ -580,12 +586,15 @@ function submitManualLayerEntry() {
 
   blurLayerSuggestionFocus();
   clearAdvancedFilterState();
-  const targetRange = getLayerRanges().find(range => layer >= range.start && layer <= range.end);
-  state.panel.rangeKey = targetRange?.key || null;
-  state.panel.manualEntryOpen = false;
+  state.panel.rangeKey = null;
+  state.panel.manualEntryOpen = true;
+  state.panel.manualLayerValue = String(layer);
   commitExactQuery(layer);
   applyFilters();
   renderLayerSuggestions();
+  window.requestAnimationFrame(() => {
+    document.querySelector('#layerSuggestionPanel .layer-manual-input')?.focus();
+  });
 }
 
 function dirLabel(dir) {
@@ -1260,6 +1269,7 @@ function resetFilters() {
   state.panel.layerFilters = { upper: [], lower: [] };
   state.panel.rangeKey = null;
   state.panel.manualEntryOpen = false;
+  state.panel.manualLayerValue = '';
   state.panel.advancedFilterOpen = false;
   document.querySelectorAll('#orbitChips .chip').forEach(c => {
     c.classList.remove('active');
@@ -1382,7 +1392,9 @@ function bindDelegatedInteractions() {
     }
   });
   layerSuggestionPanel?.addEventListener('input', event => {
-    if (event.target.matches('.layer-manual-input')) clearManualLayerError(event.target);
+    if (!event.target.matches('.layer-manual-input')) return;
+    state.panel.manualLayerValue = event.target.value;
+    clearManualLayerError(event.target);
   });
   layerSuggestionPanel?.addEventListener('pointermove', () => {
     layerSuggestionPanel.classList.remove('suppress-hover');
