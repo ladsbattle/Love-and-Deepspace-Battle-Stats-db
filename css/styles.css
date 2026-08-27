@@ -16,6 +16,10 @@
   --pill-selected-bg: rgba(184,212,255,0.22);
   --pill-selected-border: rgba(218,231,255,0.82);
   --pill-selected-ring: inset 0 0 0 1px rgba(226,236,255,0.24), 0 0 14px rgba(150,185,240,0.18);
+  --pill-bg: rgba(255,255,255,0.03);
+  --pill-border: rgba(150,180,240,0.22);
+  --pill-text: #c7dcf7;
+  --pill-focus-ring: rgba(188,212,255,0.68);
 
   /* per-orbit colours (chip bg / card top bar / badge) */
   --col-open:   #d4d4d4; --col-open-bg:   rgba(212,212,212,0.13); --col-open-border:   rgba(212,212,212,0.4);
@@ -26,6 +30,73 @@
   --col-gravity:#ffb47a; --col-gravity-bg:rgba(255,207,145,0.13); --col-gravity-border:rgba(255,207,145,0.4);
   --col-wave:   #ffe07a; --col-wave-bg:   rgba(232,200,74,0.13);   --col-wave-border:   rgba(232,200,74,0.4);
   --col-metal:  #0e94a8; --col-metal-bg:  rgba(14,148,168,0.16);   --col-metal-border:  rgba(14,148,168,0.45);
+}
+
+/* Shared pill system: geometry comes from the modifier; state comes from ARIA. */
+.ui-pill {
+  appearance: none;
+  box-sizing: border-box;
+  border: 1px solid var(--pill-border);
+  border-radius: var(--pill-radius);
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s, opacity 0.18s;
+}
+
+.ui-pill--primary {
+  min-height: 2.1rem;
+  padding: 0.56rem 0.4rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+
+.ui-pill--secondary {
+  flex: 0 0 auto;
+  min-width: 4.2rem;
+  height: 2.05rem;
+  padding: 0 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ui-pill--filter {
+  padding: 0.28rem 0.65rem;
+  background: transparent;
+  font-size: 0.72rem;
+}
+
+.ui-pill:hover {
+  border-color: var(--border-bright);
+  color: var(--text);
+}
+
+.ui-pill:focus-visible {
+  outline: 1px solid var(--pill-focus-ring);
+  outline-offset: 2px;
+}
+
+.ui-pill[aria-pressed="true"] {
+  border-color: var(--pill-selected-border);
+  background: var(--pill-selected-bg);
+  color: #fff;
+  box-shadow: var(--pill-selected-ring);
+  font-weight: 600;
+}
+
+.ui-pill.is-unavailable:not([aria-pressed="true"]) {
+  opacity: 0.38;
+}
+
+.ui-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* Let each filtering stage stay visible and extend the panel in normal flow. */
@@ -358,12 +429,6 @@ header {
   --endless-theme-color: var(--text);
   --endless-theme-bg: var(--pill-selected-bg);
   --endless-theme-border: var(--pill-selected-border);
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
-  color: #c7dcf7;
-  font-family: 'Noto Sans TC', sans-serif;
-  cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .endless-character-button[data-theme="光"],
 .endless-partner-button[data-theme="光"] {
@@ -403,11 +468,6 @@ header {
 }
 .endless-character-button {
   min-width: 0;
-  min-height: 2.1rem;
-  padding: 0.56rem 0.4rem;
-  border-radius: var(--pill-radius);
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
 }
 .endless-partner-button {
   position: relative;
@@ -420,7 +480,13 @@ header {
   align-items: center;
   justify-content: center;
   gap: 0.52rem;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: #c7dcf7;
+  font-family: 'Noto Sans TC', sans-serif;
   font-size: 0.72rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .endless-partner-button img {
   display: block;
@@ -429,12 +495,11 @@ header {
   object-fit: contain;
   pointer-events: none;
 }
-.endless-character-button:hover,
 .endless-partner-button:hover {
   border-color: var(--border-bright);
   color: var(--text);
 }
-.endless-character-button.active,
+.endless-character-button[aria-pressed="true"],
 .endless-partner-button.active {
   border-color: var(--endless-theme-border);
   background: var(--endless-theme-bg);
@@ -481,34 +546,15 @@ header {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #c7dcf7;
 }
-.chip {
-  padding: 0.56rem 0.4rem;
-  border: 1px solid rgba(150,180,240,0.22);
-  background: rgba(255,255,255,0.03);
-  color: #c7dcf7;
-  font-size: 0.78rem;
-  font-family: 'Noto Sans TC', sans-serif;
-  cursor: pointer;
-  transition: all 0.2s;
-  letter-spacing: 0.05em;
-}
-.chip:hover { border-color: var(--border-bright); color: var(--text); }
-.chip[data-orbit="開放"].active { background: var(--col-open-bg);   border-color: var(--col-open-border);   color: var(--col-open); }
-.chip[data-orbit="光"].active   { background: var(--col-light-bg);  border-color: var(--col-light-border);  color: var(--col-light); }
-.chip[data-orbit="冰"].active   { background: var(--col-ice-bg);    border-color: var(--col-ice-border);    color: var(--col-ice); }
-.chip[data-orbit="火"].active   { background: var(--col-fire-bg);   border-color: var(--col-fire-border);   color: var(--col-fire); }
-.chip[data-orbit="能量"].active { background: var(--col-energy-bg); border-color: var(--col-energy-border); color: var(--col-energy); }
-.chip[data-orbit="引力"].active { background: var(--col-gravity-bg);border-color: var(--col-gravity-border);color: var(--col-gravity); }
-.chip[data-orbit="波動"].active { background: var(--col-wave-bg);   border-color: var(--col-wave-border);   color: var(--col-wave); }
-.chip[data-orbit="金屬"].active { background: var(--col-metal-bg);  border-color: var(--col-metal-border);  color: var(--col-metal); }
-.chip.active,
-.layer-suggestion-chip.active,
-.dynamic-chip.active {
-  box-shadow: var(--pill-selected-ring);
-  font-weight: 600;
-}
+.chip[data-orbit="開放"][aria-pressed="true"] { background: var(--col-open-bg);   border-color: var(--col-open-border);   color: var(--col-open); }
+.chip[data-orbit="光"][aria-pressed="true"]   { background: var(--col-light-bg);  border-color: var(--col-light-border);  color: var(--col-light); }
+.chip[data-orbit="冰"][aria-pressed="true"]   { background: var(--col-ice-bg);    border-color: var(--col-ice-border);    color: var(--col-ice); }
+.chip[data-orbit="火"][aria-pressed="true"]   { background: var(--col-fire-bg);   border-color: var(--col-fire-border);   color: var(--col-fire); }
+.chip[data-orbit="能量"][aria-pressed="true"] { background: var(--col-energy-bg); border-color: var(--col-energy-border); color: var(--col-energy); }
+.chip[data-orbit="引力"][aria-pressed="true"] { background: var(--col-gravity-bg);border-color: var(--col-gravity-border);color: var(--col-gravity); }
+.chip[data-orbit="波動"][aria-pressed="true"] { background: var(--col-wave-bg);   border-color: var(--col-wave-border);   color: var(--col-wave); }
+.chip[data-orbit="金屬"][aria-pressed="true"] { background: var(--col-metal-bg);  border-color: var(--col-metal-border);  color: var(--col-metal); }
 
 .site-footer-credit {
   display: inline-block;
@@ -597,23 +643,8 @@ header {
   white-space: nowrap;
 }
 .layer-suggestion-chip {
-  flex: 0 0 auto;
-  min-width: 4.2rem;
-  height: 2.05rem;
-  padding: 0 0.72rem;
-  border: 1px solid rgba(150,180,240,0.24);
   background: rgba(255,255,255,0.035);
-  color: #c7dcf7;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
+  border-color: rgba(150,180,240,0.24);
 }
 .layer-suggestion-chip > span {
   font-size: inherit;
@@ -712,11 +743,6 @@ header {
   color: var(--text);
   background: rgba(160,190,240,0.12);
 }
-.layer-suggestion-chip:focus-visible {
-  outline: 2px solid rgba(188,212,255,0.72);
-  outline-offset: 2px;
-}
-
 /* Touch browsers can keep hover/focus at the tapped position after the pills are replaced. */
 @media (hover: none) {
   .layer-suggestion-chip:hover,
@@ -729,15 +755,6 @@ header {
     box-shadow: none;
   }
 }
-.layer-suggestion-chip.active,
-.layer-suggestion-chip.active:focus,
-.layer-suggestion-chip.active:focus-visible {
-  border-color: rgba(218,231,255,0.82);
-  background: var(--pill-selected-bg);
-  color: #f7faff;
-  box-shadow: var(--pill-selected-ring);
-}
-
 /* Card selector input */
 .card-input {
   height: 2.375rem;
@@ -924,36 +941,8 @@ header {
   flex-wrap: wrap;
   gap: 0.45rem;
 }
-.dynamic-chip {
-  padding: 0.28rem 0.65rem;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: #c7dcf7;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.72rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.orbit-chips .chip,
-.layer-suggestion-chip,
-.dynamic-chip {
-  border-radius: var(--pill-radius);
-}
-.dynamic-chip:hover {
-  border-color: var(--border-bright);
-  color: var(--text);
-}
-.dynamic-chip.active {
-  border-color: var(--pill-selected-border);
-  background: var(--pill-selected-bg);
-  color: #ffffff;
-  box-shadow: var(--pill-selected-ring);
-  font-weight: 600;
-}
-#section-panel .layer-suggestion-chip.active,
-#section-panel .layer-suggestion-chip.active:focus,
-#section-panel .layer-suggestion-chip.active:focus-visible,
-#section-panel .dynamic-chip.active {
+#section-panel .layer-suggestion-chip[aria-pressed="true"],
+#section-panel .dynamic-chip[aria-pressed="true"] {
   border-color: var(--filter-theme-border);
   background: var(--filter-theme-bg);
   color: var(--filter-theme-color);
@@ -3381,14 +3370,6 @@ select.card-input option {
   transition: opacity 0.18s ease, color 0.18s ease,
     border-color 0.18s ease, background-color 0.18s ease;
   transform: none !important;
-}
-
-.dynamic-chip.is-unavailable:not(.active) {
-  opacity: 0.38;
-}
-
-.dynamic-chip.active {
-  opacity: 1;
 }
 
 @media (max-width: 600px) {

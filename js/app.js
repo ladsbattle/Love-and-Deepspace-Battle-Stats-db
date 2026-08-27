@@ -375,6 +375,12 @@ function commitExactQuery(layer) {
   state.panel.committedLayer = layer;
 }
 
+function syncOrbitPillState() {
+  document.querySelectorAll('#orbitChips [data-orbit]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.orbit === state.panel.orbit));
+  });
+}
+
 function selectOrbit(btn) {
   if (appLoading) return;
   state.panel.committedOrbit = null;
@@ -387,17 +393,10 @@ function selectOrbit(btn) {
   if (state.panel.orbit === orbit) {
     state.panel.orbit = null;
     state.panel.advancedFilterOpen = false;
-    btn.classList.remove('active');
-    btn.setAttribute('aria-pressed', 'false');
   } else {
-    document.querySelectorAll('#orbitChips .chip').forEach(c => {
-      c.classList.remove('active');
-      c.setAttribute('aria-pressed', 'false');
-    });
     state.panel.orbit = orbit;
-    btn.classList.add('active');
-    btn.setAttribute('aria-pressed', 'true');
   }
+  syncOrbitPillState();
   updatePanelFilterUI();
   applyFilters();
 }
@@ -469,7 +468,7 @@ function renderLayerSuggestions() {
       <button class="layer-manual-return" type="button" data-layer-action="manual-close">返回快速選層</button>
     </div>
   ` : `
-    <button class="layer-suggestion-chip layer-manual-trigger" type="button" data-layer-action="manual-open">
+    <button class="layer-suggestion-chip layer-manual-trigger ui-pill ui-pill--secondary" type="button" data-layer-action="manual-open">
       <span>＋ 手動輸入</span>
     </button>
   `);
@@ -484,11 +483,11 @@ function renderLayerSuggestions() {
     </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${suggestionItems.map(item => activeRange ? `
-        <button class="layer-suggestion-chip${selectedLayer === item ? ' active' : ''}" type="button" data-layer="${item}" aria-pressed="${selectedLayer === item}">
+        <button class="layer-suggestion-chip ui-pill ui-pill--secondary" type="button" data-layer="${item}" aria-pressed="${selectedLayer === item}">
           <span>${item}</span>
         </button>
       ` : `
-        <button class="layer-suggestion-chip" type="button" data-layer-range="${item.key}">
+        <button class="layer-suggestion-chip ui-pill ui-pill--secondary" type="button" data-layer-range="${item.key}">
           <span>${item.start}–${item.end}</span>
         </button>
       `).join('')}
@@ -1164,7 +1163,7 @@ function renderDynamicFilterSide(side, optionsByType) {
       );
       const compatible = active || (!hasActiveSibling && isDynamicOptionCompatible(side, option));
       return `
-        <button class="dynamic-chip ${active ? 'active' : ''} ${compatible ? '' : 'is-unavailable'}"
+        <button class="dynamic-chip ui-pill ui-pill--filter ${compatible ? '' : 'is-unavailable'}"
           data-side="${side}"
           data-type="${option.type}"
           data-value="${escapeHtml(option.value)}"
@@ -1277,10 +1276,7 @@ function resetFilters() {
   state.panel.manualEntryOpen = false;
   state.panel.manualLayerValue = '';
   state.panel.advancedFilterOpen = false;
-  document.querySelectorAll('#orbitChips .chip').forEach(c => {
-    c.classList.remove('active');
-    c.setAttribute('aria-pressed', 'false');
-  });
+  syncOrbitPillState();
   updatePanelFilterUI();
   document.getElementById('videoOnly').checked = false;
   applyFilters();
@@ -1881,7 +1877,7 @@ function renderEndlessSelector() {
   characterGrid.innerHTML = ENDLESS_CHARACTER_CATALOG
     .filter(character => character.visible)
     .map(character => `
-      <button class="endless-character-button ${state.endless.character === character.name ? 'active' : ''}"
+      <button class="endless-character-button ui-pill ui-pill--primary"
         data-endless-character="${escapeHtml(character.name)}"
         data-theme="${escapeHtml(character.theme)}"
         aria-pressed="${state.endless.character === character.name}">
@@ -1959,7 +1955,7 @@ function renderEndlessDynamicFilters(baseData) {
     return;
   }
   chips.innerHTML = options.map(option => `
-    <button class="dynamic-chip ${state.endless.card === option.value ? 'active' : ''}"
+    <button class="dynamic-chip ui-pill ui-pill--filter"
       data-value="${escapeHtml(option.value)}"
       data-endless-card="${escapeHtml(option.value)}"
       aria-pressed="${state.endless.card === option.value}">
