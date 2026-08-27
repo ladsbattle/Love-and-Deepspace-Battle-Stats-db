@@ -147,10 +147,26 @@
       </div>
     </div>
 
-    <div class="dynamic-filter-panel" id="endlessDynamicFilterPanel">
-      <div class="dynamic-filter-header">
-        <div class="dynamic-filter-title">✦ 配置篩選</div>
-        <button class="btn-reset btn-reset-compact" onclick="clearEndlessDynamicFilters()">清除配置</button>
+  </div>
+
+  <div class="results-view" id="endlessResultsView">
+    <div class="results-toolbar">
+      <div class="results-info" id="endlessInfo"></div>
+      <div class="endless-results-controls">
+        <button class="advanced-filter-toggle" id="endlessAdvancedFilterToggle" type="button" aria-expanded="false" aria-controls="endlessAdvancedFilterPanel" onclick="toggleEndlessAdvancedFilters()" hidden>
+          <span>配置篩選</span>
+          <span class="advanced-filter-chevron" id="endlessAdvancedFilterChevron" aria-hidden="true">⌄</span>
+        </button>
+        <label class="video-toggle video-toggle-compact results-video-toggle">
+          <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
+          <span class="video-switch"></span>
+          <span>附影片</span>
+        </label>
+      </div>
+    </div>
+    <div class="advanced-filter-panel endless-advanced-filter-panel" id="endlessAdvancedFilterPanel" hidden>
+      <div class="advanced-filter-controls">
+        <button class="btn-reset btn-reset-compact advanced-filter-reset" onclick="clearEndlessDynamicFilters()">清除配置</button>
       </div>
       <div class="dynamic-filter-grid single-column">
         <div class="dynamic-layer-box">
@@ -158,17 +174,6 @@
         </div>
       </div>
       <div class="dynamic-no-match" id="endlessDynamicNoMatch">找不到完全相符的結果</div>
-    </div>
-  </div>
-
-  <div class="results-view" id="endlessResultsView">
-    <div class="results-toolbar">
-      <div class="results-info" id="endlessInfo"></div>
-      <label class="video-toggle video-toggle-compact results-video-toggle">
-        <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
-        <span class="video-switch"></span>
-        <span>附影片</span>
-      </label>
     </div>
     <div class="endless-grid" id="endlessGrid"></div>
   </div>

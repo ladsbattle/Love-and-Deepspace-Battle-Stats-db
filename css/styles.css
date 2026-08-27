@@ -336,7 +336,8 @@ header {
   justify-content: start;
 }
 .endless-character-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.9rem;
 }
 .endless-partner-section {
   padding-top: 1.15rem;
@@ -399,8 +400,8 @@ header {
 }
 .endless-character-button {
   min-width: 0;
-  min-height: 2.65rem;
-  padding: 0.56rem 0.75rem;
+  min-height: 2.1rem;
+  padding: 0.56rem 0.4rem;
   border-radius: var(--pill-radius);
   font-size: 0.78rem;
   letter-spacing: 0.05em;
@@ -438,29 +439,17 @@ header {
   box-shadow: var(--pill-selected-ring);
   font-weight: 600;
 }
-.endless-partner-button.active::after {
-  content: "✓";
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 1.25rem;
-  height: 1.25rem;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--endless-theme-color);
-  color: var(--bg);
-  font-size: 0.68rem;
-  line-height: 1;
-}
 .endless-partner-placeholder {
-  min-height: 8.2rem;
+  min-height: 2.05rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-dim);
+  justify-content: flex-start;
+  color: #bcd0e9;
   font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(184,212,255,0.12);
+  white-space: nowrap;
 }
 .endless-partner-placeholder[hidden] {
   display: none;
@@ -995,6 +984,17 @@ header {
   gap: 0.75rem;
   margin-bottom: 0.8rem;
 }
+#endlessResultsView .results-toolbar {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+.endless-results-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
 .panel-results-controls {
   display: inline-flex;
   align-items: center;
@@ -1075,6 +1075,13 @@ header {
 .advanced-filter-reset,
 .results-video-toggle {
   flex: 0 0 auto;
+}
+.endless-advanced-filter-panel .advanced-filter-controls {
+  justify-content: flex-end;
+  margin-bottom: 0.7rem;
+}
+.endless-advanced-filter-panel .dynamic-layer-box {
+  padding: 0.75rem;
 }
 .content-transition {
   opacity: 1;
@@ -3396,8 +3403,8 @@ select.card-input option {
     width: 100%;
   }
   .endless-character-button {
-    min-height: 2.4rem;
-    padding: 0.5rem 0.4rem;
+    min-height: 0;
+    padding: 0.5rem 0.25rem;
     font-size: 0.75rem;
   }
   .endless-partner-section {
@@ -3414,9 +3421,9 @@ select.card-input option {
     height: 4rem;
   }
   .endless-partner-placeholder {
-    min-height: 5.4rem;
-    justify-content: flex-start;
-    padding-left: 0.2rem;
+    min-height: 2.05rem;
+    justify-content: center;
+    padding-left: 0;
     font-size: 0.66rem;
   }
 }

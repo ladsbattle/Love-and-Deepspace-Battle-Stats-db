@@ -32,7 +32,8 @@ const state = {
   endless: {
     character: null,
     partner: null,
-    card: null
+    card: null,
+    advancedFilterOpen: false
   },
   preview: {
     items: { panel: [], endless: [] },
@@ -1413,7 +1414,7 @@ function bindDelegatedInteractions() {
     if (button) toggleDynamicFilter(button.dataset.side, button.dataset.type, button.dataset.value);
   });
 
-  document.getElementById('endlessDynamicFilterPanel')?.addEventListener('click', event => {
+  document.getElementById('endlessAdvancedFilterPanel')?.addEventListener('click', event => {
     const button = event.target.closest('.dynamic-chip[data-endless-card]');
     if (button) toggleEndlessCardFilter(button.dataset.endlessCard);
   });
@@ -1911,6 +1912,7 @@ function selectEndlessCharacter(characterName) {
   state.endless.character = character.name;
   state.endless.partner = null;
   state.endless.card = null;
+  state.endless.advancedFilterOpen = false;
   renderEndlessSelector();
   applyEndlessFilters();
 }
@@ -1921,6 +1923,7 @@ function selectEndlessPartner(partner) {
   if (!character?.partners.includes(partner)) return;
   state.endless.partner = state.endless.partner === partner ? null : partner;
   state.endless.card = null;
+  state.endless.advancedFilterOpen = false;
   renderEndlessSelector();
   applyEndlessFilters();
 }
@@ -1932,12 +1935,18 @@ function collectEndlessCardOptions(data) {
 }
 
 function renderEndlessDynamicFilters(baseData) {
-  const panel = document.getElementById('endlessDynamicFilterPanel');
+  const panel = document.getElementById('endlessAdvancedFilterPanel');
+  const toggle = document.getElementById('endlessAdvancedFilterToggle');
+  const chevron = document.getElementById('endlessAdvancedFilterChevron');
   const chips = document.getElementById('endlessCardChips');
   const noMatch = document.getElementById('endlessDynamicNoMatch');
-  if (!panel || !chips) return;
+  if (!panel || !toggle || !chips) return;
   const shouldShow = Boolean(state.endless.partner);
-  panel.classList.toggle('show', shouldShow);
+  if (!shouldShow) state.endless.advancedFilterOpen = false;
+  toggle.hidden = !shouldShow;
+  toggle.setAttribute('aria-expanded', String(shouldShow && state.endless.advancedFilterOpen));
+  panel.hidden = !shouldShow || !state.endless.advancedFilterOpen;
+  if (chevron) chevron.textContent = state.endless.advancedFilterOpen ? '⌃' : '⌄';
   if (!shouldShow) {
     state.endless.card = null;
     if (noMatch) noMatch.classList.remove('show');
@@ -1957,6 +1966,12 @@ function renderEndlessDynamicFilters(baseData) {
       ${escapeHtml(option.label)}
     </button>
   `).join('');
+}
+
+function toggleEndlessAdvancedFilters() {
+  if (appLoading || !state.endless.partner) return;
+  state.endless.advancedFilterOpen = !state.endless.advancedFilterOpen;
+  applyEndlessFilters();
 }
 
 function toggleEndlessCardFilter(value) {
@@ -1993,6 +2008,7 @@ function resetEndlessFilters() {
   state.endless.character = null;
   state.endless.partner = null;
   state.endless.card = null;
+  state.endless.advancedFilterOpen = false;
   document.getElementById('endlessVideoOnly').checked = false;
   renderEndlessSelector();
   applyEndlessFilters();
