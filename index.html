@@ -90,7 +90,7 @@
     <div class="advanced-filter-panel" id="advancedFilterPanel" hidden>
       <div class="advanced-filter-controls">
         <label class="video-toggle video-toggle-compact advanced-video-toggle ui-control ui-control--compact ui-control--toggle">
-          <input type="checkbox" id="videoOnly" onchange="applyFilters()">
+          <input type="checkbox" id="videoOnly" onchange="setPanelVideoOnly(this.checked)">
           <span class="video-switch"></span>
           <span>附影片</span>
         </label>
@@ -159,7 +159,7 @@
     <div class="advanced-filter-panel endless-advanced-filter-panel" id="endlessAdvancedFilterPanel" hidden>
       <div class="advanced-filter-controls">
         <label class="video-toggle video-toggle-compact advanced-video-toggle ui-control ui-control--compact ui-control--toggle">
-          <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
+          <input type="checkbox" id="endlessVideoOnly" onchange="setEndlessVideoOnly(this.checked)">
           <span class="video-switch"></span>
           <span>附影片</span>
         </label>

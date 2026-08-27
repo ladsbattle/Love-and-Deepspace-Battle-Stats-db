@@ -15,8 +15,9 @@ let DATA = [];
 let ENDLESS_DATA = [];
 let ENDLESS_ALL = [];
 const DYNAMIC_FILTER_CATEGORIES = ['dir', 'card', 'partner'];
-const state = {
-  panel: {
+
+function createPanelFilterState() {
+  return {
     orbit: null,
     results: [],
     layerFilters: { upper: [], lower: [] },
@@ -26,15 +27,25 @@ const state = {
     manualEntryOpen: false,
     manualLayerValue: '',
     advancedFilterOpen: false,
+    videoOnly: false,
     committedOrbit: null,
     committedLayer: null
-  },
-  endless: {
+  };
+}
+
+function createEndlessFilterState() {
+  return {
     character: null,
     partner: null,
     card: null,
-    advancedFilterOpen: false
-  },
+    advancedFilterOpen: false,
+    videoOnly: false
+  };
+}
+
+const state = {
+  panel: createPanelFilterState(),
+  endless: createEndlessFilterState(),
   preview: {
     items: { panel: [], endless: [] },
     autoFrame: null,
@@ -347,8 +358,7 @@ async function init() {
 
     appLoading = false;
     setSearchControlsDisabled(false);
-    state.endless.character = null;
-    state.endless.partner = null;
+    resetEndlessFilterState();
     renderEndlessSelector();
     renderLayerSuggestions();
     applyFilters();
@@ -375,6 +385,60 @@ function commitExactQuery(layer) {
   state.panel.committedLayer = layer;
 }
 
+function syncVideoFilterControls() {
+  const panelToggle = document.getElementById('videoOnly');
+  const endlessToggle = document.getElementById('endlessVideoOnly');
+  if (panelToggle) panelToggle.checked = state.panel.videoOnly;
+  if (endlessToggle) endlessToggle.checked = state.endless.videoOnly;
+}
+
+function clearPanelAdvancedState({ collapse = true } = {}) {
+  state.panel.layerFilters = { upper: [], lower: [] };
+  state.panel.dynamicBaseData = [];
+  state.panel.dynamicFilterOrder = 0;
+  state.panel.videoOnly = false;
+  if (collapse) state.panel.advancedFilterOpen = false;
+  syncVideoFilterControls();
+}
+
+function clearPanelLayerSelectionState() {
+  state.panel.committedOrbit = null;
+  state.panel.committedLayer = null;
+  state.panel.rangeKey = null;
+  state.panel.manualEntryOpen = false;
+  state.panel.manualLayerValue = '';
+  clearPanelAdvancedState();
+}
+
+function resetPanelFilterState() {
+  Object.assign(state.panel, createPanelFilterState());
+  syncVideoFilterControls();
+}
+
+function clearEndlessAdvancedState({ collapse = true } = {}) {
+  state.endless.card = null;
+  state.endless.videoOnly = false;
+  if (collapse) state.endless.advancedFilterOpen = false;
+  syncVideoFilterControls();
+}
+
+function resetEndlessFilterState() {
+  Object.assign(state.endless, createEndlessFilterState());
+  syncVideoFilterControls();
+}
+
+function setPanelVideoOnly(checked) {
+  if (appLoading) return;
+  state.panel.videoOnly = Boolean(checked);
+  applyFilters();
+}
+
+function setEndlessVideoOnly(checked) {
+  if (appLoading) return;
+  state.endless.videoOnly = Boolean(checked);
+  applyEndlessFilters();
+}
+
 function syncOrbitPillState() {
   document.querySelectorAll('#orbitChips [data-orbit]').forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.orbit === state.panel.orbit));
@@ -383,19 +447,10 @@ function syncOrbitPillState() {
 
 function selectOrbit(btn) {
   if (appLoading) return;
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  state.panel.manualEntryOpen = false;
-  state.panel.manualLayerValue = '';
   const orbit = btn.dataset.orbit;
-  clearAdvancedFilterState();
-  state.panel.rangeKey = null;
-  if (state.panel.orbit === orbit) {
-    state.panel.orbit = null;
-    state.panel.advancedFilterOpen = false;
-  } else {
-    state.panel.orbit = orbit;
-  }
+  const nextOrbit = state.panel.orbit === orbit ? null : orbit;
+  clearPanelLayerSelectionState();
+  state.panel.orbit = nextOrbit;
   syncOrbitPillState();
   updatePanelFilterUI();
   applyFilters();
@@ -442,7 +497,6 @@ function renderLayerSuggestions() {
   const ranges = getLayerRanges();
   const activeRange = ranges.find(range => range.key === state.panel.rangeKey) || null;
   const selectedLayer = getExactLayerValue();
-  if (state.panel.rangeKey && !activeRange) state.panel.rangeKey = null;
   const visibleItems = activeRange ? activeRange.layers : ranges;
   const suggestionItems = !activeRange && state.panel.manualEntryOpen ? [] : visibleItems;
 
@@ -511,24 +565,15 @@ function selectLayerRange(rangeKey) {
   const range = getLayerRanges().find(item => item.key === rangeKey);
   if (!range) return;
   blurLayerSuggestionFocus();
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  state.panel.manualEntryOpen = false;
-  state.panel.manualLayerValue = '';
+  clearPanelLayerSelectionState();
   state.panel.rangeKey = range.key;
-  clearAdvancedFilterState();
   renderLayerSuggestions();
   applyFilters();
 }
 
 function backToLayerRanges() {
   blurLayerSuggestionFocus();
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  state.panel.manualEntryOpen = false;
-  state.panel.manualLayerValue = '';
-  state.panel.rangeKey = null;
-  clearAdvancedFilterState();
+  clearPanelLayerSelectionState();
   renderLayerSuggestions();
   applyFilters();
 }
@@ -538,7 +583,7 @@ function selectSuggestedLayer(layer) {
   blurLayerSuggestionFocus();
   state.panel.manualEntryOpen = false;
   state.panel.manualLayerValue = '';
-  clearAdvancedFilterState();
+  clearPanelAdvancedState();
   commitExactQuery(layer);
   applyFilters();
   renderLayerSuggestions();
@@ -590,7 +635,7 @@ function submitManualLayerEntry() {
   }
 
   blurLayerSuggestionFocus();
-  clearAdvancedFilterState();
+  clearPanelAdvancedState();
   state.panel.rangeKey = null;
   state.panel.manualEntryOpen = true;
   state.panel.manualLayerValue = String(layer);
@@ -1182,8 +1227,6 @@ function renderDynamicFilters(baseData, layerNum) {
   const shouldShow = state.panel.orbit && layerNum !== null;
   panel.classList.toggle('show', shouldShow);
   if (!shouldShow) {
-    state.panel.layerFilters = { upper: [], lower: [] };
-    state.panel.dynamicBaseData = [];
     if (noMatch) noMatch.classList.remove('show');
     return;
   }
@@ -1199,7 +1242,6 @@ function updateAdvancedFilterControl() {
   const chevron = document.getElementById('advancedFilterChevron');
   const shouldShowAdvanced = getExactLayerValue() !== null;
 
-  if (!shouldShowAdvanced) state.panel.advancedFilterOpen = false;
   if (controls) {
     controls.hidden = false;
     controls.classList.toggle('is-placeholder', !shouldShowAdvanced);
@@ -1220,15 +1262,9 @@ function toggleAdvancedFilters() {
   updateAdvancedFilterControl();
 }
 
-function clearAdvancedFilterState() {
-  state.panel.layerFilters = { upper: [], lower: [] };
-  const videoOnly = document.getElementById('videoOnly');
-  if (videoOnly) videoOnly.checked = false;
-}
-
 function resetAdvancedFilters() {
   if (appLoading || getExactLayerValue() === null) return;
-  clearAdvancedFilterState();
+  clearPanelAdvancedState({ collapse: false });
   applyFilters();
 }
 
@@ -1244,10 +1280,9 @@ function applyFilters() {
   const activeRange = layerNum === null && state.panel.rangeKey
     ? getLayerRanges().find(range => range.key === state.panel.rangeKey) || null
     : null;
-  const videoOnly = document.getElementById('videoOnly').checked;
+  const videoOnly = state.panel.videoOnly;
   const shouldSearch = Boolean(state.panel.orbit || state.panel.rangeKey || videoOnly);
   if (!shouldSearch) {
-    state.panel.layerFilters = { upper: [], lower: [] };
     state.panel.results = [...DATA];
     const noMatch = document.getElementById('dynamicNoMatch');
     if (noMatch) noMatch.classList.remove('show');
@@ -1268,17 +1303,9 @@ function applyFilters() {
 
 function resetFilters() {
   if (appLoading) return;
-  state.panel.committedOrbit = null;
-  state.panel.committedLayer = null;
-  state.panel.orbit = null;
-  state.panel.layerFilters = { upper: [], lower: [] };
-  state.panel.rangeKey = null;
-  state.panel.manualEntryOpen = false;
-  state.panel.manualLayerValue = '';
-  state.panel.advancedFilterOpen = false;
+  resetPanelFilterState();
   syncOrbitPillState();
   updatePanelFilterUI();
-  document.getElementById('videoOnly').checked = false;
   applyFilters();
 }
 
@@ -1440,11 +1467,10 @@ function bindDelegatedInteractions() {
 }
 
 function hasPanelFilters() {
-  const videoOnly = document.getElementById('videoOnly');
   return Boolean(
     state.panel.orbit ||
     state.panel.rangeKey ||
-    (videoOnly && videoOnly.checked) ||
+    state.panel.videoOnly ||
     state.panel.layerFilters.upper.length > 0 ||
     state.panel.layerFilters.lower.length > 0
   );
@@ -1907,8 +1933,7 @@ function selectEndlessCharacter(characterName) {
   if (!character) return;
   state.endless.character = character.name;
   state.endless.partner = null;
-  state.endless.card = null;
-  state.endless.advancedFilterOpen = false;
+  clearEndlessAdvancedState();
   renderEndlessSelector();
   applyEndlessFilters();
 }
@@ -1918,8 +1943,7 @@ function selectEndlessPartner(partner) {
   const character = getEndlessCharacter();
   if (!character?.partners.includes(partner)) return;
   state.endless.partner = state.endless.partner === partner ? null : partner;
-  state.endless.card = null;
-  state.endless.advancedFilterOpen = false;
+  clearEndlessAdvancedState();
   renderEndlessSelector();
   applyEndlessFilters();
 }
@@ -1938,13 +1962,11 @@ function renderEndlessDynamicFilters(baseData) {
   const noMatch = document.getElementById('endlessDynamicNoMatch');
   if (!panel || !toggle || !chips) return;
   const shouldShow = Boolean(state.endless.partner);
-  if (!shouldShow) state.endless.advancedFilterOpen = false;
   toggle.hidden = !shouldShow;
   toggle.setAttribute('aria-expanded', String(shouldShow && state.endless.advancedFilterOpen));
   panel.hidden = !shouldShow || !state.endless.advancedFilterOpen;
   if (chevron) chevron.textContent = state.endless.advancedFilterOpen ? '⌃' : '⌄';
   if (!shouldShow) {
-    state.endless.card = null;
     if (noMatch) noMatch.classList.remove('show');
     return;
   }
@@ -1978,14 +2000,13 @@ function toggleEndlessCardFilter(value) {
 
 function resetEndlessAdvancedFilters() {
   if (appLoading) return;
-  state.endless.card = null;
-  document.getElementById('endlessVideoOnly').checked = false;
+  clearEndlessAdvancedState({ collapse: false });
   applyEndlessFilters();
 }
 
 function applyEndlessFilters() {
   if (appLoading) return;
-  const videoOnly = document.getElementById('endlessVideoOnly').checked;
+  const videoOnly = state.endless.videoOnly;
   const selectedCharacter = getEndlessCharacter();
   const baseData = ENDLESS_ALL.filter(d => {
     if (selectedCharacter && !selectedCharacter.partners.includes(d.partner)) return false;
@@ -2002,11 +2023,7 @@ function applyEndlessFilters() {
 
 function resetEndlessFilters() {
   if (appLoading) return;
-  state.endless.character = null;
-  state.endless.partner = null;
-  state.endless.card = null;
-  state.endless.advancedFilterOpen = false;
-  document.getElementById('endlessVideoOnly').checked = false;
+  resetEndlessFilterState();
   renderEndlessSelector();
   applyEndlessFilters();
 }
