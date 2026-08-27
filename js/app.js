@@ -55,7 +55,6 @@ const state = {
 };
 const PANEL_PREVIEW_SPEED = 0.075;
 const CONTENT_FADE_MS = 150;
-const fadeTimers = {};
 const fadeVersions = {};
 let tabFadeTimer = null;
 let activeFolderTab = 'favorites';
@@ -126,11 +125,9 @@ function setSearchControlsDisabled(disabled) {
   document.body.classList.toggle('is-app-loading', disabled);
   document.querySelectorAll(`
     .tab-nav .tab-btn,
-    .filter-panel button,
-    .filter-panel input,
-    .endless-filter-panel button,
-    .endless-filter-panel input,
-    .endless-filter-panel select
+    .primary-filter-block button,
+    .primary-filter-block input,
+    .primary-filter-block select
   `).forEach(el => { el.disabled = disabled; });
   const advancedToggle = document.getElementById('advancedFilterToggle');
   if (advancedToggle) advancedToggle.disabled = disabled;
@@ -1916,7 +1913,7 @@ function renderEndlessSelector() {
   partnerGrid.classList.toggle('show', Boolean(selectedCharacter));
   partnerGrid.innerHTML = selectedCharacter
     ? selectedCharacter.partners.map(partner => `
-        <button class="endless-partner-button ${state.endless.partner === partner ? 'active' : ''}"
+        <button class="endless-partner-button"
           data-endless-partner="${escapeHtml(partner)}"
           data-theme="${escapeHtml(selectedCharacter.theme)}"
           aria-pressed="${state.endless.partner === partner}">
