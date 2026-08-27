@@ -2,6 +2,14 @@
 // Parse data
 const LIMITS = { 光:210, 冰:210, 火:240, 能量:180, 引力:180, 金屬:180, 開放:300, 波動:60 };
 const ORBIT_LABEL = { 開放:'開放穩定', 波動:'開放波動', 光:'光', 冰:'冰', 火:'火', 能量:'能量', 引力:'引力', 金屬:'金屬' };
+const ENDLESS_CHARACTER_CATALOG = [
+  { name: '沈星回', theme: '光', visible: true, partners: ['逐光騎士', '光獵', '暗蝕國王'] },
+  { name: '黎深', theme: '冰', visible: true, partners: ['永恆先知', '九黎司命', '終末之神'] },
+  { name: '祁煜', theme: '火', visible: true, partners: ['深海潛行者', '潮汐之神', '利莫里亞海神', '赤霄武神'] },
+  { name: '秦徹', theme: '能量', visible: true, partners: ['無盡掠奪者', '深淵主宰', '銀翼惡魔'] },
+  { name: '夏以晝', theme: '引力', visible: true, partners: ['遠空執艦官', '終極兵器X-02', '冥羅之主'] },
+  { name: '敖尹', theme: '金屬', visible: false, partners: [] }
+];
 
 let DATA = [];
 let ENDLESS_DATA = [];
@@ -22,6 +30,7 @@ const state = {
     committedLayer: null
   },
   endless: {
+    character: null,
     partner: null,
     card: null
   },
@@ -337,7 +346,9 @@ async function init() {
 
     appLoading = false;
     setSearchControlsDisabled(false);
+    state.endless.character = null;
     state.endless.partner = null;
+    renderEndlessSelector();
     renderLayerSuggestions();
     applyFilters();
     applyEndlessFilters();
@@ -1407,6 +1418,14 @@ function bindDelegatedInteractions() {
     if (button) toggleEndlessCardFilter(button.dataset.endlessCard);
   });
 
+  document.getElementById('endlessSelector')?.addEventListener('click', event => {
+    const characterButton = event.target.closest('[data-endless-character]');
+    if (characterButton) return selectEndlessCharacter(characterButton.dataset.endlessCharacter);
+
+    const partnerButton = event.target.closest('[data-endless-partner]');
+    if (partnerButton) selectEndlessPartner(partnerButton.dataset.endlessPartner);
+  });
+
   const handleResultActivation = event => {
     if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
     if (event.target.closest('a, button')) return;
@@ -1798,7 +1817,7 @@ function openPanelDetail(d, recordHistory = true) {
 function restartActivePreview(tab) {
   if (tab === 'panel' && !hasPanelFilters()) {
     setupPreviewScroll(PREVIEW_ADAPTERS.panel.sectionSelector, previewModule.get('panel').length);
-  } else if (tab === 'endless' && !state.endless.partner) {
+  } else if (tab === 'endless' && !state.endless.character && !state.endless.partner) {
     setupPreviewScroll(PREVIEW_ADAPTERS.endless.sectionSelector, previewModule.get('endless').length);
   } else {
     stopPreviewAutoScroll();
@@ -1848,10 +1867,61 @@ function switchTab(tab, btn) {
   }, CONTENT_FADE_MS);
 }
 
-function selectPartnerDropdown(value) {
+function getEndlessCharacter(name = state.endless.character) {
+  return ENDLESS_CHARACTER_CATALOG.find(character => character.visible && character.name === name) || null;
+}
+
+function renderEndlessSelector() {
+  const characterGrid = document.getElementById('endlessCharacterGrid');
+  const partnerGrid = document.getElementById('endlessPartnerGrid');
+  const placeholder = document.getElementById('endlessPartnerPlaceholder');
+  if (!characterGrid || !partnerGrid || !placeholder) return;
+
+  characterGrid.innerHTML = ENDLESS_CHARACTER_CATALOG
+    .filter(character => character.visible)
+    .map(character => `
+      <button class="endless-character-button ${state.endless.character === character.name ? 'active' : ''}"
+        data-endless-character="${escapeHtml(character.name)}"
+        data-theme="${escapeHtml(character.theme)}"
+        aria-pressed="${state.endless.character === character.name}">
+        ${escapeHtml(character.name)}
+      </button>
+    `).join('');
+
+  const selectedCharacter = getEndlessCharacter();
+  placeholder.hidden = Boolean(selectedCharacter);
+  partnerGrid.classList.toggle('show', Boolean(selectedCharacter));
+  partnerGrid.innerHTML = selectedCharacter
+    ? selectedCharacter.partners.map(partner => `
+        <button class="endless-partner-button ${state.endless.partner === partner ? 'active' : ''}"
+          data-endless-partner="${escapeHtml(partner)}"
+          data-theme="${escapeHtml(selectedCharacter.theme)}"
+          aria-pressed="${state.endless.partner === partner}">
+          <img src="assets/companions/${encodeURIComponent(partner)}.png" alt="" loading="lazy">
+          <span>${escapeHtml(partner)}</span>
+        </button>
+      `).join('')
+    : '';
+}
+
+function selectEndlessCharacter(characterName) {
   if (appLoading) return;
-  state.endless.partner = value || null;
+  const character = getEndlessCharacter(characterName);
+  if (!character) return;
+  state.endless.character = character.name;
+  state.endless.partner = null;
   state.endless.card = null;
+  renderEndlessSelector();
+  applyEndlessFilters();
+}
+
+function selectEndlessPartner(partner) {
+  if (appLoading) return;
+  const character = getEndlessCharacter();
+  if (!character?.partners.includes(partner)) return;
+  state.endless.partner = state.endless.partner === partner ? null : partner;
+  state.endless.card = null;
+  renderEndlessSelector();
   applyEndlessFilters();
 }
 
@@ -1904,7 +1974,9 @@ function clearEndlessDynamicFilters() {
 function applyEndlessFilters() {
   if (appLoading) return;
   const videoOnly = document.getElementById('endlessVideoOnly').checked;
+  const selectedCharacter = getEndlessCharacter();
   const baseData = ENDLESS_ALL.filter(d => {
+    if (selectedCharacter && !selectedCharacter.partners.includes(d.partner)) return false;
     if (state.endless.partner && d.partner !== state.endless.partner) return false;
     if (videoOnly && !d.hasVideo) return false;
     return true;
@@ -1918,13 +1990,12 @@ function applyEndlessFilters() {
 
 function resetEndlessFilters() {
   if (appLoading) return;
+  state.endless.character = null;
   state.endless.partner = null;
   state.endless.card = null;
-  document.getElementById('partnerSelect').value = '';
   document.getElementById('endlessVideoOnly').checked = false;
-  ENDLESS_DATA = [...ENDLESS_ALL];
-  renderEndlessDynamicFilters(ENDLESS_DATA);
-  renderEndless();
+  renderEndlessSelector();
+  applyEndlessFilters();
 }
 
 function fmtScore(s) {
@@ -1970,7 +2041,7 @@ function endlessCardMarkup(d, { resultIndex = null, previewType = '', previewInd
 
 function renderEndless() {
   const resultsView = document.getElementById('endlessResultsView');
-  const hasFixedResults = Boolean(state.endless.partner);
+  const hasFixedResults = Boolean(state.endless.character || state.endless.partner);
   const dataSnapshot = [...ENDLESS_DATA];
   const infoText = hasFixedResults
     ? `共找到 <span>${dataSnapshot.length}</span> 筆結果`

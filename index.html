@@ -135,30 +135,17 @@
             </button>
           </div>
     </div>
-    <div class="filter-fields endless-filter-fields">
-      <div class="filter-group partner-group">
-        <label>搭檔選擇</label>
-        <select class="card-input" id="partnerSelect" onchange="selectPartnerDropdown(this.value)">
-          <option value="">全部搭檔</option>
-          <option value="逐光騎士">沈星回．逐光騎士</option>
-          <option value="光獵">沈星回．光獵</option>
-          <option value="暗蝕國王">沈星回．暗蝕國王</option>
-          <option value="永恆先知">黎深．永恆先知</option>
-          <option value="九黎司命">黎深．九黎司命</option>
-          <option value="終末之神">黎深．終末之神</option>
-          <option value="深海潛行者">祁煜．深海潛行者</option>
-          <option value="潮汐之神">祁煜．潮汐之神</option>
-          <option value="利莫里亞海神">祁煜．利莫里亞海神</option>
-          <option value="赤霄武神">祁煜．赤霄武神</option>
-          <option value="無盡掠奪者">秦徹．無盡掠奪者</option>
-          <option value="深淵主宰">秦徹．深淵主宰</option>
-          <option value="銀翼惡魔">秦徹．銀翼惡魔</option>
-          <option value="遠空執艦官">夏以晝．遠空執艦官</option>
-          <option value="終極兵器X-02">夏以晝．終極兵器X-02</option>
-          <option value="冥羅之主">夏以晝．冥羅之主</option>
-        </select>
-     </div>
-        </div>
+    <div class="endless-selector" id="endlessSelector">
+      <div class="endless-character-section">
+        <div class="orbit-label">角色</div>
+        <div class="endless-character-grid" id="endlessCharacterGrid"></div>
+      </div>
+      <div class="endless-partner-section">
+        <div class="orbit-label">搭檔</div>
+        <div class="endless-partner-grid" id="endlessPartnerGrid"></div>
+        <div class="endless-partner-placeholder" id="endlessPartnerPlaceholder">請先選擇角色</div>
+      </div>
+    </div>
 
     <div class="dynamic-filter-panel" id="endlessDynamicFilterPanel">
       <div class="dynamic-filter-header">
