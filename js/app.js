@@ -1980,9 +1980,10 @@ function toggleEndlessCardFilter(value) {
   applyEndlessFilters();
 }
 
-function clearEndlessDynamicFilters() {
+function resetEndlessAdvancedFilters() {
   if (appLoading) return;
   state.endless.card = null;
+  document.getElementById('endlessVideoOnly').checked = false;
   applyEndlessFilters();
 }
 

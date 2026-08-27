@@ -157,16 +157,19 @@
           <span>配置篩選</span>
           <span class="advanced-filter-chevron" id="endlessAdvancedFilterChevron" aria-hidden="true">⌄</span>
         </button>
-        <label class="video-toggle video-toggle-compact results-video-toggle">
-          <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
-          <span class="video-switch"></span>
-          <span>附影片</span>
-        </label>
       </div>
     </div>
     <div class="advanced-filter-panel endless-advanced-filter-panel" id="endlessAdvancedFilterPanel" hidden>
       <div class="advanced-filter-controls">
-        <button class="btn-reset btn-reset-compact advanced-filter-reset" onclick="clearEndlessDynamicFilters()">清除配置</button>
+        <label class="video-toggle video-toggle-compact advanced-video-toggle">
+          <input type="checkbox" id="endlessVideoOnly" onchange="applyEndlessFilters()">
+          <span class="video-switch"></span>
+          <span>附影片</span>
+        </label>
+        <button class="btn-reset btn-reset-compact advanced-filter-reset" onclick="resetEndlessAdvancedFilters()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
+          重設
+        </button>
       </div>
       <div class="dynamic-filter-grid single-column">
         <div class="dynamic-layer-box">
