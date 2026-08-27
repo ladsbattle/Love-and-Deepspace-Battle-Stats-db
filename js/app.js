@@ -453,7 +453,7 @@ function renderLayerSuggestions() {
         <span class="layer-suggestion-back is-placeholder ui-control ui-control--navigation" aria-hidden="true">返回區間</span>
       </div>
       <div class="layer-suggestion-placeholder${state.panel.orbit ? '' : ' is-empty'}">
-        <span class="layer-suggestion-placeholder-text">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
+        <span class="layer-suggestion-placeholder-text primary-filter-placeholder">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
       </div>
     `;
     panel.classList.add('show');

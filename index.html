@@ -41,21 +41,20 @@
 <div class="section active" id="section-panel">
 <div class="container">
   <!-- Filter Panel -->
-  <div class="filter-panel">
-        <div class="filter-header">
-          <div class="filter-title">✦ 篩選條件</div>
-          <div class="filter-header-actions">
-            <button class="btn-reset btn-reset-compact ui-control ui-control--compact ui-control--utility" onclick="resetFilters()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
-              重設
-            </button>
-          </div>
+  <div class="filter-panel primary-filter-block">
+    <div class="filter-header">
+      <div class="filter-title">✦ 篩選條件</div>
+      <div class="filter-header-actions">
+        <button class="btn-reset btn-reset-compact ui-control ui-control--compact ui-control--utility" onclick="resetFilters()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
+          重設
+        </button>
+      </div>
     </div>
 
-    <div class="filter-state-stack">
-    <div id="primaryFilterControls" class="primary-filter-controls">
-    <div class="orbit-group">
-      <div class="orbit-label">軌道類型</div>
+    <div class="primary-filter-content">
+      <div class="primary-filter-section">
+        <div class="orbit-label">軌道類型</div>
         <div class="orbit-chips" id="orbitChips">
           <div class="orbit-row-open">
             <button class="chip ui-pill ui-pill--primary" data-orbit="開放" aria-pressed="false" onclick="selectOrbit(this)">開放穩定</button>
@@ -70,12 +69,11 @@
             <button class="chip ui-pill ui-pill--primary" data-orbit="引力" aria-pressed="false" onclick="selectOrbit(this)">引力</button>
           </div>
         </div>
-    </div>
+      </div>
 
-    <div class="filter-fields panel-filter-fields">
-      <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
-    </div>
-    </div>
+      <div class="primary-filter-section primary-filter-section--secondary">
+        <div class="layer-suggestion-panel" id="layerSuggestionPanel" aria-live="polite"></div>
+      </div>
     </div>
   </div>
 
@@ -125,28 +123,27 @@
 <div class="container">
 
   <!-- Endless filter panel -->
-  <div class="endless-filter-panel">
-        <div class="filter-header">
-          <div class="filter-title">✦ 篩選條件</div>
-          <div class="filter-header-actions">
-            <button class="btn-reset btn-reset-compact ui-control ui-control--compact ui-control--utility" onclick="resetEndlessFilters()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
-              重設
-            </button>
-          </div>
+  <div class="endless-filter-panel primary-filter-block">
+    <div class="filter-header">
+      <div class="filter-title">✦ 篩選條件</div>
+      <div class="filter-header-actions">
+        <button class="btn-reset btn-reset-compact ui-control ui-control--compact ui-control--utility" onclick="resetEndlessFilters()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 2.6-6.3M3 4v5h5"/></svg>
+          重設
+        </button>
+      </div>
     </div>
-    <div class="endless-selector" id="endlessSelector">
-      <div class="endless-character-section">
+    <div class="endless-selector primary-filter-content" id="endlessSelector">
+      <div class="primary-filter-section">
         <div class="orbit-label">角色</div>
         <div class="endless-character-grid" id="endlessCharacterGrid"></div>
       </div>
-      <div class="endless-partner-section">
+      <div class="primary-filter-section primary-filter-section--secondary">
         <div class="orbit-label">搭檔</div>
         <div class="endless-partner-grid" id="endlessPartnerGrid"></div>
-        <div class="endless-partner-placeholder" id="endlessPartnerPlaceholder">請先選擇角色</div>
+        <div class="endless-partner-placeholder primary-filter-placeholder" id="endlessPartnerPlaceholder">請先選擇角色</div>
       </div>
     </div>
-
   </div>
 
   <div class="results-view" id="endlessResultsView">
