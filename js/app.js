@@ -450,7 +450,7 @@ function renderLayerSuggestions() {
     panel.innerHTML = `
       <div class="layer-suggestion-toolbar">
         <span class="orbit-label">快速選層</span>
-        <span class="layer-suggestion-back is-placeholder" aria-hidden="true">返回區間</span>
+        <span class="layer-suggestion-back is-placeholder ui-control ui-control--navigation" aria-hidden="true">返回區間</span>
       </div>
       <div class="layer-suggestion-placeholder${state.panel.orbit ? '' : ' is-empty'}">
         <span class="layer-suggestion-placeholder-text">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
@@ -463,9 +463,9 @@ function renderLayerSuggestions() {
     <div class="layer-manual-controls">
       <div class="layer-manual-entry">
         <input class="layer-manual-input" type="text" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(state.panel.manualLayerValue)}" placeholder="輸入層數" aria-label="手動輸入層數">
-        <button class="layer-manual-submit" type="button" data-layer-action="manual-submit">查看</button>
+        <button class="layer-manual-submit ui-control ui-control--inline" type="button" data-layer-action="manual-submit">查看</button>
       </div>
-      <button class="layer-manual-return" type="button" data-layer-action="manual-close">返回快速選層</button>
+      <button class="layer-manual-return ui-control ui-control--navigation" type="button" data-layer-action="manual-close">返回快速選層</button>
     </div>
   ` : `
     <button class="layer-suggestion-chip layer-manual-trigger ui-pill ui-pill--secondary" type="button" data-layer-action="manual-open">
@@ -476,10 +476,10 @@ function renderLayerSuggestions() {
     <div class="layer-suggestion-toolbar">
       <span class="orbit-label">快速選層</span>
       ${activeRange ? `
-        <button class="layer-suggestion-back" type="button" data-layer-action="back" aria-label="返回層數區間">
+        <button class="layer-suggestion-back ui-control ui-control--navigation" type="button" data-layer-action="back" aria-label="返回層數區間">
           返回區間
         </button>
-      ` : '<span class="layer-suggestion-back is-placeholder" aria-hidden="true">返回區間</span>'}
+      ` : '<span class="layer-suggestion-back is-placeholder ui-control ui-control--navigation" aria-hidden="true">返回區間</span>'}
     </div>
     <div class="layer-suggestion-track" aria-label="${activeRange ? '選擇層數' : '選擇層數區間'}">
       ${suggestionItems.map(item => activeRange ? `
