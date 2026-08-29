@@ -1232,12 +1232,27 @@ function renderDynamicFilters(baseData, layerNum) {
   renderDynamicFilterSide('lower', collectLayerOptions(baseData, 'lower'));
 }
 
-function updateAdvancedFilterControl() {
+function getPanelAdvancedBaseData() {
+  const layerNum = getExactLayerValue();
+  return layerNum === null ? [] : getBasePanelData(layerNum, false);
+}
+
+function canUsePanelAdvancedFilters(baseData = getPanelAdvancedBaseData()) {
+  return getExactLayerValue() !== null && baseData.length > 1;
+}
+
+function hasPanelAdvancedState() {
+  return state.panel.advancedFilterOpen
+    || state.panel.videoOnly
+    || state.panel.layerFilters.upper.length > 0
+    || state.panel.layerFilters.lower.length > 0;
+}
+
+function updateAdvancedFilterControl(shouldShowAdvanced = canUsePanelAdvancedFilters()) {
   const panel = document.getElementById('advancedFilterPanel');
   const controls = document.getElementById('panelResultsControls');
   const toggle = document.getElementById('advancedFilterToggle');
   const chevron = document.getElementById('advancedFilterChevron');
-  const shouldShowAdvanced = getExactLayerValue() !== null;
 
   if (controls) {
     controls.hidden = false;
@@ -1248,19 +1263,19 @@ function updateAdvancedFilterControl() {
   if (toggle) {
     toggle.hidden = false;
     toggle.disabled = !shouldShowAdvanced;
-    toggle.setAttribute('aria-expanded', String(state.panel.advancedFilterOpen));
+    toggle.setAttribute('aria-expanded', String(shouldShowAdvanced && state.panel.advancedFilterOpen));
   }
-  if (chevron) chevron.textContent = state.panel.advancedFilterOpen ? '⌃' : '⌄';
+  if (chevron) chevron.textContent = shouldShowAdvanced && state.panel.advancedFilterOpen ? '⌃' : '⌄';
 }
 
 function toggleAdvancedFilters() {
-  if (appLoading || getExactLayerValue() === null) return;
+  if (appLoading || !canUsePanelAdvancedFilters()) return;
   state.panel.advancedFilterOpen = !state.panel.advancedFilterOpen;
   updateAdvancedFilterControl();
 }
 
 function resetAdvancedFilters() {
-  if (appLoading || getExactLayerValue() === null) return;
+  if (appLoading || !canUsePanelAdvancedFilters()) return;
   clearPanelAdvancedState({ collapse: false });
   applyFilters();
 }
@@ -1274,6 +1289,9 @@ function matchesLayerFilters(d, side) {
 function applyFilters() {
   if (appLoading) return;
   const layerNum = getExactLayerValue();
+  const advancedBaseData = layerNum === null ? [] : getBasePanelData(layerNum, false);
+  const shouldShowAdvanced = canUsePanelAdvancedFilters(advancedBaseData);
+  if (!shouldShowAdvanced && hasPanelAdvancedState()) clearPanelAdvancedState();
   const activeRange = layerNum === null && state.panel.rangeKey
     ? getLayerRanges().find(range => range.key === state.panel.rangeKey) || null
     : null;
@@ -1284,7 +1302,7 @@ function applyFilters() {
     const noMatch = document.getElementById('dynamicNoMatch');
     if (noMatch) noMatch.classList.remove('show');
     renderDynamicFilters([], null);
-    updateAdvancedFilterControl();
+    updateAdvancedFilterControl(shouldShowAdvanced);
     renderCards();
     return;
   }
@@ -1294,7 +1312,7 @@ function applyFilters() {
   const noMatch = document.getElementById('dynamicNoMatch');
   const hasSelectedDynamicFilters = state.panel.layerFilters.upper.length > 0 || state.panel.layerFilters.lower.length > 0;
   if (noMatch) noMatch.classList.toggle('show', hasSelectedDynamicFilters && state.panel.results.length === 0);
-  updateAdvancedFilterControl();
+  updateAdvancedFilterControl(shouldShowAdvanced);
   renderCards();
 }
 
@@ -1951,14 +1969,30 @@ function collectEndlessCardOptions(data) {
   return sortCardsBySetAndRank([...cardMap.values()]);
 }
 
-function renderEndlessDynamicFilters(baseData) {
+function getEndlessAdvancedBaseData() {
+  const selectedCharacter = getEndlessCharacter();
+  return ENDLESS_ALL.filter(d => {
+    if (selectedCharacter && !selectedCharacter.partners.includes(d.partner)) return false;
+    if (state.endless.partner && d.partner !== state.endless.partner) return false;
+    return true;
+  });
+}
+
+function canUseEndlessAdvancedFilters(baseData = getEndlessAdvancedBaseData()) {
+  return Boolean(state.endless.partner) && baseData.length > 1;
+}
+
+function hasEndlessAdvancedState() {
+  return state.endless.advancedFilterOpen || state.endless.videoOnly || Boolean(state.endless.card);
+}
+
+function renderEndlessDynamicFilters(baseData, shouldShow = canUseEndlessAdvancedFilters()) {
   const panel = document.getElementById('endlessAdvancedFilterPanel');
   const toggle = document.getElementById('endlessAdvancedFilterToggle');
   const chevron = document.getElementById('endlessAdvancedFilterChevron');
   const chips = document.getElementById('endlessCardChips');
   const noMatch = document.getElementById('endlessDynamicNoMatch');
   if (!panel || !toggle || !chips) return;
-  const shouldShow = Boolean(state.endless.partner);
   toggle.hidden = !shouldShow;
   toggle.setAttribute('aria-expanded', String(shouldShow && state.endless.advancedFilterOpen));
   panel.hidden = !shouldShow || !state.endless.advancedFilterOpen;
@@ -1984,7 +2018,7 @@ function renderEndlessDynamicFilters(baseData) {
 }
 
 function toggleEndlessAdvancedFilters() {
-  if (appLoading || !state.endless.partner) return;
+  if (appLoading || !canUseEndlessAdvancedFilters()) return;
   state.endless.advancedFilterOpen = !state.endless.advancedFilterOpen;
   applyEndlessFilters();
 }
@@ -2003,15 +2037,13 @@ function resetEndlessAdvancedFilters() {
 
 function applyEndlessFilters() {
   if (appLoading) return;
-  const videoOnly = state.endless.videoOnly;
-  const selectedCharacter = getEndlessCharacter();
-  const baseData = ENDLESS_ALL.filter(d => {
-    if (selectedCharacter && !selectedCharacter.partners.includes(d.partner)) return false;
-    if (state.endless.partner && d.partner !== state.endless.partner) return false;
-    if (videoOnly && !d.hasVideo) return false;
-    return true;
-  });
-  renderEndlessDynamicFilters(baseData);
+  const advancedBaseData = getEndlessAdvancedBaseData();
+  const shouldShowAdvanced = canUseEndlessAdvancedFilters(advancedBaseData);
+  if (!shouldShowAdvanced && hasEndlessAdvancedState()) clearEndlessAdvancedState();
+  const baseData = state.endless.videoOnly
+    ? advancedBaseData.filter(d => d.hasVideo)
+    : advancedBaseData;
+  renderEndlessDynamicFilters(baseData, shouldShowAdvanced);
   ENDLESS_DATA = baseData.filter(d => !state.endless.card || d.card === state.endless.card);
   const noMatch = document.getElementById('endlessDynamicNoMatch');
   if (noMatch) noMatch.classList.toggle('show', Boolean(state.endless.card) && ENDLESS_DATA.length === 0);
