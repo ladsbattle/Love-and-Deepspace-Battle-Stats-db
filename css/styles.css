@@ -591,6 +591,9 @@ header {
 .layer-suggestion-panel.show {
   display: block;
 }
+.layer-suggestion-panel.is-loading {
+  opacity: 0.45;
+}
 .layer-suggestion-toolbar {
   display: flex;
   align-items: center;

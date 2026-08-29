@@ -315,6 +315,7 @@ async function init() {
   appLoading = true;
   bootLoadFailed = false;
   setSearchControlsDisabled(true);
+  renderLayerSuggestions();
   renderBootProgress();
 
   const updateLastUpdated = async () => {
@@ -483,14 +484,27 @@ function getLayerRanges() {
   return [...ranges.values()].sort((a, b) => a.start - b.start);
 }
 
+function layerSuggestionPlaceholderMarkup(message, isEmpty = false) {
+  return `
+    <div class="layer-suggestion-toolbar">
+      <span class="orbit-label">快速選層</span>
+      <span class="layer-suggestion-back is-placeholder ui-control ui-control--navigation" aria-hidden="true">返回區間</span>
+    </div>
+    <div class="layer-suggestion-placeholder${isEmpty ? ' is-empty' : ''}">
+      <span class="layer-suggestion-placeholder-text primary-filter-placeholder">${escapeHtml(message)}</span>
+    </div>
+  `;
+}
+
 function renderLayerSuggestions() {
   const panel = document.getElementById('layerSuggestionPanel');
   if (!panel) return;
   if (appLoading) {
-    panel.classList.remove('show');
-    panel.replaceChildren();
+    panel.innerHTML = layerSuggestionPlaceholderMarkup('請先選擇軌道類型', true);
+    panel.classList.add('show', 'is-loading');
     return;
   }
+  panel.classList.remove('is-loading');
   const ranges = getLayerRanges();
   const activeRange = ranges.find(range => range.key === state.panel.rangeKey) || null;
   const selectedLayer = getExactLayerValue();
@@ -498,15 +512,10 @@ function renderLayerSuggestions() {
   const suggestionItems = !activeRange && state.panel.manualEntryOpen ? [] : visibleItems;
 
   if (!state.panel.orbit || visibleItems.length === 0) {
-    panel.innerHTML = `
-      <div class="layer-suggestion-toolbar">
-        <span class="orbit-label">快速選層</span>
-        <span class="layer-suggestion-back is-placeholder ui-control ui-control--navigation" aria-hidden="true">返回區間</span>
-      </div>
-      <div class="layer-suggestion-placeholder${state.panel.orbit ? '' : ' is-empty'}">
-        <span class="layer-suggestion-placeholder-text primary-filter-placeholder">${state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型'}</span>
-      </div>
-    `;
+    panel.innerHTML = layerSuggestionPlaceholderMarkup(
+      state.panel.orbit ? '此軌道暫無可選層數' : '請先選擇軌道類型',
+      !state.panel.orbit
+    );
     panel.classList.add('show');
     return;
   }
