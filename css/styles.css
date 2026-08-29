@@ -880,21 +880,19 @@ header {
   gap: 0.75rem;
   margin-bottom: 0.8rem;
 }
+.panel-results-controls,
 .endless-results-controls {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
 }
-.panel-results-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-.panel-results-controls.is-placeholder {
+.panel-results-controls.is-placeholder,
+.endless-results-controls.is-placeholder {
   visibility: hidden;
   pointer-events: none;
 }
-.panel-results-controls[hidden] {
+.panel-results-controls[hidden],
+.endless-results-controls[hidden] {
   display: none;
 }
 .results-info {

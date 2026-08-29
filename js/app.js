@@ -1988,12 +1988,19 @@ function hasEndlessAdvancedState() {
 
 function renderEndlessDynamicFilters(baseData, shouldShow = canUseEndlessAdvancedFilters()) {
   const panel = document.getElementById('endlessAdvancedFilterPanel');
+  const controls = document.getElementById('endlessResultsControls');
   const toggle = document.getElementById('endlessAdvancedFilterToggle');
   const chevron = document.getElementById('endlessAdvancedFilterChevron');
   const chips = document.getElementById('endlessCardChips');
   const noMatch = document.getElementById('endlessDynamicNoMatch');
   if (!panel || !toggle || !chips) return;
-  toggle.hidden = !shouldShow;
+  if (controls) {
+    controls.hidden = false;
+    controls.classList.toggle('is-placeholder', !shouldShow);
+    controls.setAttribute('aria-hidden', String(!shouldShow));
+  }
+  toggle.hidden = false;
+  toggle.disabled = !shouldShow;
   toggle.setAttribute('aria-expanded', String(shouldShow && state.endless.advancedFilterOpen));
   panel.hidden = !shouldShow || !state.endless.advancedFilterOpen;
   if (chevron) chevron.textContent = state.endless.advancedFilterOpen ? '⌃' : '⌄';
