@@ -12,6 +12,7 @@
   --text: #f0f6ff;
   --text-muted: #b0c8e8;
   --text-dim: #6a88b0;
+  --font-display: 'Noto Serif TC', serif;
   --pill-radius: 999px;
   --pill-selected-bg: rgba(184,212,255,0.22);
   --pill-selected-border: rgba(218,231,255,0.82);
@@ -581,6 +582,13 @@ header {
 .footer-contributors { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
 .footer-contributors:focus-visible { outline: 1px solid var(--border-bright); outline-offset: 4px; }
 dialog.contributors-modal {
+  /* Acknowledgment typography shares the site's display font and theme colours. */
+  --contributors-heading-size: 1.08rem;
+  --contributors-body-size: 0.85rem;
+  --contributors-hint-size: 0.75rem;
+  --contributors-section-gap: 1.25rem;
+  position: fixed;
+  inset: 0;
   margin: auto;
   max-width: 560px;
   width: calc(100% - 2rem);
@@ -591,15 +599,17 @@ dialog.contributors-modal {
 }
 .contributors-modal::backdrop { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); }
 body:has(.contributors-modal[open]) { overflow: hidden; }
-.contributors-modal .info-modal-title { padding-right: 2.5rem; font-size: 1.45rem; font-weight: 600; letter-spacing: 0.12em; text-shadow: none; }
-.contributors-modal #contributorsIntro { margin: 0.75rem 0 1.8rem; color: var(--text-muted); font-size: 0.8rem; line-height: 1.8; }
-.contributors-group + .contributors-group { margin-top: 1.6rem; }
-.contributors-group h3 { margin: 0 0 0.65rem; font-size: 0.75rem; font-weight: 600; line-height: 1.6; letter-spacing: 0.14em; color: var(--text-muted); }
+.contributors-modal .info-modal-title { padding: 0 2rem; text-align: center; text-shadow: none; }
+.contributors-modal #contributorsIntro { max-width: 22em; margin: 0.9rem auto 1.6rem; color: var(--text-muted); font-size: var(--contributors-body-size); line-height: 1.8; text-align: center; }
+.contributors-group + .contributors-group { margin-top: var(--contributors-section-gap); padding-top: var(--contributors-section-gap); border-top: 1px solid var(--border); }
+.contributors-group h3 { margin: 0 0 0.65rem; font-family: var(--font-display); font-size: var(--contributors-heading-size); font-weight: 600; line-height: 1.6; letter-spacing: 0.06em; color: var(--text); }
 .contributors-names { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem 1.1rem; }
-.contributors-names li { color: var(--text); font-size: 0.85rem; font-weight: 400; line-height: 1.7; overflow-wrap: anywhere; }
-.contributors-message { color: var(--text-muted); font-size: 0.85rem; line-height: 1.8; }
+.contributors-names li { color: var(--text); font-size: var(--contributors-body-size); font-weight: 400; line-height: 1.7; overflow-wrap: anywhere; text-align: center; }
+.contributors-message { color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.8; }
+.contributors-modal .loading-inline { font-size: var(--contributors-hint-size); }
+.contributors-modal .loading-spinner { width: 1em; height: 1em; }
 .contributors-message + button { margin-top: 0.75rem; }
-.contributors-contact { margin: 1.8rem 0 0; padding-top: 1.1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.72rem; line-height: 1.9; }
+.contributors-contact { margin: 1.8rem 0 0; padding-top: 1.1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.9; }
 .contributors-maker { white-space: nowrap; color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 .contributors-maker:hover { color: var(--accent); text-decoration-thickness: 2px; }
 .contributors-maker:focus-visible { outline: 1px solid var(--border-bright); outline-offset: 3px; border-radius: 3px; }
@@ -2050,7 +2060,7 @@ body.is-app-loading .primary-filter-block select {
 .info-modal-title {
   margin: 0;
   color: var(--text);
-  font-family: 'Noto Serif TC', serif;
+  font-family: var(--font-display);
   font-size: 1.42rem;
   font-weight: 600;
   letter-spacing: 0.12em;
