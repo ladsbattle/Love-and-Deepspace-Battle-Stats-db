@@ -254,13 +254,19 @@
 </div>
 
 <div class="search-link-status" id="searchLinkStatus" role="status" aria-live="polite" hidden></div>
-<dialog class="modal contributors-modal" id="contributorsDialog" aria-labelledby="contributorsTitle" aria-describedby="contributorsIntro">
+<dialog class="modal info-modal contributors-modal" id="contributorsDialog" aria-labelledby="contributorsTitle" aria-describedby="contributorsIntro">
   <button class="modal-close" type="button" data-contributors-action="close" aria-label="關閉感謝名單" autofocus>✕</button>
-  <h2 class="info-modal-title" id="contributorsTitle">特別感謝</h2>
-  <div class="contributors-scroll">
-    <p id="contributorsIntro">感謝所有分享戰鬥面板、<br>協助整理與維護資料的玩家。</p>
-    <div id="contributorsContent" aria-live="polite"></div>
-    <p class="contributors-contact">本資料庫的貢獻者眾多，若名單有錯誤或遺漏，亦或是您不希望將您的大名展示於其中，皆歡迎聯繫網站製作者 <a class="contributors-maker" href="mailto:tingtingwang0905@gmail.com" aria-label="寄信給 Ting Ting Wang：tingtingwang0905@gmail.com" title="tingtingwang0905@gmail.com">Ting Ting Wang</a>處理，感謝您的支持。</p>
+  <div class="info-modal-header">
+    <h2 class="info-modal-title" id="contributorsTitle">特別感謝</h2>
+  </div>
+  <p id="contributorsIntro">感謝每一位進行面板分享與協助資料庫運作的玩家。</p>
+  <div class="info-tabs contributors-tabs" role="tablist" aria-label="貢獻分類">
+    <button class="info-tab active" id="contributorsSharingTab" type="button" role="tab" aria-selected="true" aria-controls="contributorsContent" data-contributor-category="面板分享">面板分享</button>
+    <button class="info-tab" id="contributorsMaintenanceTab" type="button" role="tab" aria-selected="false" aria-controls="contributorsContent" tabindex="-1" data-contributor-category="網站維護">網站維護</button>
+  </div>
+  <div class="info-content contributors-scroll">
+    <div id="contributorsContent" role="tabpanel" aria-labelledby="contributorsSharingTab" aria-live="polite" tabindex="0"></div>
+    <p class="contributors-contact">本資料庫的貢獻者眾多，且僅展示公開發文者之大名（即不列出匿名發文者，以保護您的資訊），若您發現名單有錯誤或遺漏，亦或是不希望自己的大名展示於其中，請不吝聯繫網站製作者<a class="contributors-maker" href="https://www.facebook.com/groups/1655830235133299/user/61579601102041" target="_blank" rel="noopener noreferrer">Ting Ting Wang</a>協助處理，感謝您的支持。</p>
   </div>
 </dialog>
 <script src="js/app.js"></script>

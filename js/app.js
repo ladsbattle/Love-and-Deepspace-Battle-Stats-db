@@ -6,10 +6,10 @@ const PANEL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQb
 const ENDLESS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1577067344&single=true&output=csv';
 const CHANGELOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1820828638&single=true&output=csv';
 const CONTRIBUTORS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1484906078&single=true&output=csv';
-const CONTRIBUTOR_CATEGORIES = ['網站製作', '資料維護', '面板分享'];
+const CONTRIBUTOR_CATEGORIES = ['面板分享', '網站維護'];
 const contributorEnglishSort = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
 const contributorStrokeSort = new Intl.Collator('zh-Hant-u-co-stroke', { numeric: true });
-const contributors = { status: 'idle', groups: null };
+const contributors = { status: 'idle', groups: null, category: CONTRIBUTOR_CATEGORIES[0] };
 const CSV_REQUEST_TIMEOUT_MS = 10000;
 const IMAGE_PRELOAD_TIMEOUT_MS = 8000;
 const MAIN_DATA_RETRIES = 1;
@@ -569,13 +569,40 @@ function renderContributors() {
   } else if (contributors.status === 'error') {
     content.innerHTML = '<p class="contributors-message">名單暫時無法載入，不影響資料庫搜尋。</p><button class="ui-control ui-control--compact ui-control--utility" type="button" data-contributors-action="retry">重新載入名單</button>';
   } else if (contributors.status === 'loaded') {
-    content.innerHTML = CONTRIBUTOR_CATEGORIES.map(category => {
-      const names = contributors.groups[category];
-      return `<section class="contributors-group"><h3>${category}</h3>${names.length
-        ? `<ul class="contributors-names">${names.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>`
-        : '<p class="contributors-message">名單整理中</p>'}</section>`;
-    }).join('');
+    const names = contributors.groups[contributors.category];
+    content.innerHTML = names.length
+      ? `<ul class="contributors-names">${names.map(name => `<li><span>${escapeHtml(name)}</span></li>`).join('')}</ul>`
+      : '<p class="contributors-message">名單整理中</p>';
+    requestAnimationFrame(fitContributorNames);
   }
+}
+
+// Fit the actual rendered name, including after fonts load or columns resize.
+function fitContributorNames() {
+  if (!document.getElementById('contributorsDialog')?.open) return;
+  document.querySelectorAll('.contributors-names span').forEach(name => {
+    name.style.fontSize = '';
+    const available = name.parentElement.clientWidth;
+    const width = name.getBoundingClientRect().width;
+    if (available > 0 && width > available) {
+      const size = parseFloat(getComputedStyle(name).fontSize);
+      name.style.fontSize = `${Math.floor(size * (available - 1) / width * 100) / 100}px`;
+    }
+  });
+}
+
+function switchContributorTab(category) {
+  if (!CONTRIBUTOR_CATEGORIES.includes(category)) return;
+  contributors.category = category;
+  document.querySelectorAll('[data-contributor-category]').forEach(tab => {
+    const active = tab.dataset.contributorCategory === category;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', String(active));
+    tab.tabIndex = active ? 0 : -1;
+    if (active) document.getElementById('contributorsContent').setAttribute('aria-labelledby', tab.id);
+  });
+  renderContributors();
+  document.querySelector('.contributors-scroll').scrollTop = 0;
 }
 
 async function loadContributors() {
@@ -596,6 +623,7 @@ function openContributors() {
   const dialog = document.getElementById('contributorsDialog');
   if (!dialog || dialog.open) return;
   dialog.showModal();
+  switchContributorTab(CONTRIBUTOR_CATEGORIES[0]);
   loadContributors(); // Optional data: never part of the main startup progress.
 }
 
@@ -1334,8 +1362,8 @@ function renderVersionHistory() {
 
 function switchInfoTab(tab) {
   const activeTab = ['guide', 'intro', 'version'].includes(tab) ? tab : 'guide';
-  document.querySelector('.info-tabs')?.setAttribute('data-active', activeTab);
-  document.querySelectorAll('.info-tab').forEach(btn => {
+  document.querySelector('#infoOverlay .info-tabs')?.setAttribute('data-active', activeTab);
+  document.querySelectorAll('#infoOverlay .info-tab').forEach(btn => {
     const isActive = btn.dataset.tab === activeTab;
     btn.classList.toggle('active', isActive);
     btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
@@ -1345,7 +1373,7 @@ function switchInfoTab(tab) {
     panel.classList.toggle('active', isActive);
     panel.hidden = !isActive;
   });
-  const infoContent = document.querySelector('.info-content');
+  const infoContent = document.querySelector('#infoOverlay .info-content');
   if (infoContent) infoContent.scrollTop = 0;
   if (activeTab === 'version') renderVersionHistory();
 }
@@ -1755,8 +1783,31 @@ function bindDelegatedInteractions() {
     if (action === 'open') openContributors();
     if (action === 'close') document.getElementById('contributorsDialog')?.close();
     if (action === 'retry') loadContributors();
+    const category = event.target.closest('[data-contributor-category]')?.dataset.contributorCategory;
+    if (category) switchContributorTab(category);
   });
   const contributorsDialog = document.getElementById('contributorsDialog');
+  // Roving tab focus supports arrows/Home/End without affecting Information tabs.
+  contributorsDialog?.addEventListener('keydown', event => {
+    const tab = event.target.closest('[data-contributor-category]');
+    if (!tab || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const tabs = [...contributorsDialog.querySelectorAll('[data-contributor-category]')];
+    const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+      : (tabs.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    switchContributorTab(tabs[index].dataset.contributorCategory);
+    tabs[index].focus();
+  });
+  if (contributorsDialog) {
+    let previousWidth = 0;
+    new ResizeObserver(([entry]) => {
+      if (entry.contentRect.width === previousWidth) return;
+      previousWidth = entry.contentRect.width;
+      fitContributorNames();
+    }).observe(contributorsDialog);
+    document.fonts.ready.then(fitContributorNames);
+    document.fonts.addEventListener('loadingdone', fitContributorNames);
+  }
   contributorsDialog?.addEventListener('click', event => {
     const bounds = contributorsDialog.getBoundingClientRect();
     if (event.target === contributorsDialog && (event.clientX < bounds.left || event.clientX > bounds.right
