@@ -571,9 +571,8 @@ function renderContributors() {
   } else if (contributors.status === 'loaded') {
     content.innerHTML = CONTRIBUTOR_CATEGORIES.map(category => {
       const names = contributors.groups[category];
-      const title = category === '面板分享' ? '分享名單' : category;
-      return `<section class="contributors-group"><h3>${title}</h3>${names.length
-        ? `<ul class="contributors-names">${names.map(name => `<li><span>${escapeHtml(name)}</span></li>`).join('')}</ul>`
+      return `<section class="contributors-group"><h3>${category}</h3>${names.length
+        ? `<ul class="contributors-names">${names.map(name => `<li><span>${escapeHtml(name).replace(/[\p{Script=Han}\p{Script=Bopomofo}\u02C7\u02CA\u02CB\u02D9]+/gu, '<span class="contributor-local-name">$&</span>')}</span></li>`).join('')}</ul>`
         : '<p class="contributors-message">名單整理中</p>'}</section>`;
     }).join('');
     requestAnimationFrame(fitContributorNames);
@@ -583,7 +582,7 @@ function renderContributors() {
 // Fit the actual rendered name, including after fonts load or columns resize.
 function fitContributorNames() {
   if (!document.getElementById('contributorsDialog')?.open) return;
-  document.querySelectorAll('.contributors-names span').forEach(name => {
+  document.querySelectorAll('.contributors-names li > span').forEach(name => {
     name.style.fontSize = '';
     const available = name.parentElement.clientWidth;
     const width = name.getBoundingClientRect().width;
