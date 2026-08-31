@@ -13,6 +13,7 @@
   --text-muted: #b0c8e8;
   --text-dim: #6a88b0;
   --font-display: 'Noto Serif TC', serif;
+  --information-dialog-height: min(78vh, calc(100vh - 2rem));
   --pill-radius: 999px;
   --pill-selected-bg: rgba(184,212,255,0.22);
   --pill-selected-border: rgba(218,231,255,0.82);
@@ -592,19 +593,22 @@ dialog.contributors-modal {
   margin: auto;
   max-width: 560px;
   width: calc(100% - 2rem);
-  max-height: calc(100dvh - 2rem);
+  height: var(--information-dialog-height);
+  max-height: var(--information-dialog-height);
   padding: 2rem;
-  overflow-y: auto;
+  overflow: hidden;
   color: var(--text);
 }
 .contributors-modal::backdrop { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); }
+dialog.contributors-modal[open] { display: flex; flex-direction: column; }
+.contributors-scroll { margin-top: 0.9rem; }
 body:has(.contributors-modal[open]) { overflow: hidden; }
-.contributors-modal .info-modal-title { padding: 0 2rem; text-align: center; text-shadow: none; }
-.contributors-modal #contributorsIntro { max-width: 22em; margin: 0.9rem auto 1.6rem; color: var(--text-muted); font-size: var(--contributors-body-size); line-height: 1.8; text-align: center; }
+.contributors-modal .info-modal-title { flex-shrink: 0; padding: 0 2rem; text-align: center; text-shadow: none; }
+.contributors-modal #contributorsIntro { max-width: 22em; margin: 0 auto 1.6rem; color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.9; text-align: center; }
 .contributors-group + .contributors-group { margin-top: var(--contributors-section-gap); padding-top: var(--contributors-section-gap); border-top: 1px solid var(--border); }
 .contributors-group h3 { margin: 0 0 0.65rem; font-family: var(--font-display); font-size: var(--contributors-heading-size); font-weight: 600; line-height: 1.6; letter-spacing: 0.06em; color: var(--text); }
 .contributors-names { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem 1.1rem; }
-.contributors-names li { color: var(--text); font-size: var(--contributors-body-size); font-weight: 400; line-height: 1.7; overflow-wrap: anywhere; text-align: center; }
+.contributors-names li { color: var(--text); font-family: var(--font-display); font-size: var(--contributors-body-size); font-weight: 400; line-height: 1.7; overflow-wrap: anywhere; text-align: center; }
 .contributors-message { color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.8; }
 .contributors-modal .loading-inline { font-size: var(--contributors-hint-size); }
 .contributors-modal .loading-spinner { width: 1em; height: 1em; }
@@ -2028,8 +2032,8 @@ body.is-app-loading .primary-filter-block select {
 
 .info-modal {
   max-width: 560px;
-  height: min(78vh, calc(100vh - 2rem));
-  max-height: min(78vh, calc(100vh - 2rem));
+  height: var(--information-dialog-height);
+  max-height: var(--information-dialog-height);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2115,13 +2119,16 @@ body.is-app-loading .primary-filter-block select {
     inset 0 0 0 1px rgba(255,255,255,0.045);
 }
 
-.info-content {
+.info-content,
+.contributors-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.info-content {
   border-top: 1px solid rgba(184,212,255,0.12);
   padding: 0.95rem 0.45rem 0 0;
-  scrollbar-gutter: stable;
 }
 
 .info-panel {
@@ -2748,10 +2755,6 @@ body.is-app-loading .primary-filter-block select {
 }
 
 @media (max-width: 600px) {
-  .info-modal {
-    height: min(78vh, calc(100vh - 2rem));
-    max-height: min(78vh, calc(100vh - 2rem));
-  }
   .info-modal > .modal-close {
     top: 1.38rem;
     right: 1.95rem;
