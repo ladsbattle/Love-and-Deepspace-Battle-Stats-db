@@ -905,6 +905,21 @@ header {
   letter-spacing: 0.05em;
 }
 .results-info span { color: var(--accent); }
+.search-link-status {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  width: max-content;
+  max-width: calc(100% - 2rem);
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border-bright);
+  border-radius: var(--control-radius);
+  background: #0d1526;
+  color: var(--text);
+  font-size: 0.8rem;
+}
 .boot-load-error {
   display: inline-flex;
   align-items: center;
