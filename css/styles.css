@@ -31,7 +31,7 @@
   --control-text: #c7dcf7;
   --control-focus-ring: rgba(188,212,255,0.68);
   --primary-filter-min-height: 264px;
-  --primary-filter-min-height-mobile: 381px;
+  --primary-filter-min-height-mobile: 23rem;
   --primary-filter-padding: 1.5rem;
   --primary-filter-padding-mobile: 1rem;
   --primary-filter-section-gap: 1.4rem;
@@ -601,6 +601,8 @@ dialog.contributors-modal {
 .contributors-modal::backdrop { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); }
 dialog.contributors-modal[open] { display: flex; flex-direction: column; }
 body:has(.contributors-modal[open]) { overflow: hidden; }
+/* Initial focus announces the static heading; interactive controls keep focus rings. */
+#contributorsTitle:focus { outline: none; }
 .contributors-modal #contributorsIntro { flex-shrink: 0; margin: 0 0 1rem; color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.9; }
 .contributors-group + .contributors-group { margin-top: 1.6rem; }
 .contributors-group h3 { display: flex; flex-direction: column; align-items: center; margin: 0 0 1rem; color: var(--text); font-family: var(--font-display); font-size: 1rem; font-weight: 600; line-height: 1.7; letter-spacing: 0.06em; }
@@ -2837,6 +2839,22 @@ body.is-app-loading .primary-filter-block select {
   }
   .primary-filter-content {
     gap: var(--primary-filter-section-gap-mobile);
+  }
+  /* Share the mobile baseline; the empty companion area absorbs spare space. */
+  .primary-filter-block:has(.endless-partner-placeholder:not([hidden])) {
+    display: flex;
+    flex-direction: column;
+  }
+  .primary-filter-block:has(.endless-partner-placeholder:not([hidden])) .primary-filter-content {
+    flex: 1;
+    grid-template-rows: auto 1fr;
+  }
+  .primary-filter-section:has(.endless-partner-placeholder:not([hidden])) {
+    display: flex;
+    flex-direction: column;
+  }
+  .endless-partner-placeholder:not([hidden]) {
+    flex: 1;
   }
   .primary-filter-placeholder {
     justify-content: center;
