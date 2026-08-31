@@ -604,8 +604,9 @@ body:has(.contributors-modal[open]) { overflow: hidden; }
 .contributors-modal #contributorsIntro { flex-shrink: 0; margin: 0 0 1rem; color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.9; }
 .contributors-group + .contributors-group { margin-top: 1.6rem; }
 .contributors-group h3 { display: flex; flex-direction: column; align-items: center; margin: 0 0 1rem; color: var(--text); font-family: var(--font-display); font-size: 1rem; font-weight: 600; line-height: 1.7; letter-spacing: 0.06em; }
-.contributors-names { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem 1.1rem; }
-.contributors-names li { min-width: 0; color: var(--text); font-family: var(--font-display); font-size: var(--contributors-body-size); font-weight: 400; line-height: 1.7; text-align: center; }
+/* Fixed column widths keep full rows aligned; incomplete rows center as a group. */
+.contributors-names { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.55rem 1.1rem; }
+.contributors-names li { flex: 0 0 calc((100% - 2.2rem) / 3); min-width: 0; color: var(--text); font-family: var(--font-display); font-size: var(--contributors-body-size); font-weight: 400; line-height: 1.7; text-align: center; }
 .contributors-names li > span { display: inline-block; white-space: nowrap; }
 .contributor-local-name { font-family: 'Noto Sans TC', sans-serif; }
 .contributors-message { color: var(--text-muted); font-size: var(--contributors-hint-size); line-height: 1.8; }
@@ -618,7 +619,7 @@ body:has(.contributors-modal[open]) { overflow: hidden; }
 .contributors-maker:focus-visible { outline: 1px solid var(--border-bright); outline-offset: 3px; border-radius: 3px; }
 @media (max-width: 600px) {
   dialog.contributors-modal { padding: 1.5rem 1.25rem; }
-  .contributors-names { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contributors-names li { flex-basis: calc((100% - 1.1rem) / 2); }
 }
 
 .layer-suggestion-panel {
