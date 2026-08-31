@@ -5,6 +5,11 @@ const ORBIT_LABEL = { 開放:'開放穩定', 波動:'開放波動', 光:'光', �
 const PANEL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?output=csv';
 const ENDLESS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1577067344&single=true&output=csv';
 const CHANGELOG_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1820828638&single=true&output=csv';
+const CONTRIBUTORS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTfNvGSQbmwwXodVzmhuZfOAGIIE634hWTA6V1CTaQlF272v3VRJ5t_F7OfSKPH0qbBQbUSvLlQnw3x/pub?gid=1484906078&single=true&output=csv';
+const CONTRIBUTOR_CATEGORIES = ['網站製作', '資料維護', '面板分享'];
+const contributorEnglishSort = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+const contributorStrokeSort = new Intl.Collator('zh-Hant-u-co-stroke', { numeric: true });
+const contributors = { status: 'idle', groups: null };
 const CSV_REQUEST_TIMEOUT_MS = 10000;
 const IMAGE_PRELOAD_TIMEOUT_MS = 8000;
 const MAIN_DATA_RETRIES = 1;
@@ -82,9 +87,12 @@ const LOCAL_FOLDER_KEY = 'ladsbattle_local_folder_v1';
 
 // Search links store only committed filters, never private folder data or UI state.
 const SEARCH_FILTER_FIELDS = { dir: 'Stella', card: 'Card', partner: 'Partner' };
+const SEARCH_FILTER_SIDES = { upper: 'T1_', lower: 'T2_' };
 const SEARCH_PARAM_KEYS = [
-  'mode', 'orbit', 'layer', 'range', 'character', 'partner', 'card', 'video',
-  ...['upper', 'lower'].flatMap(side => Object.values(SEARCH_FILTER_FIELDS).map(field => side + field))
+  'mode', 'orbit', 'level', 'layer', 'range', 'character', 'partner', 'card', 'video',
+  // Include legacy names so old links can be read and normalized on the next sync.
+  ...Object.entries(SEARCH_FILTER_SIDES).flatMap(([side, prefix]) =>
+    Object.values(SEARCH_FILTER_FIELDS).flatMap(field => [prefix + field, side + field]))
 ];
 let restoringSearchUrl = true;
 
@@ -100,11 +108,11 @@ function searchParamsForTab(tab) {
     params.set('mode', 'orbit');
     params.set('orbit', ORBIT_LABEL[state.panel.orbit]);
     const layer = getExactLayerValue();
-    if (layer !== null) params.set('layer', String(layer));
+    if (layer !== null) params.set('level', String(layer));
     else if (state.panel.rangeKey) params.set('range', state.panel.rangeKey);
     for (const side of ['upper', 'lower']) {
       for (const filter of state.panel.layerFilters[side]) {
-        params.set(side + SEARCH_FILTER_FIELDS[filter.type], filter.type === 'dir' ? dirLabel(filter.value) : filter.value);
+        params.set(SEARCH_FILTER_SIDES[side] + SEARCH_FILTER_FIELDS[filter.type], filter.type === 'dir' ? dirLabel(filter.value) : filter.value);
       }
     }
     if (state.panel.videoOnly) params.set('video', '1');
@@ -146,6 +154,7 @@ function parseSearchLink(params) {
     return value;
   };
   SEARCH_PARAM_KEYS.forEach(read);
+  const readCompatible = (key, legacyKey) => read(params.has(key) ? key : legacyKey);
   const mode = read('mode');
   if (mode && mode !== 'orbit' && mode !== 'endless') throw new Error('Invalid search mode');
   if (read('video') && !['0', '1'].includes(read('video'))) throw new Error('Invalid video filter');
@@ -168,9 +177,10 @@ function parseSearchLink(params) {
   const orbit = read('orbit');
   next.orbit = Object.keys(ORBIT_LABEL).find(key => ORBIT_LABEL[key] === orbit || key === orbit) || null;
   if (orbit && !next.orbit) throw new Error('Unknown orbit');
-  if (read('layer')) {
-    const layer = Number(read('layer'));
-    if (!next.orbit || !/^\d+$/.test(read('layer')) || !Number.isInteger(layer) || layer < 1 || layer > LIMITS[next.orbit]) {
+  const level = readCompatible('level', 'layer');
+  if (level) {
+    const layer = Number(level);
+    if (!next.orbit || !/^\d+$/.test(level) || !Number.isInteger(layer) || layer < 1 || layer > LIMITS[next.orbit]) {
       throw new Error('Invalid layer');
     }
     next.committedOrbit = next.orbit;
@@ -185,7 +195,7 @@ function parseSearchLink(params) {
   }
   for (const side of ['upper', 'lower']) {
     for (const [type, field] of Object.entries(SEARCH_FILTER_FIELDS)) {
-      const value = read(side + field);
+      const value = readCompatible(SEARCH_FILTER_SIDES[side] + field, side + field);
       if (!value) continue;
       if (next.committedLayer === null || (type === 'dir' && !['順譜', '逆譜'].includes(value))) {
         throw new Error('Invalid advanced filter');
@@ -509,6 +519,84 @@ function parseChangelogCSV(text) {
       note: cols[noteIndex]?.trim()
     };
   }).filter(item => item.date && item.note);
+}
+
+// Published Sheets CSV may contain quoted commas, line breaks and escaped quotes.
+function parseContributorCSV(text) {
+  const records = [];
+  let record = '';
+  let quoted = false;
+  for (const char of text.replace(/^\uFEFF/, '')) {
+    if (char === '"') quoted = !quoted;
+    if ((char === '\n' || char === '\r') && !quoted) {
+      if (record.trim()) records.push(parseCsvLine(record));
+      record = '';
+    } else record += char;
+  }
+  if (record.trim()) records.push(parseCsvLine(record));
+  if (quoted) throw new Error('Unclosed CSV quotation');
+  const headers = records.shift() || [];
+  const nameIndex = headers.indexOf('名稱');
+  const categoryIndex = headers.findIndex(header => header === '貢獻別' || header === '分類');
+  if (nameIndex < 0 || categoryIndex < 0) throw new Error('Missing contributor CSV headers');
+  const names = Object.fromEntries(CONTRIBUTOR_CATEGORIES.map(category => [category, new Set()]));
+  records.forEach(row => {
+    const name = (row[nameIndex] || '').trim().normalize('NFC');
+    if (!name) return;
+    (row[categoryIndex] || '').split(/[、,，;；|／/\r\n]+/).forEach(tag => names[tag.trim()]?.add(name));
+  });
+  return Object.fromEntries(CONTRIBUTOR_CATEGORIES.map(category => [category, [...names[category]].sort(compareContributorNames)]));
+}
+
+function compareContributorNames(a, b) {
+  // Ignore leading punctuation when grouping; keep the displayed name intact.
+  const group = name => {
+    const firstLetter = name.match(/[A-Za-z\p{Script=Han}]/u)?.[0] || '';
+    return /^[A-Za-z]$/.test(firstLetter) ? 0 : firstLetter ? 1 : 2;
+  };
+  const difference = group(a) - group(b);
+  if (difference) return difference;
+  const compared = (group(a) === 0 ? contributorEnglishSort : contributorStrokeSort).compare(a, b);
+  return compared || (a < b ? -1 : a > b ? 1 : 0);
+}
+
+function renderContributors() {
+  const content = document.getElementById('contributorsContent');
+  if (!content) return;
+  content.setAttribute('aria-busy', String(contributors.status === 'loading'));
+  if (contributors.status === 'loading') {
+    content.innerHTML = loadingMarkup('名單載入中…');
+  } else if (contributors.status === 'error') {
+    content.innerHTML = '<p class="contributors-message">名單暫時無法載入，不影響資料庫搜尋。</p><button class="ui-control ui-control--compact ui-control--utility" type="button" data-contributors-action="retry">重新載入名單</button>';
+  } else if (contributors.status === 'loaded') {
+    content.innerHTML = CONTRIBUTOR_CATEGORIES.map(category => {
+      const names = contributors.groups[category];
+      return `<section class="contributors-group"><h3>${category}</h3>${names.length
+        ? `<ul class="contributors-names">${names.map(name => `<li>${escapeHtml(name)}</li>`).join('')}</ul>`
+        : '<p class="contributors-message">名單整理中</p>'}</section>`;
+    }).join('');
+  }
+}
+
+async function loadContributors() {
+  if (contributors.status === 'loading' || contributors.status === 'loaded') return;
+  contributors.status = 'loading';
+  renderContributors();
+  try {
+    contributors.groups = await fetchCsvResource(CONTRIBUTORS_CSV_URL, parseContributorCSV, null, { retries: 1 });
+    contributors.status = 'loaded';
+  } catch (error) {
+    contributors.status = 'error';
+    console.warn('Contributor list unavailable:', error);
+  }
+  renderContributors();
+}
+
+function openContributors() {
+  const dialog = document.getElementById('contributorsDialog');
+  if (!dialog || dialog.open) return;
+  dialog.showModal();
+  loadContributors(); // Optional data: never part of the main startup progress.
 }
 
 function resetBootProgress() {
@@ -1661,6 +1749,19 @@ function openResultCard(type, index) {
 }
 
 function bindDelegatedInteractions() {
+  // Delegation also covers the footer, which is parsed after this script.
+  document.addEventListener('click', event => {
+    const action = event.target.closest('[data-contributors-action]')?.dataset.contributorsAction;
+    if (action === 'open') openContributors();
+    if (action === 'close') document.getElementById('contributorsDialog')?.close();
+    if (action === 'retry') loadContributors();
+  });
+  const contributorsDialog = document.getElementById('contributorsDialog');
+  contributorsDialog?.addEventListener('click', event => {
+    const bounds = contributorsDialog.getBoundingClientRect();
+    if (event.target === contributorsDialog && (event.clientX < bounds.left || event.clientX > bounds.right
+      || event.clientY < bounds.top || event.clientY > bounds.bottom)) contributorsDialog.close();
+  });
   window.addEventListener('popstate', restoreSearchFromUrl);
   const layerSuggestionPanel = document.getElementById('layerSuggestionPanel');
   layerSuggestionPanel?.addEventListener('click', event => {
@@ -2435,6 +2536,7 @@ function closeModalDirect() {
   document.getElementById('mLowerBlock').style.display = '';
 }
 document.addEventListener('keydown', e => {
+  if (document.getElementById('contributorsDialog')?.open) return; // Native dialog handles Escape and focus.
   if (e.key === 'Escape') {
     closeModalDirect();
     closeInfoModalDirect();

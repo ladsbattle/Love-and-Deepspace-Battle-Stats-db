@@ -254,6 +254,13 @@
 </div>
 
 <div class="search-link-status" id="searchLinkStatus" role="status" aria-live="polite" hidden></div>
+<dialog class="modal contributors-modal" id="contributorsDialog" aria-labelledby="contributorsTitle" aria-describedby="contributorsIntro">
+  <button class="modal-close" type="button" data-contributors-action="close" aria-label="關閉感謝名單" autofocus>✕</button>
+  <h2 class="info-modal-title" id="contributorsTitle">特別感謝</h2>
+  <p id="contributorsIntro">感謝所有分享戰鬥面板、協助整理與維護資料的玩家。</p>
+  <div id="contributorsContent" aria-live="polite"></div>
+  <p class="contributors-contact">本資料庫的貢獻者眾多，若名單有錯誤或遺漏，亦或是您不希望將您的大名展示於其中，皆歡迎聯繫網站製作者 <span class="contributors-maker">Ting Ting Wang</span>處理，<span class="contributors-contact-end">感謝您的支持。<a class="contributors-email" href="mailto:tingtingwang0905@gmail.com" aria-label="寄信給 Ting Ting Wang：tingtingwang0905@gmail.com" title="tingtingwang0905@gmail.com"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a></span></p>
+</dialog>
 <script src="js/app.js"></script>
 
 <footer class="site-footer">
@@ -261,7 +268,7 @@
   <a href="https://line.me/ti/g2/gw9Ds6tjgN1mPRRCKbc7pLofd4Wzd1MJoR71eQ" target="_blank" rel="noopener">
     戀與深空戰鬥討論群
   </a>
-  <span class="site-footer-credit">, created by <a href="https://www.facebook.com/groups/1655830235133299/user/61579601102041" target="_blank" rel="noopener">Ting Ting Wang</a></span>
+  <span aria-hidden="true"> · </span><button class="footer-contributors" type="button" data-contributors-action="open" aria-haspopup="dialog" aria-controls="contributorsDialog">Contributors</button>
   <div id="lastUpdated"></div>
 </footer>
 

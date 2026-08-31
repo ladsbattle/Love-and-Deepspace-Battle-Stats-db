@@ -193,6 +193,7 @@
 }
 
 .site-footer a,
+.footer-contributors,
 .header-link {
   color: #aaa;
   text-decoration: none;
@@ -201,6 +202,7 @@
 }
 
 .site-footer a:hover,
+.footer-contributors:hover,
 .header-link:hover {
   color: #dbe8ff;
   text-decoration: underline;
@@ -576,9 +578,38 @@ header {
 .chip[data-orbit="波動"][aria-pressed="true"] { background: var(--col-wave-bg);   border-color: var(--col-wave-border);   color: var(--col-wave); }
 .chip[data-orbit="金屬"][aria-pressed="true"] { background: var(--col-metal-bg);  border-color: var(--col-metal-border);  color: var(--col-metal); }
 
-.site-footer-credit {
-  display: inline-block;
-  white-space: nowrap;
+.footer-contributors { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.footer-contributors:focus-visible { outline: 1px solid var(--border-bright); outline-offset: 4px; }
+dialog.contributors-modal {
+  margin: auto;
+  max-width: 560px;
+  width: calc(100% - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  color: var(--text);
+}
+.contributors-modal::backdrop { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); }
+body:has(.contributors-modal[open]) { overflow: hidden; }
+.contributors-modal .info-modal-title { padding-right: 2.5rem; }
+.contributors-modal #contributorsIntro { margin: 1rem 0 1.5rem; color: var(--text-muted); font-size: 0.85rem; line-height: 1.8; }
+.contributors-group + .contributors-group { border-top: 1px solid var(--border); margin-top: 1.25rem; padding-top: 1.25rem; }
+.contributors-group h3 { font-size: 0.9rem; color: var(--text); margin-bottom: 0.75rem; }
+.contributors-names { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem 1rem; }
+.contributors-names li { font-size: 0.85rem; line-height: 1.7; overflow-wrap: anywhere; }
+.contributors-message { color: var(--text-muted); font-size: 0.85rem; line-height: 1.8; }
+.contributors-message + button { margin-top: 0.75rem; }
+.contributors-contact { margin: 1.5rem 0 0; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.75rem; line-height: 1.9; }
+.contributors-maker, .contributors-contact-end { white-space: nowrap; }
+.contributors-maker { color: var(--text); }
+.contributors-email { display: inline-flex; align-items: center; justify-content: center; position: relative; width: 20px; height: 20px; margin-left: 3px; vertical-align: middle; color: var(--text); text-decoration: none; }
+.contributors-email:hover { color: var(--accent); }
+.contributors-email:focus-visible { outline: 1px solid var(--border-bright); outline-offset: 3px; border-radius: 3px; }
+@media (pointer: coarse) {
+  .contributors-email::after { content: ''; position: absolute; width: 44px; height: 44px; }
+}
+@media (max-width: 600px) {
+  dialog.contributors-modal { padding: 1.25rem; }
+  .contributors-names { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .layer-suggestion-panel {
